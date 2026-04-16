@@ -150,6 +150,10 @@ output "frontend_url" {
   value = "https://${aws_cloudfront_distribution.frontend.domain_name}"
 }
 
+output "frontend_distribution_id" {
+  value = aws_cloudfront_distribution.frontend.id
+}
+
 output "assets_url" {
   value = "https://${aws_cloudfront_distribution.assets.domain_name}"
 }
