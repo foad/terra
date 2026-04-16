@@ -57,8 +57,12 @@ resource "aws_cloudfront_distribution" "frontend" {
     }
   }
 
+  aliases = ["terra.foad.dev"]
+
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn      = "arn:aws:acm:us-east-1:018043257032:certificate/9a3420d7-21c7-48d2-a739-21047a9646ce"
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
   }
 }
 
