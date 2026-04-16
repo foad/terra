@@ -90,7 +90,7 @@ data "archive_file" "lambda_placeholder" {
 resource "aws_lambda_function" "api" {
   function_name = "${var.project_name}-api"
   role          = aws_iam_role.lambda.arn
-  handler       = "handler.handler"
+  handler       = "src.handlers.api.handler"
   runtime       = "python3.13"
   timeout       = 30
   memory_size   = 512
@@ -123,7 +123,7 @@ resource "aws_cloudwatch_log_group" "api" {
 resource "aws_lambda_function" "photo_processor" {
   function_name = "${var.project_name}-photo-processor"
   role          = aws_iam_role.lambda.arn
-  handler       = "handler.handler"
+  handler       = "src.handlers.photo_processor.handler"
   runtime       = "python3.13"
   timeout       = 60
   memory_size   = 1024
