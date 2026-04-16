@@ -1,7 +1,7 @@
 .container {
   padding: 12px 16px;
-  border-top: 1px solid var(--color-border);
-  background: var(--color-bg);
+  border-top: 1px solid var(--undp-color-gray-300, #d4d6d8);
+  background: var(--undp-color-white, #ffffff);
 }
 
 .selected {
@@ -19,14 +19,13 @@
 .label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--color-text);
 }
 
 .details {
   display: flex;
   gap: 8px;
   font-size: 0.8125rem;
-  color: var(--color-text-secondary);
+  color: var(--undp-color-gray-600, #55606e);
 }
 
 .area {
@@ -39,7 +38,7 @@
 
 .coords {
   font-size: 0.75rem;
-  color: var(--color-text-secondary);
+  color: var(--undp-color-gray-600, #55606e);
   font-family: monospace;
 }
 
@@ -51,19 +50,19 @@
 
 .fallbackLabel {
   font-size: 0.8125rem;
-  color: var(--color-text-secondary);
+  color: var(--undp-color-gray-600, #55606e);
 }
 
 .fallbackInput {
   padding: 8px 12px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  border: 1px solid var(--undp-color-gray-400, #a9b1b9);
+  border-radius: 0;
   font-size: 0.875rem;
   font-family: inherit;
 }
 
 .fallbackInput:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(26, 86, 219, 0.15);
+  border-color: var(--undp-color-blue-600, #0468b1);
+  box-shadow: 0 0 0 2px rgba(4, 104, 177, 0.15);
 }

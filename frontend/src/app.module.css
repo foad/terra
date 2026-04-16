@@ -1,6 +1,6 @@
 .errorBanner {
   padding: 8px 16px;
-  background: #fef2f2;
-  color: #991b1b;
+  background: var(--undp-color-red-100, #fdd);
+  color: var(--undp-color-red-600, #d12800);
   font-size: 0.875rem;
 }
