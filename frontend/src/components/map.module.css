@@ -4,6 +4,17 @@
   min-height: 0;
 }
 
+.container :global(.maplibregl-ctrl-attrib) a {
+  text-decoration: none;
+  background-image: none;
+  padding-right: 0;
+  color: inherit;
+}
+
+.container :global(.maplibregl-ctrl-attrib-button)::before {
+  display: none;
+}
+
 .locationMarker {
   width: 16px;
   height: 16px;
