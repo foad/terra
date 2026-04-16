@@ -41,10 +41,10 @@ resource "aws_iam_policy" "lambda_s3" {
         "s3:ListBucket",
       ]
       Resource = [
-        "arn:aws:s3:::${var.project_name}-photos-*",
-        "arn:aws:s3:::${var.project_name}-photos-*/*",
-        "arn:aws:s3:::${var.project_name}-exports-*",
-        "arn:aws:s3:::${var.project_name}-exports-*/*",
+        aws_s3_bucket.photos.arn,
+        "${aws_s3_bucket.photos.arn}/*",
+        aws_s3_bucket.exports.arn,
+        "${aws_s3_bucket.exports.arn}/*",
       ]
     }]
   })
