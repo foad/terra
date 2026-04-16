@@ -1,0 +1,72 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-west-2
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: astral-sh/setup-uv@v8
+
+      - name: Install dependencies
+        working-directory: backend
+        run: uv sync --extra dev
+
+      - name: Lint
+        working-directory: backend
+        run: uv run ruff check src/
+
+      - name: Test
+        working-directory: backend
+        run: uv run pytest
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: astral-sh/setup-uv@v8
+
+      - name: Package Lambda
+        working-directory: backend
+        run: |
+          mkdir -p .build/package
+          uv pip install --target .build/package -r <(uv pip compile pyproject.toml --quiet)
+          cp -r src/ .build/package/
+          cd .build/package && zip -rq ../lambda.zip . -x "*.pyc" "__pycache__/*"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy terra-api
+        working-directory: backend
+        run: |
+          aws lambda update-function-code \
+            --function-name terra-api \
+            --zip-file fileb://.build/lambda.zip \
+            --query 'FunctionName' --output text
+
+      - name: Deploy terra-photo-processor
+        working-directory: backend
+        run: |
+          aws lambda update-function-code \
+            --function-name terra-photo-processor \
+            --zip-file fileb://.build/lambda.zip \
+            --query 'FunctionName' --output text
