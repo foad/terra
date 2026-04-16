@@ -70,9 +70,9 @@ resource "aws_iam_role_policy_attachment" "lambda_bedrock" {
   policy_arn = aws_iam_policy.lambda_bedrock.arn
 }
 
-# Lambda Powertools layer (AWS-managed)
-data "aws_lambda_layer_version" "powertools" {
-  layer_name = "AWSLambdaPowertoolsPythonV3-python313-x86_64"
+# Lambda Powertools layer (AWS-managed, published by account 017000801446)
+locals {
+  powertools_layer_arn = "arn:aws:lambda:${var.aws_region}:017000801446:layer:AWSLambdaPowertoolsPythonV3-python313-x86_64:7"
 }
 
 # Placeholder zip for initial deployment
@@ -98,7 +98,7 @@ resource "aws_lambda_function" "api" {
   filename         = data.archive_file.lambda_placeholder.output_path
   source_code_hash = data.archive_file.lambda_placeholder.output_base64sha256
 
-  layers = [data.aws_lambda_layer_version.powertools.arn]
+  layers = [local.powertools_layer_arn]
 
   environment {
     variables = {
