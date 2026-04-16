@@ -102,10 +102,9 @@ resource "aws_lambda_function" "api" {
 
   environment {
     variables = {
-      POWERTOOLS_SERVICE_NAME = var.project_name
-      LOG_LEVEL               = "INFO"
-      SUPABASE_URL            = var.supabase_url
-      SUPABASE_SERVICE_KEY    = var.supabase_service_key
+      POWERTOOLS_SERVICE_NAME  = var.project_name
+      POWERTOOLS_PARAMETERS_SSM_PREFIX = "/${var.project_name}"
+      LOG_LEVEL                = "INFO"
     }
   }
 
@@ -134,10 +133,9 @@ resource "aws_lambda_function" "photo_processor" {
 
   environment {
     variables = {
-      POWERTOOLS_SERVICE_NAME = "${var.project_name}-photo-processor"
-      LOG_LEVEL               = "INFO"
-      SUPABASE_URL            = var.supabase_url
-      SUPABASE_SERVICE_KEY    = var.supabase_service_key
+      POWERTOOLS_SERVICE_NAME  = "${var.project_name}-photo-processor"
+      POWERTOOLS_PARAMETERS_SSM_PREFIX = "/${var.project_name}"
+      LOG_LEVEL                = "INFO"
     }
   }
 
