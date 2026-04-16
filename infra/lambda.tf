@@ -20,12 +20,6 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-# VPC access for RDS connectivity
-resource "aws_iam_role_policy_attachment" "lambda_vpc" {
-  role       = aws_iam_role.lambda.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
-}
-
 # S3 access for photos and exports
 resource "aws_iam_policy" "lambda_s3" {
   name = "${var.project_name}-lambda-s3"
@@ -110,6 +104,8 @@ resource "aws_lambda_function" "api" {
     variables = {
       POWERTOOLS_SERVICE_NAME = var.project_name
       LOG_LEVEL               = "INFO"
+      SUPABASE_URL            = var.supabase_url
+      SUPABASE_SERVICE_KEY    = var.supabase_service_key
     }
   }
 
@@ -140,6 +136,8 @@ resource "aws_lambda_function" "photo_processor" {
     variables = {
       POWERTOOLS_SERVICE_NAME = "${var.project_name}-photo-processor"
       LOG_LEVEL               = "INFO"
+      SUPABASE_URL            = var.supabase_url
+      SUPABASE_SERVICE_KEY    = var.supabase_service_key
     }
   }
 
