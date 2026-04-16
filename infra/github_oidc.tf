@@ -63,8 +63,11 @@ resource "aws_iam_role_policy" "github_actions_cloudfront" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect   = "Allow"
-      Action   = "cloudfront:CreateInvalidation"
+      Effect = "Allow"
+      Action = [
+        "cloudfront:GetInvalidation",
+        "cloudfront:CreateInvalidation",
+      ]
       Resource = aws_cloudfront_distribution.frontend.arn
     }]
   })
