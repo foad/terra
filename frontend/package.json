@@ -10,7 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@base-ui/react": "^1.4.0",
+    "@undp/design-system": "^1.7.3",
+    "@undp/design-system-assets": "^1.7.3",
     "maplibre-gl": "^5.23.0",
     "pmtiles": "^4.4.1",
     "react": "^19.2.4",
