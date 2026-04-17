@@ -1,6 +1,6 @@
 import uuid
 from unittest.mock import patch, MagicMock
-from src.handlers.reports import create_report, _find_version_chain, ReportSubmission
+from src.handlers.reports import create_report, query_reports, _find_version_chain, ReportSubmission
 
 
 def _valid_body(**overrides):
@@ -115,6 +115,91 @@ class TestCreateReport:
         insert_call = mock_cursor.execute.call_args_list[-2]
         params = insert_call[0][1]
         assert any("uploads/test.jpg" in str(p) for p in params if p)
+
+
+class TestQueryReports:
+    @patch("src.handlers.reports.get_connection")
+    def test_returns_geojson(self, mock_get_conn):
+        from datetime import datetime, timezone
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchall.return_value = [
+            (
+                "report-id-1", 36.16, 36.2,
+                "s2-123", None, "partial",
+                None, None, None,
+                ["Residential Infrastructure (Houses and apartments)"], None,
+                ["Earthquake"], True, None,
+                None, ["Food assistance and safe drinking water"],
+                "chain-id-1", True,
+                datetime(2026, 4, 17, tzinfo=timezone.utc),
+                1,
+            )
+        ]
+        mock_cursor.fetchone.return_value = (1,)
+        mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_get_conn.return_value = mock_conn
+
+        result = query_reports({})
+
+        assert result["type"] == "FeatureCollection"
+        assert len(result["features"]) == 1
+        assert result["total"] == 1
+        feature = result["features"][0]
+        assert feature["geometry"]["coordinates"] == [36.16, 36.2]
+        assert feature["properties"]["damage_level"] == "partial"
+
+    @patch("src.handlers.reports.get_connection")
+    def test_empty_results(self, mock_get_conn):
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchall.return_value = []
+        mock_cursor.fetchone.return_value = (0,)
+        mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_get_conn.return_value = mock_conn
+
+        result = query_reports({"west": "0", "south": "0", "east": "1", "north": "1"})
+
+        assert result["type"] == "FeatureCollection"
+        assert result["features"] == []
+        assert result["total"] == 0
+
+    @patch("src.handlers.reports.get_connection")
+    def test_s2_id_filter_includes_all_versions(self, mock_get_conn):
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchall.return_value = []
+        mock_cursor.fetchone.return_value = (0,)
+        mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_get_conn.return_value = mock_conn
+
+        query_reports({"s2_id": "test-building"})
+
+        # Verify the main WHERE clause does not filter by is_latest
+        sql = mock_cursor.execute.call_args_list[0][0][0]
+        # The main WHERE is the last one (after the subquery)
+        main_where = sql.split("WHERE")[-1].split("ORDER BY")[0]
+        assert "is_latest = true" not in main_where
+        assert "s2_id = %s" in main_where
+
+    @patch("src.handlers.reports.get_connection")
+    def test_limit_capped_at_1000(self, mock_get_conn):
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchall.return_value = []
+        mock_cursor.fetchone.return_value = (0,)
+        mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_get_conn.return_value = mock_conn
+
+        query_reports({"limit": "5000"})
+
+        sql_params = mock_cursor.execute.call_args_list[0][0][1]
+        # Last two params are limit and offset
+        assert sql_params[-2] == 1000
 
 
 class TestFindVersionChain:
