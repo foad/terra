@@ -91,14 +91,71 @@ export const DashboardMap = ({ reports, onReportSelect }: DashboardMapProps) => 
       map.addSource("reports", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
+        cluster: true,
+        clusterMaxZoom: 14,
+        clusterRadius: 50,
+        clusterProperties: {
+          count_minimal: ["+", ["case", ["==", ["get", "damage_level"], "minimal"], 1, 0]],
+          count_partial: ["+", ["case", ["==", ["get", "damage_level"], "partial"], 1, 0]],
+          count_complete: ["+", ["case", ["==", ["get", "damage_level"], "complete"], 1, 0]],
+        },
       });
 
+      // Cluster circles — sized by point count, coloured by average damage severity
+      // Severity score: (partial + 2*complete) / point_count → 0=all minimal, 2=all complete
+      map.addLayer({
+        id: "clusters",
+        type: "circle",
+        source: "reports",
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-radius": [
+            "step", ["get", "point_count"],
+            18, 10,
+            24, 50,
+            32, 100,
+            40,
+          ],
+          "circle-color": [
+            "interpolate", ["linear"],
+            ["/",
+              ["+", ["get", "count_partial"], ["*", 2, ["get", "count_complete"]]],
+              ["get", "point_count"],
+            ],
+            0, DAMAGE_COLORS.minimal,
+            1, DAMAGE_COLORS.partial,
+            2, DAMAGE_COLORS.complete,
+          ],
+          "circle-opacity": 0.8,
+          "circle-stroke-width": 2,
+          "circle-stroke-color": "#ffffff",
+        },
+      });
+
+      // Cluster count labels
+      map.addLayer({
+        id: "cluster-count",
+        type: "symbol",
+        source: "reports",
+        filter: ["has", "point_count"],
+        layout: {
+          "text-field": "{point_count_abbreviated}",
+          "text-size": 13,
+          "text-font": ["Open Sans Bold"],
+        },
+        paint: {
+          "text-color": "#ffffff",
+        },
+      });
+
+      // Individual report markers (unclustered)
       map.addLayer({
         id: "report-markers",
         type: "circle",
         source: "reports",
+        filter: ["!", ["has", "point_count"]],
         paint: {
-          "circle-radius": 8,
+          "circle-radius": 7,
           "circle-color": [
             "match",
             ["get", "damage_level"],
@@ -112,6 +169,21 @@ export const DashboardMap = ({ reports, onReportSelect }: DashboardMapProps) => 
         },
       });
 
+      // Click cluster to zoom in
+      map.on("click", "clusters", (e) => {
+        const features = map.queryRenderedFeatures(e.point, { layers: ["clusters"] });
+        if (!features.length) return;
+        const clusterId = features[0].properties?.cluster_id;
+        const source = map.getSource("reports") as maplibregl.GeoJSONSource;
+        source.getClusterExpansionZoom(clusterId).then((zoom) => {
+          map.easeTo({
+            center: (features[0].geometry as GeoJSON.Point).coordinates as [number, number],
+            zoom,
+          });
+        });
+      });
+
+      // Click individual marker to select
       map.on("click", "report-markers", (e) => {
         const feature = e.features?.[0];
         if (!feature?.properties?.id) return;
@@ -119,12 +191,35 @@ export const DashboardMap = ({ reports, onReportSelect }: DashboardMapProps) => 
           (r) => r.properties.id === feature.properties!.id,
         );
         if (report) onReportSelectRef.current?.(report);
+
+        // Show popup
+        const coords = (feature.geometry as GeoJSON.Point).coordinates as [number, number];
+        const props = report?.properties;
+        if (props) {
+          new maplibregl.Popup({ offset: 12, closeButton: false })
+            .setLngLat(coords)
+            .setHTML(
+              `<div class="${styles.popup}">` +
+              `<strong>${props.damage_level}</strong>` +
+              `<br>${props.infrastructure_type[0]?.split("(")[0]?.trim() ?? ""}` +
+              (props.infrastructure_name ? `<br>${props.infrastructure_name}` : "") +
+              `<br><small>${new Date(props.submitted_at).toLocaleDateString()}</small>` +
+              `</div>`,
+            )
+            .addTo(map);
+        }
       });
 
+      // Pointer cursors
+      map.on("mouseenter", "clusters", () => {
+        map.getCanvas().style.cursor = "pointer";
+      });
+      map.on("mouseleave", "clusters", () => {
+        map.getCanvas().style.cursor = "";
+      });
       map.on("mouseenter", "report-markers", () => {
         map.getCanvas().style.cursor = "pointer";
       });
-
       map.on("mouseleave", "report-markers", () => {
         map.getCanvas().style.cursor = "";
       });
@@ -174,7 +269,9 @@ export const DashboardMap = ({ reports, onReportSelect }: DashboardMapProps) => 
       updateData();
     } else {
       map.on("load", updateData);
-      return () => { map.off("load", updateData); };
+      return () => {
+        map.off("load", updateData);
+      };
     }
   }, [reports]);
 
