@@ -1,0 +1,101 @@
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--undpds-spacing-05);
+  gap: var(--undpds-spacing-05);
+}
+
+.capture {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--undpds-spacing-05);
+  border: 2px dashed var(--undpds-color-gray-400);
+  padding: var(--undpds-spacing-07);
+  text-align: center;
+}
+
+.captureIcon {
+  color: var(--undpds-color-gray-500);
+}
+
+.captureLabel {
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.captureHint {
+  font-size: 0.8125rem;
+  color: var(--undpds-color-gray-600);
+}
+
+.captureButtons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--undpds-spacing-03);
+  width: 100%;
+  max-width: 280px;
+}
+
+.hiddenInput {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.preview {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.previewImage {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.status {
+  display: flex;
+  flex-direction: column;
+  gap: var(--undpds-spacing-03);
+  font-size: 0.875rem;
+  color: var(--undpds-color-gray-600);
+}
+
+.progressLabel {
+  font-size: 0.875rem;
+}
+
+.progressBar {
+  height: 4px;
+  background: var(--undpds-color-gray-200);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--undpds-color-blue-600);
+  transition: width 0.2s;
+}
+
+.error {
+  display: flex;
+  flex-direction: column;
+  gap: var(--undpds-spacing-04);
+}
+
+.errorMessage {
+  font-size: 0.875rem;
+  color: var(--undpds-color-red);
+}

@@ -2,9 +2,16 @@ import { useState, useCallback } from "react";
 import { Map } from "./map";
 import type { SelectedBuilding } from "./map";
 import { BuildingSelection } from "./building-selection";
+import { PhotoCapture } from "./photo-capture";
+import type { PhotoResult } from "./photo-capture";
 import { DamageClassification } from "./damage-classification";
 import type { DamageLevel } from "./damage-classification";
-import { SurveyForm, EMPTY_SURVEY, SURVEY_STEP_COUNT, isSurveyStepComplete } from "./survey-form";
+import {
+  SurveyForm,
+  EMPTY_SURVEY,
+  SURVEY_STEP_COUNT,
+  isSurveyStepComplete,
+} from "./survey-form";
 import type { SurveyData } from "./survey-form";
 import styles from "./report-flow.module.css";
 
@@ -25,6 +32,7 @@ export const ReportFlow = ({
   const [selectedBuilding, setSelectedBuilding] =
     useState<SelectedBuilding | null>(null);
   const [locationFallback, setLocationFallback] = useState("");
+  const [photo, setPhoto] = useState<PhotoResult | null>(null);
   const [damageLevel, setDamageLevel] = useState<DamageLevel | null>(null);
   const [survey, setSurvey] = useState<SurveyData>(EMPTY_SURVEY);
   const [surveyStep, setSurveyStep] = useState(0);
@@ -84,13 +92,12 @@ export const ReportFlow = ({
           </a>
           <span className={styles.stepTitle}>Take a Photo</span>
         </div>
-        {/* Photo capture component will be added in #26 */}
-        <div className={styles.placeholder}>Photo capture coming soon</div>
+        <PhotoCapture onPhotoUploaded={setPhoto} />
         <div className={styles.actions}>
           <a
             role="button"
-            className="button button-primary"
-            onClick={() => setStep("damage")}
+            className={`button button-primary ${!photo ? "disabled" : ""}`}
+            onClick={photo ? () => setStep("damage") : undefined}
           >
             Next
           </a>
