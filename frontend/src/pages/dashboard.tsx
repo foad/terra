@@ -66,10 +66,25 @@ const DashboardPage = () => {
     if (filters.from) params.set("from", filters.from);
     if (filters.to) params.set("to", filters.to);
 
-    const qs = params.toString();
-    const data = await api(`/reports${qs ? `?${qs}` : ""}`);
-    setReports(data.features);
-    setTotal(data.total);
+    params.set("limit", "1000");
+
+    let allFeatures: ReportFeature[] = [];
+    let offset = 0;
+    let total = 0;
+
+    // Paginate to fetch all reports
+    while (true) {
+      params.set("offset", String(offset));
+      const qs = params.toString();
+      const data = await api(`/reports?${qs}`);
+      allFeatures = allFeatures.concat(data.features);
+      total = data.total;
+      if (allFeatures.length >= total) break;
+      offset = allFeatures.length;
+    }
+
+    setReports(allFeatures);
+    setTotal(total);
     setLoading(false);
   }, [filters]);
 

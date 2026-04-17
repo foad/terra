@@ -13,3 +13,20 @@
 .container :global(.maplibregl-ctrl-attrib-button)::before {
   display: none;
 }
+
+.popup {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.container :global(.maplibregl-popup-content) {
+  padding: 8px 12px;
+  border-radius: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.container :global(.maplibregl-popup-content) a {
+  text-decoration: none;
+  background-image: none;
+  padding-right: 0;
+}
