@@ -130,7 +130,7 @@ export const PhotoCapture = ({ onPhotoUploaded }: PhotoCaptureProps) => {
       )}
 
       {state === "done" && (
-        <div className={styles.status}>Photo uploaded</div>
+        <div className={styles.status} data-testid="photo-uploaded">Photo uploaded</div>
       )}
 
       {state === "error" && (
