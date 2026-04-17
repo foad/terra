@@ -4,6 +4,18 @@ import type { Filters, ReportFeature } from "../pages/dashboard";
 import { MultiSelect } from "./multi-select";
 import styles from "./dashboard-sidebar.module.css";
 
+const CRISIS_NATURES = [
+  "Earthquake",
+  "Flood",
+  "Tsunami",
+  "Hurricane/Cyclone",
+  "Wildfire",
+  "Explosion",
+  "Chemical incident",
+  "Conflict",
+  "Civil unrest",
+];
+
 const INFRASTRUCTURE_TYPES = [
   "Residential Infrastructure (Houses and apartments)",
   "Commercial Infrastructure (Markets, malls, shops, hotels, banks, industries, etc.)",
@@ -43,6 +55,7 @@ export const DashboardSidebar = ({
   const hasActiveFilters =
     filters.damageLevel.length > 0 ||
     filters.infrastructureType.length > 0 ||
+    filters.crisisNature.length > 0 ||
     filters.from !== "" ||
     filters.to !== "";
 
@@ -121,6 +134,7 @@ export const DashboardSidebar = ({
                   onFiltersChange({
                     damageLevel: [],
                     infrastructureType: [],
+                    crisisNature: [],
                     from: "",
                     to: "",
                   })
@@ -163,6 +177,18 @@ export const DashboardSidebar = ({
               selected={filters.infrastructureType}
               onChange={(selected) =>
                 onFiltersChange({ ...filters, infrastructureType: selected })
+              }
+            />
+          </div>
+
+          <div className={styles.filterGroup}>
+            <div className={styles.filterLabel}>Crisis Type</div>
+            <MultiSelect
+              label="All crisis types"
+              options={CRISIS_NATURES.map((n) => ({ value: n, label: n }))}
+              selected={filters.crisisNature}
+              onChange={(selected) =>
+                onFiltersChange({ ...filters, crisisNature: selected })
               }
             />
           </div>

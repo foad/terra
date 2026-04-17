@@ -155,6 +155,13 @@ def query_reports(params: dict) -> dict:
         conditions.append(f"({placeholders})")
         values.extend(types)
 
+    # Crisis nature filter (pipe-separated, values may contain commas)
+    if "crisis_nature" in params:
+        natures = params["crisis_nature"].split("|")
+        placeholders = " OR ".join(["%s = ANY(crisis_nature)"] * len(natures))
+        conditions.append(f"({placeholders})")
+        values.extend(natures)
+
     # Date range filter
     if "from" in params:
         conditions.append("submitted_at >= %s")
