@@ -121,6 +121,123 @@ def create_report(body: dict) -> dict:
     }
 
 
+def query_reports(params: dict) -> dict:
+    """Query reports with spatial, temporal, and attribute filters. Returns GeoJSON."""
+    conn = get_connection()
+
+    conditions = ["is_latest = true"]
+    values = []
+
+    # Bounding box filter
+    if all(k in params for k in ("west", "south", "east", "north")):
+        conditions.append(
+            "ST_Intersects(location, ST_MakeEnvelope(%s, %s, %s, %s, 4326))"
+        )
+        values.extend([params["west"], params["south"], params["east"], params["north"]])
+
+    # H3 cell filter
+    if "h3" in params:
+        conditions.append("h3_r8 = %s")
+        values.append(params["h3"])
+
+    # Damage level filter
+    if "damage_level" in params:
+        levels = params["damage_level"].split(",")
+        placeholders = ",".join(["%s"] * len(levels))
+        conditions.append(f"damage_level IN ({placeholders})")
+        values.extend(levels)
+
+    # Infrastructure type filter
+    if "infrastructure_type" in params:
+        conditions.append("%s = ANY(infrastructure_type)")
+        values.append(params["infrastructure_type"])
+
+    # Date range filter
+    if "from" in params:
+        conditions.append("submitted_at >= %s")
+        values.append(params["from"])
+    if "to" in params:
+        conditions.append("submitted_at <= %s")
+        values.append(params["to"])
+
+    # S2 ID filter (for version history)
+    if "s2_id" in params:
+        # When querying by s2_id, show all versions not just latest
+        conditions = [c for c in conditions if c != "is_latest = true"]
+        conditions.append("s2_id = %s")
+        values.append(params["s2_id"])
+
+    where = " AND ".join(conditions)
+
+    # Pagination
+    limit = min(int(params.get("limit", 500)), 1000)
+    offset = int(params.get("offset", 0))
+
+    with conn.cursor() as cur:
+        cur.execute(
+            f"""
+            SELECT
+                id, ST_X(location) as lng, ST_Y(location) as lat,
+                s2_id, location_description, damage_level,
+                ai_damage_level, ai_confidence, photo_url,
+                infrastructure_type, infrastructure_name,
+                crisis_nature, debris_present, electricity_status,
+                health_status, pressing_needs, version_chain_id,
+                is_latest, submitted_at,
+                (SELECT COUNT(*) FROM reports r2
+                 WHERE r2.version_chain_id = reports.version_chain_id) as version_count
+            FROM reports
+            WHERE {where}
+            ORDER BY submitted_at DESC
+            LIMIT %s OFFSET %s
+            """,
+            (*values, limit, offset),
+        )
+        rows = cur.fetchall()
+
+        cur.execute(
+            f"SELECT COUNT(*) FROM reports WHERE {where}",
+            tuple(values),
+        )
+        total = cur.fetchone()[0]
+
+    features = []
+    for row in rows:
+        features.append({
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [row[1], row[2]],
+            },
+            "properties": {
+                "id": str(row[0]),
+                "s2_id": row[3],
+                "location_description": row[4],
+                "damage_level": row[5],
+                "ai_damage_level": row[6],
+                "ai_confidence": row[7],
+                "photo_url": row[8],
+                "infrastructure_type": row[9],
+                "infrastructure_name": row[10],
+                "crisis_nature": row[11],
+                "debris_present": row[12],
+                "electricity_status": row[13],
+                "health_status": row[14],
+                "pressing_needs": row[15],
+                "version_chain_id": str(row[16]),
+                "is_latest": row[17],
+                "submitted_at": row[18].isoformat() if row[18] else None,
+                "version_count": row[19],
+            },
+        })
+
+    return {
+        "type": "FeatureCollection",
+        "features": features,
+        "total": total,
+    }
+
+
 def _find_version_chain(s2_id: str | None, h3_r12: str) -> uuid.UUID:
     """Find existing version chain for this building, or create a new one."""
     conn = get_connection()
