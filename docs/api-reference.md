@@ -52,7 +52,7 @@ Query reports. Returns a GeoJSON FeatureCollection.
 | `west`, `south`, `east`, `north` | float | Bounding box filter (all four required) |
 | `h3` | string | H3 R8 cell filter |
 | `damage_level` | string | Comma-separated: `minimal`, `partial`, `complete` |
-| `infrastructure_type` | string | Filter by infrastructure type |
+| `infrastructure_type` | string | Pipe-separated infrastructure types (values contain commas) |
 | `from` | string | ISO datetime, reports submitted after |
 | `to` | string | ISO datetime, reports submitted before |
 | `s2_id` | string | Building ID — returns all versions, not just latest |

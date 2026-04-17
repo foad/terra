@@ -148,10 +148,12 @@ def query_reports(params: dict) -> dict:
         conditions.append(f"damage_level IN ({placeholders})")
         values.extend(levels)
 
-    # Infrastructure type filter
+    # Infrastructure type filter (pipe-separated, values contain commas)
     if "infrastructure_type" in params:
-        conditions.append("%s = ANY(infrastructure_type)")
-        values.append(params["infrastructure_type"])
+        types = params["infrastructure_type"].split("|")
+        placeholders = " OR ".join(["%s = ANY(infrastructure_type)"] * len(types))
+        conditions.append(f"({placeholders})")
+        values.extend(types)
 
     # Date range filter
     if "from" in params:
