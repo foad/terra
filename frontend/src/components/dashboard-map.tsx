@@ -24,6 +24,7 @@ export const DashboardMap = ({ reports, onReportSelect }: DashboardMapProps) => 
   const mapRef = useRef<maplibregl.Map | null>(null);
   const onReportSelectRef = useRef(onReportSelect);
   const reportsDataRef = useRef(reports);
+  const hasFittedRef = useRef(false);
 
   useEffect(() => {
     onReportSelectRef.current = onReportSelect;
@@ -256,12 +257,13 @@ export const DashboardMap = ({ reports, onReportSelect }: DashboardMapProps) => 
         features: reports,
       });
 
-      if (reports.length > 0) {
+      if (reports.length > 0 && !hasFittedRef.current) {
         const bounds = new maplibregl.LngLatBounds();
         for (const r of reports) {
           bounds.extend(r.geometry.coordinates as [number, number]);
         }
         map.fitBounds(bounds, { padding: 50, maxZoom: 15 });
+        hasFittedRef.current = true;
       }
     };
 

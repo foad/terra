@@ -1,11 +1,23 @@
-import { X } from "lucide-react";
+import { CircleCheck, TriangleAlert, CircleX, X } from "lucide-react";
+import type { ReactNode } from "react";
 import type { Filters, ReportFeature } from "../pages/dashboard";
+import { MultiSelect } from "./multi-select";
 import styles from "./dashboard-sidebar.module.css";
 
-const DAMAGE_LEVELS = [
-  { value: "minimal", label: "Minimal / No damage" },
-  { value: "partial", label: "Partially damaged" },
-  { value: "complete", label: "Completely damaged" },
+const INFRASTRUCTURE_TYPES = [
+  "Residential Infrastructure (Houses and apartments)",
+  "Commercial Infrastructure (Markets, malls, shops, hotels, banks, industries, etc.)",
+  "Government Building (Administrative buildings, courthouses, police stations, fire stations, etc.)",
+  "Utility Infrastructure (Water pumps, power plants, waste treatment plants, etc.)",
+  "Transport and Communication Infrastructure (Roads, cell towers, bridges, railway station, bus station, etc.)",
+  "Community Infrastructure (Schools, hospitals, community halls, public toilets, etc.)",
+  "Public spaces/Recreation Infrastructure (stadiums, playgrounds, religious buildings, etc.)",
+];
+
+const DAMAGE_LEVELS: { value: string; label: string; icon: ReactNode }[] = [
+  { value: "minimal", label: "Minimal", icon: <CircleCheck size={16} /> },
+  { value: "partial", label: "Partial", icon: <TriangleAlert size={16} /> },
+  { value: "complete", label: "Complete", icon: <CircleX size={16} /> },
 ];
 
 interface DashboardSidebarProps {
@@ -30,7 +42,7 @@ export const DashboardSidebar = ({
 
   const hasActiveFilters =
     filters.damageLevel.length > 0 ||
-    filters.infrastructureType !== "" ||
+    filters.infrastructureType.length > 0 ||
     filters.from !== "" ||
     filters.to !== "";
 
@@ -108,7 +120,7 @@ export const DashboardSidebar = ({
                 onClick={() =>
                   onFiltersChange({
                     damageLevel: [],
-                    infrastructureType: "",
+                    infrastructureType: [],
                     from: "",
                     to: "",
                   })
@@ -121,39 +133,66 @@ export const DashboardSidebar = ({
 
           <div className={styles.filterGroup}>
             <div className={styles.filterLabel}>Damage Level</div>
-            {DAMAGE_LEVELS.map((level) => (
-              <div className="form-check" key={level.value}>
-                <input
-                  type="checkbox"
-                  id={`filter-${level.value}`}
-                  checked={filters.damageLevel.includes(level.value)}
-                  onChange={() => toggleDamageLevel(level.value)}
-                />
-                <label htmlFor={`filter-${level.value}`}>{level.label}</label>
-              </div>
-            ))}
+            <div className={styles.damageButtons}>
+              {DAMAGE_LEVELS.map((level) => {
+                const isActive = filters.damageLevel.includes(level.value);
+                return (
+                  <button
+                    key={level.value}
+                    type="button"
+                    className={`${styles.damageButton} ${styles[level.value]} ${isActive ? styles.active : ""}`}
+                    onClick={() => toggleDamageLevel(level.value)}
+                    aria-pressed={isActive}
+                  >
+                    {level.icon}
+                    <span>{level.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className={styles.filterGroup}>
+            <div className={styles.filterLabel}>Infrastructure Type</div>
+            <MultiSelect
+              label="All types"
+              options={INFRASTRUCTURE_TYPES.map((type) => ({
+                value: type,
+                label: type.split("(")[0].trim(),
+              }))}
+              selected={filters.infrastructureType}
+              onChange={(selected) =>
+                onFiltersChange({ ...filters, infrastructureType: selected })
+              }
+            />
           </div>
 
           <div className={styles.filterGroup}>
             <div className={styles.filterLabel}>Date Range</div>
-            <label htmlFor="filter-from">From</label>
-            <input
-              type="date"
-              id="filter-from"
-              value={filters.from}
-              onChange={(e) =>
-                onFiltersChange({ ...filters, from: e.target.value })
-              }
-            />
-            <label htmlFor="filter-to">To</label>
-            <input
-              type="date"
-              id="filter-to"
-              value={filters.to}
-              onChange={(e) =>
-                onFiltersChange({ ...filters, to: e.target.value })
-              }
-            />
+            <div className={styles.dateRange}>
+              <div className={styles.dateField}>
+                <label htmlFor="filter-from">From</label>
+                <input
+                  type="date"
+                  id="filter-from"
+                  value={filters.from}
+                  onChange={(e) =>
+                    onFiltersChange({ ...filters, from: e.target.value })
+                  }
+                />
+              </div>
+              <div className={styles.dateField}>
+                <label htmlFor="filter-to">To</label>
+                <input
+                  type="date"
+                  id="filter-to"
+                  value={filters.to}
+                  onChange={(e) =>
+                    onFiltersChange({ ...filters, to: e.target.value })
+                  }
+                />
+              </div>
+            </div>
           </div>
         </div>
       )}

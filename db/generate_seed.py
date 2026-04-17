@@ -67,7 +67,7 @@ PRESSING_NEEDS = [
     "Support from local authorities and community organizations",
 ]
 
-BASE_TIME = datetime(2026, 4, 10, 8, 0, 0)
+BASE_TIME = datetime(2026, 4, 5, 8, 0, 0)
 random.seed(0xf0ad)
 
 
