@@ -1,10 +1,25 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './styles/global.css'
-import { App } from './app.tsx'
+import { StrictMode, lazy, Suspense } from "react";
+import { createRoot } from "react-dom/client";
+import { BrowserRouter, Routes, Route } from "react-router";
+import "./styles/global.css";
+import { App } from "./app.tsx";
 
-createRoot(document.getElementById('root')!).render(
+const DashboardPage = lazy(() => import("./pages/dashboard.tsx"));
+
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<App />} />
+        <Route
+          path="/dashboard"
+          element={
+            <Suspense>
+              <DashboardPage />
+            </Suspense>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
   </StrictMode>,
-)
+);
