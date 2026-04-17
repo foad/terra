@@ -105,6 +105,7 @@ resource "aws_lambda_function" "api" {
       POWERTOOLS_SERVICE_NAME          = var.project_name
       POWERTOOLS_PARAMETERS_SSM_PREFIX = "/${var.project_name}"
       LOG_LEVEL                        = "INFO"
+      PHOTOS_BUCKET                    = aws_s3_bucket.photos.id
     }
   }
 

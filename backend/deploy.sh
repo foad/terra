@@ -9,8 +9,8 @@ echo "Packaging backend..."
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR"
 
-# Install dependencies into build dir
-uv pip install --target "$BUILD_DIR/package" -r <(uv pip compile "$SCRIPT_DIR/pyproject.toml" --quiet)
+# Install dependencies into build dir (targeting Lambda's Amazon Linux)
+uv pip install --target "$BUILD_DIR/package" --python-platform x86_64-unknown-linux-gnu --python-version 3.13 --only-binary :all: -r <(uv pip compile "$SCRIPT_DIR/pyproject.toml" --quiet)
 
 # Copy source code
 cp -r "$SCRIPT_DIR/src" "$BUILD_DIR/package/"
