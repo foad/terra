@@ -1,7 +1,7 @@
 .container {
   padding: 12px 16px;
-  border-top: 1px solid var(--undp-color-gray-300, #d4d6d8);
-  background: var(--undp-color-white, #ffffff);
+  border-top: 1px solid var(--undpds-color-gray-300);
+  background: var(--undpds-color-white);
 }
 
 .selected {
@@ -25,7 +25,7 @@
   display: flex;
   gap: 8px;
   font-size: 0.8125rem;
-  color: var(--undp-color-gray-600, #55606e);
+  color: var(--undpds-color-gray-600);
 }
 
 .area {
@@ -38,7 +38,7 @@
 
 .coords {
   font-size: 0.75rem;
-  color: var(--undp-color-gray-600, #55606e);
+  color: var(--undpds-color-gray-600);
   font-family: monospace;
 }
 
@@ -46,23 +46,4 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-}
-
-.fallbackLabel {
-  font-size: 0.8125rem;
-  color: var(--undp-color-gray-600, #55606e);
-}
-
-.fallbackInput {
-  padding: 8px 12px;
-  border: 1px solid var(--undp-color-gray-400, #a9b1b9);
-  border-radius: 0;
-  font-size: 0.875rem;
-  font-family: inherit;
-}
-
-.fallbackInput:focus {
-  outline: none;
-  border-color: var(--undp-color-blue-600, #0468b1);
-  box-shadow: 0 0 0 2px rgba(4, 104, 177, 0.15);
 }
