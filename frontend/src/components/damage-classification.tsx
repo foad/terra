@@ -61,6 +61,7 @@ export const DamageClassification = ({
               className={`${styles.card} ${styles[option.level]} ${isSelected ? styles.selected : ""}`}
               onClick={() => onChange(option.level)}
               aria-pressed={isSelected}
+              data-testid={`damage-${option.level}`}
             >
               <div className={styles.cardIcon}>{option.icon}</div>
               <div className={styles.cardContent}>

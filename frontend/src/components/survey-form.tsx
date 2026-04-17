@@ -101,7 +101,7 @@ export const SurveyForm = ({ step, value, onChange }: SurveyFormProps) => {
 
   if (step === 0) {
     return (
-      <div className={styles.container}>
+      <div className={styles.container} data-testid="survey-step-0">
         <h2 className={styles.question}>Type of infrastructure:</h2>
         <div className={styles.options}>
           {INFRASTRUCTURE_TYPES.map((type) => (
@@ -139,7 +139,7 @@ export const SurveyForm = ({ step, value, onChange }: SurveyFormProps) => {
 
   if (step === 1) {
     return (
-      <div className={styles.container}>
+      <div className={styles.container} data-testid="survey-step-1">
         <h2 className={styles.question}>
           Provide more details on the nature of the infrastructure, including the name of the infrastructure:
         </h2>
@@ -158,7 +158,7 @@ export const SurveyForm = ({ step, value, onChange }: SurveyFormProps) => {
 
   if (step === 2) {
     return (
-      <div className={styles.container}>
+      <div className={styles.container} data-testid="survey-step-2">
         <h2 className={styles.question}>Nature of the crisis:</h2>
         <div className={styles.options}>
           {CRISIS_NATURES.map((group) => (
@@ -184,7 +184,7 @@ export const SurveyForm = ({ step, value, onChange }: SurveyFormProps) => {
 
   if (step === 3) {
     return (
-      <div className={styles.container}>
+      <div className={styles.container} data-testid="survey-step-3">
         <h2 className={styles.question}>
           Is there any debris that requires clearing on or near the infrastructure site?
         </h2>
@@ -216,7 +216,7 @@ export const SurveyForm = ({ step, value, onChange }: SurveyFormProps) => {
 
   if (step === 4) {
     return (
-      <div className={styles.container}>
+      <div className={styles.container} data-testid="survey-step-4">
         <h2 className={styles.question}>
           What is the current condition of electricity infrastructure in your community following the crisis?
         </h2>
@@ -240,7 +240,7 @@ export const SurveyForm = ({ step, value, onChange }: SurveyFormProps) => {
 
   if (step === 5) {
     return (
-      <div className={styles.container}>
+      <div className={styles.container} data-testid="survey-step-5">
         <h2 className={styles.question}>
           How would you rate the overall functioning of health services in your community since the event?
         </h2>
@@ -264,7 +264,7 @@ export const SurveyForm = ({ step, value, onChange }: SurveyFormProps) => {
 
   if (step === 6) {
     return (
-      <div className={styles.container}>
+      <div className={styles.container} data-testid="survey-step-6">
         <h2 className={styles.question}>What are the most pressing needs?</h2>
         <div className={styles.options}>
           {PRESSING_NEEDS.map((need) => (

@@ -105,7 +105,7 @@ export const ReportFlow = ({
 
   if (step === "location") {
     return (
-      <div className={styles.step}>
+      <div className={styles.step} data-testid="step-location">
         <div className={styles.mapContainer}>
           <Map
             latitude={latitude}
@@ -122,6 +122,7 @@ export const ReportFlow = ({
         <div className={styles.actions}>
           <a
             role="button"
+            data-testid="btn-next"
             className={`button button-primary ${!hasLocation ? "disabled" : ""}`}
             onClick={hasLocation ? () => setStep("photo") : undefined}
           >
@@ -134,10 +135,11 @@ export const ReportFlow = ({
 
   if (step === "photo") {
     return (
-      <div className={styles.step}>
+      <div className={styles.step} data-testid="step-photo">
         <div className={styles.stepHeader}>
           <a
             role="button"
+            data-testid="btn-back"
             className="button button-secondary button-without-arrow"
             onClick={() => setStep("location")}
           >
@@ -149,6 +151,7 @@ export const ReportFlow = ({
         <div className={styles.actions}>
           <a
             role="button"
+            data-testid="btn-next"
             className={`button button-primary ${!photo ? "disabled" : ""}`}
             onClick={photo ? () => setStep("damage") : undefined}
           >
@@ -161,10 +164,11 @@ export const ReportFlow = ({
 
   if (step === "damage") {
     return (
-      <div className={styles.step}>
+      <div className={styles.step} data-testid="step-damage">
         <div className={styles.stepHeader}>
           <a
             role="button"
+            data-testid="btn-back"
             className="button button-secondary button-without-arrow"
             onClick={() => setStep("photo")}
           >
@@ -176,6 +180,7 @@ export const ReportFlow = ({
         <div className={styles.actions}>
           <a
             role="button"
+            data-testid="btn-next"
             className={`button button-primary ${!damageLevel ? "disabled" : ""}`}
             onClick={damageLevel ? () => setStep("survey") : undefined}
           >
@@ -208,10 +213,11 @@ export const ReportFlow = ({
     };
 
     return (
-      <div className={styles.step}>
+      <div className={styles.step} data-testid="step-survey">
         <div className={styles.stepHeader}>
           <a
             role="button"
+            data-testid="btn-back"
             className={`button button-secondary button-without-arrow ${isSubmitting ? "disabled" : ""}`}
             onClick={isSubmitting ? undefined : handleBack}
           >
@@ -228,6 +234,7 @@ export const ReportFlow = ({
         <div className={styles.actions}>
           <a
             role="button"
+            data-testid={isLastSurveyStep ? "btn-submit" : "btn-next"}
             className={`button button-primary ${!canAdvance || isSubmitting ? "disabled" : ""}`}
             onClick={canAdvance && !isSubmitting ? handleNext : undefined}
           >
@@ -244,7 +251,7 @@ export const ReportFlow = ({
 
   if (step === "confirmation") {
     return (
-      <div className={styles.step}>
+      <div className={styles.step} data-testid="step-confirmation">
         <SubmissionConfirmation
           areaReportCount={areaReportCount}
           onSubmitAnother={handleSubmitAnother}
