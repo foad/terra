@@ -1,8 +1,9 @@
 import os
 import uuid
+
 import h3
-from pydantic import BaseModel, Field
 from aws_lambda_powertools import Logger
+from pydantic import BaseModel, Field
 
 from src.utils.db import get_connection
 
