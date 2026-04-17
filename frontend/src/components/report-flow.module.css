@@ -32,6 +32,13 @@
   font-size: 0.875rem;
 }
 
+.submitError {
+  padding: 8px 16px;
+  background: var(--undpds-color-red-100);
+  color: var(--undpds-color-red);
+  font-size: 0.875rem;
+}
+
 .actions {
   padding: 12px 16px;
   border-top: 1px solid var(--undpds-color-gray-300);

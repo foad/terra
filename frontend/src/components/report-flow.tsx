@@ -13,9 +13,11 @@ import {
   isSurveyStepComplete,
 } from "./survey-form";
 import type { SurveyData } from "./survey-form";
+import { SubmissionConfirmation } from "./submission-confirmation";
+import { api } from "../utils/api";
 import styles from "./report-flow.module.css";
 
-type Step = "location" | "photo" | "damage" | "survey";
+type Step = "location" | "photo" | "damage" | "survey" | "submitting" | "confirmation";
 
 interface ReportFlowProps {
   latitude: number | null;
@@ -36,6 +38,8 @@ export const ReportFlow = ({
   const [damageLevel, setDamageLevel] = useState<DamageLevel | null>(null);
   const [survey, setSurvey] = useState<SurveyData>(EMPTY_SURVEY);
   const [surveyStep, setSurveyStep] = useState(0);
+  const [areaReportCount, setAreaReportCount] = useState(0);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleBuildingSelect = useCallback(
     (building: SelectedBuilding | null) => {
@@ -44,6 +48,55 @@ export const ReportFlow = ({
     },
     [],
   );
+
+  const handleSubmit = async () => {
+    if (!damageLevel || !latitude || !longitude) return;
+
+    setStep("submitting");
+    setSubmitError(null);
+
+    try {
+      const result = await api("/reports", {
+        method: "POST",
+        body: JSON.stringify({
+          latitude,
+          longitude,
+          s2_id: selectedBuilding?.s2Id ?? null,
+          location_description: locationFallback || null,
+          damage_level: damageLevel,
+          photo_key: photo?.photoKey ?? null,
+          infrastructure_type: survey.infrastructureType,
+          infrastructure_type_other: survey.infrastructureTypeOther || null,
+          infrastructure_name: survey.infrastructureName || null,
+          crisis_nature: survey.crisisNature,
+          debris_present: survey.debrisPresent,
+          electricity_status: survey.electricityStatus || null,
+          health_status: survey.healthStatus || null,
+          pressing_needs: survey.pressingNeeds,
+          pressing_needs_other: survey.pressingNeedsOther || null,
+        }),
+      });
+
+      setAreaReportCount(result.area_report_count);
+      setStep("confirmation");
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Submission failed");
+      setStep("survey");
+      setSurveyStep(SURVEY_STEP_COUNT - 1);
+    }
+  };
+
+  const handleSubmitAnother = () => {
+    setStep("location");
+    setSelectedBuilding(null);
+    setLocationFallback("");
+    setPhoto(null);
+    setDamageLevel(null);
+    setSurvey(EMPTY_SURVEY);
+    setSurveyStep(0);
+    setAreaReportCount(0);
+    setSubmitError(null);
+  };
 
   const hasLocation =
     selectedBuilding !== null || locationFallback.trim() !== "";
@@ -133,13 +186,14 @@ export const ReportFlow = ({
     );
   }
 
-  if (step === "survey") {
+  if (step === "survey" || step === "submitting") {
     const canAdvance = isSurveyStepComplete(surveyStep, survey);
+    const isSubmitting = step === "submitting";
 
     const handleNext = () => {
       if (!canAdvance) return;
       if (isLastSurveyStep) {
-        // Submit will be wired in #18
+        handleSubmit();
       } else {
         setSurveyStep(surveyStep + 1);
       }
@@ -158,8 +212,8 @@ export const ReportFlow = ({
         <div className={styles.stepHeader}>
           <a
             role="button"
-            className="button button-secondary button-without-arrow"
-            onClick={handleBack}
+            className={`button button-secondary button-without-arrow ${isSubmitting ? "disabled" : ""}`}
+            onClick={isSubmitting ? undefined : handleBack}
           >
             Back
           </a>
@@ -168,15 +222,33 @@ export const ReportFlow = ({
           </span>
         </div>
         <SurveyForm step={surveyStep} value={survey} onChange={setSurvey} />
+        {submitError && (
+          <div className={styles.submitError}>{submitError}</div>
+        )}
         <div className={styles.actions}>
           <a
             role="button"
-            className={`button button-primary ${!canAdvance ? "disabled" : ""}`}
-            onClick={canAdvance ? handleNext : undefined}
+            className={`button button-primary ${!canAdvance || isSubmitting ? "disabled" : ""}`}
+            onClick={canAdvance && !isSubmitting ? handleNext : undefined}
           >
-            {isLastSurveyStep ? "Submit Report" : "Next"}
+            {isSubmitting
+              ? "Submitting..."
+              : isLastSurveyStep
+                ? "Submit Report"
+                : "Next"}
           </a>
         </div>
+      </div>
+    );
+  }
+
+  if (step === "confirmation") {
+    return (
+      <div className={styles.step}>
+        <SubmissionConfirmation
+          areaReportCount={areaReportCount}
+          onSubmitAnother={handleSubmitAnother}
+        />
       </div>
     );
   }
