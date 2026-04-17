@@ -1,5 +1,6 @@
 from aws_lambda_powertools import Logger, Tracer
 from aws_lambda_powertools.event_handler import APIGatewayHttpResolver
+from aws_lambda_powertools.event_handler.api_gateway import CORSConfig
 from aws_lambda_powertools.logging import correlation_paths
 
 from src.handlers.reports import create_report
@@ -7,7 +8,8 @@ from src.handlers.photos import get_upload_url
 
 logger = Logger()
 tracer = Tracer()
-app = APIGatewayHttpResolver()
+cors = CORSConfig(allow_origin="*", max_age=3600)
+app = APIGatewayHttpResolver(cors=cors)
 
 
 @app.get("/health")

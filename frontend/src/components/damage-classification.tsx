@@ -1,3 +1,5 @@
+import { CircleCheck, TriangleAlert, CircleX } from "lucide-react";
+import type { ReactNode } from "react";
 import styles from "./damage-classification.module.css";
 
 export type DamageLevel = "minimal" | "partial" | "complete";
@@ -6,7 +8,7 @@ interface DamageOption {
   level: DamageLevel;
   label: string;
   description: string;
-  icon: string;
+  icon: ReactNode;
 }
 
 const OPTIONS: DamageOption[] = [
@@ -15,19 +17,19 @@ const OPTIONS: DamageOption[] = [
     label: "Minimal / No damage",
     description:
       "Structurally sound and functional, showing only cosmetic or no visible damage",
-    icon: "✓",
+    icon: <CircleCheck size={24} />,
   },
   {
     level: "partial",
     label: "Partially damaged",
     description: "Repairable, and remains usable with caution",
-    icon: "⚠",
+    icon: <TriangleAlert size={24} />,
   },
   {
     level: "complete",
     label: "Completely damaged",
     description: "Structurally unsafe or destroyed",
-    icon: "✕",
+    icon: <CircleX size={24} />,
   },
 ];
 
