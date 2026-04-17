@@ -41,6 +41,57 @@ Body: <image binary>
 
 The presigned URL expires after 15 minutes.
 
+## GET /reports
+
+Query reports. Returns a GeoJSON FeatureCollection.
+
+**Query Parameters**
+
+| Param | Type | Description |
+|-------|------|-------------|
+| `west`, `south`, `east`, `north` | float | Bounding box filter (all four required) |
+| `h3` | string | H3 R8 cell filter |
+| `damage_level` | string | Comma-separated: `minimal`, `partial`, `complete` |
+| `infrastructure_type` | string | Filter by infrastructure type |
+| `from` | string | ISO datetime, reports submitted after |
+| `to` | string | ISO datetime, reports submitted before |
+| `s2_id` | string | Building ID — returns all versions, not just latest |
+| `limit` | int | Max results (default 500, max 1000) |
+| `offset` | int | Pagination offset |
+
+**Example request**
+
+```
+GET /reports?west=36.1&south=36.1&east=36.3&north=36.3&damage_level=partial,complete
+```
+
+**Response**
+
+```json
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [36.16, 36.2] },
+      "properties": {
+        "id": "59a7cb76-...",
+        "s2_id": "4899916394579099648",
+        "damage_level": "partial",
+        "infrastructure_type": ["Residential Infrastructure (Houses and apartments)"],
+        "submitted_at": "2026-04-17T15:35:47+00:00",
+        "version_chain_id": "a34b724b-...",
+        "is_latest": true,
+        "version_count": 1
+      }
+    }
+  ],
+  "total": 1
+}
+```
+
+When `s2_id` is provided, all versions for that building are returned (not just `is_latest`), ordered by `submitted_at` descending.
+
 ## POST /reports
 
 Submit a damage assessment report.
