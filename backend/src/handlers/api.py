@@ -3,8 +3,8 @@ from aws_lambda_powertools.event_handler import APIGatewayHttpResolver
 from aws_lambda_powertools.event_handler.api_gateway import CORSConfig
 from aws_lambda_powertools.logging import correlation_paths
 
-from src.handlers.reports import create_report, query_reports
 from src.handlers.photos import get_upload_url
+from src.handlers.reports import create_report, query_reports
 
 logger = Logger()
 tracer = Tracer()
