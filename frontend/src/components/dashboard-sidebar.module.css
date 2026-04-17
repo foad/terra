@@ -50,6 +50,84 @@
   margin-bottom: var(--undpds-spacing-02);
 }
 
+/* Damage level button group */
+
+.damageButtons {
+  display: flex;
+  gap: 0;
+}
+
+.damageButton {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border: 1px solid var(--undpds-color-gray-300);
+  background: var(--undpds-color-white);
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+  margin-inline-start: -1px;
+}
+
+.damageButton:first-child {
+  margin-inline-start: 0;
+}
+
+.damageButton.minimal {
+  color: #166534;
+  border-color: var(--undpds-color-gray-300);
+}
+
+.damageButton.partial {
+  color: #92400e;
+  border-color: var(--undpds-color-gray-300);
+}
+
+.damageButton.complete {
+  color: #991b1b;
+  border-color: var(--undpds-color-gray-300);
+}
+
+.damageButton.minimal.active {
+  background: #dcfce7;
+  border-color: #16a34a;
+  z-index: 1;
+}
+
+.damageButton.partial.active {
+  background: #fef3c7;
+  border-color: #d97706;
+  z-index: 1;
+}
+
+.damageButton.complete.active {
+  background: #fee2e2;
+  border-color: #dc2626;
+  z-index: 1;
+}
+
+
+/* Date range */
+
+.dateRange {
+  display: flex;
+  flex-direction: column;
+  gap: var(--undpds-spacing-03);
+}
+
+.dateField {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Report detail panel */
+
 .detail {
   padding: var(--undpds-spacing-05);
 }
@@ -110,17 +188,17 @@
   letter-spacing: 0.02em;
 }
 
-.minimal {
+.damageBadge.minimal {
   background: #dcfce7;
   color: #166534;
 }
 
-.partial {
+.damageBadge.partial {
   background: #fef3c7;
   color: #92400e;
 }
 
-.complete {
+.damageBadge.complete {
   background: #fee2e2;
   color: #991b1b;
 }

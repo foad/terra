@@ -1,0 +1,113 @@
+.container {
+  max-width: 18.5rem;
+  position: relative;
+}
+
+.trigger {
+  border: 2px solid var(--undpds-color-black);
+  color: var(--undpds-color-black);
+  cursor: pointer;
+  font-size: var(--undpds-font-size-16);
+  font-weight: 600;
+  line-height: 1.125rem;
+  margin: 0;
+  padding: var(--undpds-spacing-05) var(--undpds-spacing-50) var(--undpds-spacing-05) var(--undpds-spacing-05);
+  position: relative;
+  text-transform: uppercase;
+  width: 100%;
+  background: var(--undpds-color-white);
+  display: flex;
+  text-align: start;
+  font-family: inherit;
+}
+
+.trigger::after {
+  background: url('@undp/design-system-assets/images/chevron-down.svg') no-repeat center center;
+  content: "";
+  float: right;
+  height: 13px;
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  width: 20px;
+  transform: translateY(-50%);
+  transition: all 200ms ease-in-out;
+}
+
+.open .trigger {
+  border-bottom: 0;
+}
+
+.open .trigger::after {
+  transform: translateY(-50%) rotate(-180deg);
+}
+
+.list {
+  border: 2px solid var(--undpds-color-black);
+  border-top: 0;
+  box-sizing: border-box;
+  min-height: 100px;
+  max-height: 18.75rem;
+  padding: 0 var(--undpds-spacing-05);
+  width: 100%;
+  position: absolute;
+  z-index: 10;
+  background: var(--undpds-color-white);
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+}
+
+.list::-webkit-scrollbar {
+  background-color: rgba(0, 0, 0, 0.3);
+  width: 4px;
+}
+
+.list::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.list li {
+  list-style: none;
+  margin-bottom: 0;
+}
+
+.toggleAll {
+  border-bottom: 1px solid var(--undpds-color-gray-300);
+  margin-bottom: var(--undpds-spacing-03);
+}
+
+.toggleAllButton {
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--undpds-color-blue-600);
+  cursor: pointer;
+  padding: var(--undpds-spacing-03) 0;
+  width: 100%;
+  text-align: start;
+}
+
+.list :global(.form-check) {
+  justify-content: space-between;
+  margin: 0 calc(-1 * var(--undpds-spacing-05));
+  padding: 0 var(--undpds-spacing-05);
+  gap: var(--undpds-spacing-05);
+}
+
+.list :global(.form-check):hover {
+  background-color: var(--undpds-color-gray-100);
+}
+
+.list :global(.form-check) label {
+  padding: var(--undpds-spacing-05) 0;
+  width: 100%;
+}
+
+.list :global(.form-check) input {
+  flex-shrink: 0;
+}
