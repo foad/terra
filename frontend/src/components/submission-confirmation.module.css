@@ -1,0 +1,33 @@
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--undpds-spacing-07);
+  gap: var(--undpds-spacing-05);
+  text-align: center;
+}
+
+.icon {
+  color: var(--undpds-color-green);
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.message {
+  font-size: 0.9375rem;
+  color: var(--undpds-color-gray-600);
+  line-height: 1.5;
+  max-width: 320px;
+}
+
+.count {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--undpds-color-blue-600);
+}
