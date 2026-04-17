@@ -1,0 +1,126 @@
+.sidebar {
+  width: 320px;
+  border-inline-end: 1px solid var(--undpds-color-gray-300);
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.filters {
+  padding: var(--undpds-spacing-05);
+}
+
+.filtersHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--undpds-spacing-05);
+}
+
+.filtersTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+.clearButton {
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  color: var(--undpds-color-blue-600);
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.filterGroup {
+  margin-bottom: var(--undpds-spacing-05);
+  display: flex;
+  flex-direction: column;
+  gap: var(--undpds-spacing-03);
+}
+
+.filterLabel {
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: var(--undpds-spacing-02);
+}
+
+.detail {
+  padding: var(--undpds-spacing-05);
+}
+
+.detailHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--undpds-spacing-05);
+}
+
+.detailTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--undpds-color-gray-600);
+  padding: 4px;
+}
+
+.detailBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--undpds-spacing-04);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fieldLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--undpds-color-gray-600);
+}
+
+.fieldValue {
+  font-size: 0.875rem;
+}
+
+.damageBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.minimal {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.partial {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.complete {
+  background: #fee2e2;
+  color: #991b1b;
+}

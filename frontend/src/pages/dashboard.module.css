@@ -1,0 +1,48 @@
+.container {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  padding: 10px 16px;
+  background: var(--undpds-color-blue-600);
+  color: var(--undpds-color-white);
+  border-bottom: 4px solid var(--undpds-color-red);
+}
+
+.headerInner {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin: 0;
+  line-height: 1;
+}
+
+.subtitle {
+  font-size: 0.8125rem;
+  opacity: 0.8;
+}
+
+.reportCount {
+  margin-inline-start: auto;
+  font-size: 0.8125rem;
+  opacity: 0.8;
+}
+
+.body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.mapArea {
+  flex: 1;
+  min-width: 0;
+}
