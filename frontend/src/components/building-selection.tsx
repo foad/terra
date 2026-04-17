@@ -33,13 +33,10 @@ export const BuildingSelection = ({
             Tap a building on the map to select it
           </div>
           <div className={styles.fallback}>
-            <label htmlFor="location-fallback" className={styles.fallbackLabel}>
-              Or describe the location:
-            </label>
+            <label htmlFor="location-fallback">Or describe the location:</label>
             <input
               id="location-fallback"
               type="text"
-              className={styles.fallbackInput}
               placeholder="e.g. The school near the central market"
               value={locationFallback}
               onChange={(e) => onLocationFallbackChange(e.target.value)}
