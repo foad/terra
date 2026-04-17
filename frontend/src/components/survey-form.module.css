@@ -1,0 +1,42 @@
+.container {
+  flex: 1;
+  padding: var(--undpds-spacing-05);
+  overflow-y: auto;
+}
+
+.question {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.4;
+  margin: 0 0 var(--undpds-spacing-05);
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--undpds-spacing-03);
+}
+
+.options :global(.form-check) {
+  align-items: flex-start;
+}
+
+.options :global(.form-check) input {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.optionGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--undpds-spacing-03);
+}
+
+.optionGroupLabel {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--undpds-color-gray-600);
+  margin-top: var(--undpds-spacing-03);
+}
