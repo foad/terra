@@ -202,7 +202,7 @@ def generate(
                 f" {sql_str(damage)}, ARRAY[{sql_str(infra)}], {sql_str(infra_name)},\n"
                 f" ARRAY['Earthquake'], {str(debris).lower()}, {sql_str(elec)},\n"
                 f" {sql_str(health)}, {sql_array(needs)},\n"
-                f" {sql_str(chain_id)}, true,\n"
+                f" {sql_str(chain_id)}, false,\n"
                 f" {sql_str(device)}, '{submitted.isoformat()}+00')"
             )
             values.append(val)
@@ -229,12 +229,24 @@ def generate(
             f" {sql_str(damage)}, ARRAY[{sql_str(infra)}], {sql_str(infra_name)},\n"
             f" ARRAY['Earthquake'], {str(debris).lower()}, {sql_str(elec)},\n"
             f" {sql_str(health)}, {sql_array(needs)},\n"
-            f" {sql_str(chain_id)}, true,\n"
+            f" {sql_str(chain_id)}, false,\n"
             f" {sql_str(device)}, '{submitted.isoformat()}+00')"
         )
         values.append(val)
 
     lines.append(",\n\n".join(values) + ";")
+
+    # Fix up is_latest: set to true for the most recent report per version chain
+    lines.append("")
+    lines.append("-- Set is_latest for the most recent report in each version chain")
+    lines.append(
+        "UPDATE reports SET is_latest = true "
+        "WHERE id IN ("
+        "  SELECT DISTINCT ON (version_chain_id) id FROM reports "
+        "  WHERE device_id LIKE 'device-seed-%' "
+        "  ORDER BY version_chain_id, submitted_at DESC"
+        ");"
+    )
 
     return "\n".join(lines)
 
