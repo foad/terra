@@ -37,6 +37,7 @@ export const BuildingSelection = ({
             <input
               id="location-fallback"
               type="text"
+              data-testid="input-location-fallback"
               placeholder="e.g. The school near the central market"
               value={locationFallback}
               onChange={(e) => onLocationFallbackChange(e.target.value)}
