@@ -4,9 +4,11 @@ import type { SelectedBuilding } from "./map";
 import { BuildingSelection } from "./building-selection";
 import { DamageClassification } from "./damage-classification";
 import type { DamageLevel } from "./damage-classification";
+import { SurveyForm, EMPTY_SURVEY, SURVEY_STEP_COUNT, isSurveyStepComplete } from "./survey-form";
+import type { SurveyData } from "./survey-form";
 import styles from "./report-flow.module.css";
 
-type Step = "location" | "photo" | "damage";
+type Step = "location" | "photo" | "damage" | "survey";
 
 interface ReportFlowProps {
   latitude: number | null;
@@ -24,6 +26,8 @@ export const ReportFlow = ({
     useState<SelectedBuilding | null>(null);
   const [locationFallback, setLocationFallback] = useState("");
   const [damageLevel, setDamageLevel] = useState<DamageLevel | null>(null);
+  const [survey, setSurvey] = useState<SurveyData>(EMPTY_SURVEY);
+  const [surveyStep, setSurveyStep] = useState(0);
 
   const handleBuildingSelect = useCallback(
     (building: SelectedBuilding | null) => {
@@ -35,6 +39,8 @@ export const ReportFlow = ({
 
   const hasLocation =
     selectedBuilding !== null || locationFallback.trim() !== "";
+
+  const isLastSurveyStep = surveyStep === SURVEY_STEP_COUNT - 1;
 
   if (step === "location") {
     return (
@@ -52,17 +58,15 @@ export const ReportFlow = ({
           locationFallback={locationFallback}
           onLocationFallbackChange={setLocationFallback}
         />
-        {hasLocation && (
-          <div className={styles.actions}>
-            <a
-              role="button"
-              className="button button-primary"
-              onClick={() => setStep("photo")}
-            >
-              Next
-            </a>
-          </div>
-        )}
+        <div className={styles.actions}>
+          <a
+            role="button"
+            className={`button button-primary ${!hasLocation ? "disabled" : ""}`}
+            onClick={hasLocation ? () => setStep("photo") : undefined}
+          >
+            Next
+          </a>
+        </div>
       </div>
     );
   }
@@ -109,19 +113,63 @@ export const ReportFlow = ({
           <span className={styles.stepTitle}>Damage Assessment</span>
         </div>
         <DamageClassification value={damageLevel} onChange={setDamageLevel} />
-        {damageLevel && (
-          <div className={styles.actions}>
-            <a
-              role="button"
-              className="button button-primary"
-              onClick={() => {
-                // Next steps will be added as we build more tickets
-              }}
-            >
-              Next
-            </a>
-          </div>
-        )}
+        <div className={styles.actions}>
+          <a
+            role="button"
+            className={`button button-primary ${!damageLevel ? "disabled" : ""}`}
+            onClick={damageLevel ? () => setStep("survey") : undefined}
+          >
+            Next
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === "survey") {
+    const canAdvance = isSurveyStepComplete(surveyStep, survey);
+
+    const handleNext = () => {
+      if (!canAdvance) return;
+      if (isLastSurveyStep) {
+        // Submit will be wired in #18
+      } else {
+        setSurveyStep(surveyStep + 1);
+      }
+    };
+
+    const handleBack = () => {
+      if (surveyStep > 0) {
+        setSurveyStep(surveyStep - 1);
+      } else {
+        setStep("damage");
+      }
+    };
+
+    return (
+      <div className={styles.step}>
+        <div className={styles.stepHeader}>
+          <a
+            role="button"
+            className="button button-secondary button-without-arrow"
+            onClick={handleBack}
+          >
+            Back
+          </a>
+          <span className={styles.stepTitle}>
+            Survey ({surveyStep + 1}/{SURVEY_STEP_COUNT})
+          </span>
+        </div>
+        <SurveyForm step={surveyStep} value={survey} onChange={setSurvey} />
+        <div className={styles.actions}>
+          <a
+            role="button"
+            className={`button button-primary ${!canAdvance ? "disabled" : ""}`}
+            onClick={canAdvance ? handleNext : undefined}
+          >
+            {isLastSurveyStep ? "Submit Report" : "Next"}
+          </a>
+        </div>
       </div>
     );
   }
