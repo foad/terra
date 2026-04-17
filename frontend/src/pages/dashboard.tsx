@@ -34,14 +34,16 @@ export interface ReportFeature {
 
 export interface Filters {
   damageLevel: string[];
-  infrastructureType: string;
+  infrastructureType: string[];
+  crisisNature: string[];
   from: string;
   to: string;
 }
 
 const EMPTY_FILTERS: Filters = {
   damageLevel: [],
-  infrastructureType: "",
+  infrastructureType: [],
+  crisisNature: [],
   from: "",
   to: "",
 };
@@ -60,8 +62,11 @@ const DashboardPage = () => {
     if (filters.damageLevel.length > 0) {
       params.set("damage_level", filters.damageLevel.join(","));
     }
-    if (filters.infrastructureType) {
-      params.set("infrastructure_type", filters.infrastructureType);
+    if (filters.infrastructureType.length > 0) {
+      params.set("infrastructure_type", filters.infrastructureType.join("|"));
+    }
+    if (filters.crisisNature.length > 0) {
+      params.set("crisis_nature", filters.crisisNature.join("|"));
     }
     if (filters.from) params.set("from", filters.from);
     if (filters.to) params.set("to", filters.to);
