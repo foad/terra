@@ -1,0 +1,117 @@
+.container {
+  flex: 1;
+  padding: var(--undpds-spacing-05);
+}
+
+.label {
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-bottom: var(--undpds-spacing-05);
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--undpds-spacing-04);
+}
+
+.card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--undpds-spacing-05);
+  padding: var(--undpds-spacing-05);
+  border: 0;
+  border-inline-start: 4px solid var(--undpds-color-gray-300);
+  background: var(--undpds-color-white);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  touch-action: manipulation;
+  text-align: start;
+  font-family: inherit;
+  position: relative;
+}
+
+
+.minimal {
+  border-inline-start-color: var(--undpds-color-green);
+}
+
+.partial {
+  border-inline-start-color: var(--undpds-color-yellow);
+}
+
+.complete {
+  border-inline-start-color: var(--undpds-color-red);
+}
+
+.cardIcon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.minimal .cardIcon {
+  color: var(--undpds-color-green);
+}
+
+.partial .cardIcon {
+  color: #d97706;
+}
+
+.complete .cardIcon {
+  color: var(--undpds-color-red);
+}
+
+.cardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cardLabel {
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.cardDescription {
+  font-size: 0.8125rem;
+  color: var(--undpds-color-gray-600);
+  line-height: 1.4;
+}
+
+.selected {
+  border-inline-start-width: 6px;
+}
+
+.minimal.selected {
+  background: #f0fdf4;
+}
+
+.partial.selected {
+  background: #fffbeb;
+}
+
+.complete.selected {
+  background: #fef2f2;
+}
+
+.aiBadge {
+  position: absolute;
+  top: var(--undpds-spacing-03);
+  inset-inline-end: var(--undpds-spacing-03);
+  background: var(--undpds-color-blue-600);
+  color: var(--undpds-color-white);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
