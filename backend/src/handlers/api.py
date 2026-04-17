@@ -3,7 +3,7 @@ from aws_lambda_powertools.event_handler import APIGatewayHttpResolver
 from aws_lambda_powertools.event_handler.api_gateway import CORSConfig
 from aws_lambda_powertools.logging import correlation_paths
 
-from src.handlers.reports import create_report
+from src.handlers.reports import create_report, query_reports
 from src.handlers.photos import get_upload_url
 
 logger = Logger()
@@ -22,6 +22,13 @@ def health():
 @tracer.capture_method
 def post_photo_upload():
     return get_upload_url()
+
+
+@app.get("/reports")
+@tracer.capture_method
+def get_reports():
+    params = app.current_event.query_string_parameters or {}
+    return query_reports(params)
 
 
 @app.post("/reports")
