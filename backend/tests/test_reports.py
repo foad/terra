@@ -201,6 +201,120 @@ class TestQueryReports:
         # Last two params are limit and offset
         assert sql_params[-2] == 1000
 
+    @patch("src.handlers.reports.get_connection")
+    def test_damage_level_filter(self, mock_get_conn):
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchall.return_value = []
+        mock_cursor.fetchone.return_value = (0,)
+        mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_get_conn.return_value = mock_conn
+
+        query_reports({"damage_level": "partial,complete"})
+
+        sql = mock_cursor.execute.call_args_list[0][0][0]
+        main_where = sql.split("WHERE")[-1].split("ORDER BY")[0]
+        assert "damage_level IN" in main_where
+        params = mock_cursor.execute.call_args_list[0][0][1]
+        assert "partial" in params
+        assert "complete" in params
+
+    @patch("src.handlers.reports.get_connection")
+    def test_infrastructure_type_filter_pipe_separated(self, mock_get_conn):
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchall.return_value = []
+        mock_cursor.fetchone.return_value = (0,)
+        mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_get_conn.return_value = mock_conn
+
+        query_reports({
+            "infrastructure_type": "Residential Infrastructure (Houses and apartments)|Commercial Infrastructure (Markets, malls, shops, hotels, banks, industries, etc.)"
+        })
+
+        sql = mock_cursor.execute.call_args_list[0][0][0]
+        main_where = sql.split("WHERE")[-1].split("ORDER BY")[0]
+        assert "ANY(infrastructure_type)" in main_where
+        params = mock_cursor.execute.call_args_list[0][0][1]
+        assert "Residential Infrastructure (Houses and apartments)" in params
+        assert "Commercial Infrastructure (Markets, malls, shops, hotels, banks, industries, etc.)" in params
+
+    @patch("src.handlers.reports.get_connection")
+    def test_crisis_nature_filter_pipe_separated(self, mock_get_conn):
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchall.return_value = []
+        mock_cursor.fetchone.return_value = (0,)
+        mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_get_conn.return_value = mock_conn
+
+        query_reports({"crisis_nature": "Earthquake|Flood"})
+
+        sql = mock_cursor.execute.call_args_list[0][0][0]
+        main_where = sql.split("WHERE")[-1].split("ORDER BY")[0]
+        assert "ANY(crisis_nature)" in main_where
+        params = mock_cursor.execute.call_args_list[0][0][1]
+        assert "Earthquake" in params
+        assert "Flood" in params
+
+    @patch("src.handlers.reports.get_connection")
+    def test_date_range_filter(self, mock_get_conn):
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchall.return_value = []
+        mock_cursor.fetchone.return_value = (0,)
+        mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_get_conn.return_value = mock_conn
+
+        query_reports({"from": "2026-04-10", "to": "2026-04-15"})
+
+        sql = mock_cursor.execute.call_args_list[0][0][0]
+        main_where = sql.split("WHERE")[-1].split("ORDER BY")[0]
+        assert "submitted_at >=" in main_where
+        assert "submitted_at <=" in main_where
+
+    @patch("src.handlers.reports.get_connection")
+    def test_h3_filter(self, mock_get_conn):
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchall.return_value = []
+        mock_cursor.fetchone.return_value = (0,)
+        mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_get_conn.return_value = mock_conn
+
+        query_reports({"h3": "882da16751fffff"})
+
+        sql = mock_cursor.execute.call_args_list[0][0][0]
+        main_where = sql.split("WHERE")[-1].split("ORDER BY")[0]
+        assert "h3_r8 = %s" in main_where
+
+    @patch("src.handlers.reports.get_connection")
+    def test_multiple_filters_combined(self, mock_get_conn):
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchall.return_value = []
+        mock_cursor.fetchone.return_value = (0,)
+        mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_get_conn.return_value = mock_conn
+
+        query_reports({
+            "damage_level": "complete",
+            "crisis_nature": "Earthquake",
+            "from": "2026-04-10",
+        })
+
+        sql = mock_cursor.execute.call_args_list[0][0][0]
+        main_where = sql.split("WHERE")[-1].split("ORDER BY")[0]
+        assert "damage_level IN" in main_where
+        assert "ANY(crisis_nature)" in main_where
+        assert "submitted_at >=" in main_where
+
 
 class TestFindVersionChain:
     @patch("src.handlers.reports.get_connection")
