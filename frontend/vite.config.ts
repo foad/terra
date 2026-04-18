@@ -7,6 +7,9 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.ts",
       includeAssets: ["favicon.svg"],
       manifest: {
         name: "TERRA",
@@ -31,20 +34,8 @@ export default defineConfig({
           },
         ],
       },
-      workbox: {
+      injectManifest: {
         globPatterns: ["**/*.{js,css,html,svg,png,woff2}"],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/.*\.pmtiles/,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "pmtiles-cache",
-              rangeRequests: true,
-              cacheableResponse: { statuses: [0, 200, 206] },
-              expiration: { maxAgeSeconds: 60 * 60 * 24 * 30 },
-            },
-          },
-        ],
       },
     }),
   ],
