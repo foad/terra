@@ -2,11 +2,13 @@ import { Layout } from "./components/layout";
 import { ReportFlow } from "./components/report-flow";
 import { useGeolocation } from "./hooks/use-geolocation";
 import { usePersistentStorage } from "./hooks/use-persistent-storage";
+import { usePrefetchTiles } from "./hooks/use-prefetch-tiles";
 import styles from "./app.module.css";
 
 export const App = () => {
   const { latitude, longitude, accuracy, error } = useGeolocation();
   const storage = usePersistentStorage();
+  usePrefetchTiles(latitude, longitude);
 
   return (
     <Layout>
