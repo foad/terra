@@ -34,7 +34,7 @@
 
 .submitError {
   padding: 8px 16px;
-  background: var(--undpds-color-red-100);
+  background: var(--undpds-color-red-200);
   color: var(--undpds-color-red);
   font-size: 0.875rem;
 }

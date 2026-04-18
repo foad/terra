@@ -1,6 +1,13 @@
 .errorBanner {
   padding: 8px 16px;
-  background: var(--undpds-color-red-100);
-  color: var(--undpds-color-red-600);
-  font-size: 0.875rem;
+  background: var(--undpds-color-red-200);
+  color: var(--undpds-color-black);
+  font-size: 0.8125rem;
+}
+
+.warningBanner {
+  padding: 8px 16px;
+  background: var(--undpds-color-yellow-200);
+  color: var(--undpds-color-black);
+  font-size: 0.8125rem;
 }
