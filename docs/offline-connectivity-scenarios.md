@@ -233,7 +233,7 @@ sequenceDiagram
 flowchart TD
     Request[Tile Request] --> SW{Service Worker}
     SW -->|App shell| Precache[Precache: Cache Only]
-    SW -->|PMTiles range| PMCache[CacheFirst: 30 day TTL]
+    SW -->|PMTiles range| PMCache["CacheFirst: 206→200 wrap, keyed by URL+Range"]
     SW -->|OSM raster| OSMCache[CacheFirst: 30 day TTL]
     SW -->|API GET /reports| APICache[NetworkFirst: 5 min TTL]
     SW -->|API POST| NoCache[Network Only → IndexedDB fallback]
@@ -242,6 +242,24 @@ flowchart TD
     Verify -->|Verified| Reload[Reload map sources]
     Reload --> Repaint[MapLibre triggerRepaint]
 ```
+
+### PMTiles Caching Detail
+
+The Cache API rejects 206 (partial) responses. The custom service worker handler:
+1. Intercepts range requests to `data.source.coop`
+2. Keys cache entries by `URL?_r=Range` to store each partial response separately
+3. Wraps 206 responses as 200 before storing (preserves Content-Range in `X-Original-Content-Range` header)
+4. Reconstructs the 206 response when serving from cache
+
+### Progressive Prefetch
+
+On first GPS fix, the app background-prefetches building footprint tiles in a 2km radius at zoom 14 and 15:
+- Starts 3 seconds after GPS fix (avoids competing with initial map load)
+- Throttled at 50ms between requests
+- ~80 tiles, ~3MB of cached data
+- Stops if connectivity is lost
+- Re-runs only if the user moves 500m+ from the last prefetch location
+- The service worker caches these requests automatically via the same PMTiles handler
 
 ## IndexedDB Schema
 
