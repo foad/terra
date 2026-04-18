@@ -11,7 +11,7 @@ export const App = () => {
   return (
     <Layout>
       {error && <div className={styles.errorBanner}>{error}</div>}
-      {storage.persisted === false && (
+      {storage.persisted === false && !navigator.onLine && (
         <div className={styles.warningBanner}>
           Offline storage may be limited. Reports queued offline could be lost
           if storage is full.
