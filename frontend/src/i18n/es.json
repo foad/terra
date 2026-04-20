@@ -1,7 +1,7 @@
 {
   "app": {
     "title": "TERRA",
-    "subtitle": "Evaluación de daños en crisis",
+    "subtitle": "Evaluación de daños",
     "offline": "Está sin conexión. Los informes se sincronizarán cuando se conecte. Algunas áreas del mapa pueden no estar disponibles.",
     "storageLimited": "El almacenamiento sin conexión puede ser limitado. Los informes en cola podrían perderse si el almacenamiento está lleno.",
     "syncing": "Sincronizando {{count}} informe...",

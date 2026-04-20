@@ -1,7 +1,7 @@
 {
   "app": {
     "title": "TERRA",
-    "subtitle": "Evaluation des dommages en situation de crise",
+    "subtitle": "Évaluation des dommages",
     "offline": "Vous êtes hors ligne. Les rapports seront synchronisés une fois connecté. Certaines zones de la carte peuvent ne pas être disponibles.",
     "storageLimited": "Le stockage hors ligne peut être limité. Les rapports en file d'attente pourraient être perdus si le stockage est plein.",
     "syncing": "Synchronisation de {{count}} rapport...",
