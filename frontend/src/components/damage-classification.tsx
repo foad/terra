@@ -1,36 +1,21 @@
 import { CircleCheck, TriangleAlert, CircleX } from "lucide-react";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import styles from "./damage-classification.module.css";
 
 export type DamageLevel = "minimal" | "partial" | "complete";
 
 interface DamageOption {
   level: DamageLevel;
-  label: string;
-  description: string;
+  labelKey: string;
+  descKey: string;
   icon: ReactNode;
 }
 
 const OPTIONS: DamageOption[] = [
-  {
-    level: "minimal",
-    label: "Minimal / No damage",
-    description:
-      "Structurally sound and functional, showing only cosmetic or no visible damage",
-    icon: <CircleCheck size={24} />,
-  },
-  {
-    level: "partial",
-    label: "Partially damaged",
-    description: "Repairable, and remains usable with caution",
-    icon: <TriangleAlert size={24} />,
-  },
-  {
-    level: "complete",
-    label: "Completely damaged",
-    description: "Structurally unsafe or destroyed",
-    icon: <CircleX size={24} />,
-  },
+  { level: "minimal", labelKey: "damage.minimal", descKey: "damage.minimalDesc", icon: <CircleCheck size={24} /> },
+  { level: "partial", labelKey: "damage.partial", descKey: "damage.partialDesc", icon: <TriangleAlert size={24} /> },
+  { level: "complete", labelKey: "damage.complete", descKey: "damage.completeDesc", icon: <CircleX size={24} /> },
 ];
 
 interface DamageClassificationProps {
@@ -46,9 +31,10 @@ export const DamageClassification = ({
   aiSuggestion,
   aiConfidence,
 }: DamageClassificationProps) => {
+  const { t } = useTranslation();
   return (
     <div className={styles.container}>
-      <div className={styles.label}>Damage level</div>
+      <div className={styles.label}>{t("damage.label")}</div>
       <div className={styles.options}>
         {OPTIONS.map((option) => {
           const isSelected = value === option.level;
@@ -65,14 +51,12 @@ export const DamageClassification = ({
             >
               <div className={styles.cardIcon}>{option.icon}</div>
               <div className={styles.cardContent}>
-                <div className={styles.cardLabel}>{option.label}</div>
-                <div className={styles.cardDescription}>
-                  {option.description}
-                </div>
+                <div className={styles.cardLabel}>{t(option.labelKey)}</div>
+                <div className={styles.cardDescription}>{t(option.descKey)}</div>
               </div>
               {isAiSuggested && aiConfidence != null && (
                 <div className={styles.aiBadge}>
-                  AI: {Math.round(aiConfidence * 100)}%
+                  {t("damage.aiConfidence", { confidence: Math.round(aiConfidence * 100) })}
                 </div>
               )}
             </button>

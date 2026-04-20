@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { SelectedBuilding } from "./map";
 import styles from "./building-selection.module.css";
 
@@ -12,11 +13,12 @@ export const BuildingSelection = ({
   locationFallback,
   onLocationFallbackChange,
 }: BuildingSelectionProps) => {
+  const { t } = useTranslation();
   return (
     <div className={styles.container}>
       {building ? (
         <div className={styles.selected}>
-          <div className={styles.label}>Selected building</div>
+          <div className={styles.label}>{t("location.selectedBuilding")}</div>
           <div className={styles.details}>
             <span className={styles.area}>
               {Math.round(building.areaM2)} m²
@@ -29,16 +31,16 @@ export const BuildingSelection = ({
         </div>
       ) : (
         <div className={styles.unselected}>
-          <div className={styles.label}>
-            Tap a building on the map to select it
-          </div>
+          <div className={styles.label}>{t("location.selectBuilding")}</div>
           <div className={styles.fallback}>
-            <label htmlFor="location-fallback">Or describe the location:</label>
+            <label htmlFor="location-fallback">
+              {t("location.describeLocation")}
+            </label>
             <input
               id="location-fallback"
               type="text"
               data-testid="input-location-fallback"
-              placeholder="e.g. The school near the central market"
+              placeholder={t("location.descriptionPlaceholder")}
               value={locationFallback}
               onChange={(e) => onLocationFallbackChange(e.target.value)}
             />
