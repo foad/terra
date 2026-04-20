@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Layout } from "./components/layout";
 import { ReportFlow } from "./components/report-flow";
 import { useGeolocation } from "./hooks/use-geolocation";
@@ -8,6 +9,7 @@ import { useSync } from "./hooks/use-sync";
 import styles from "./app.module.css";
 
 export const App = () => {
+  const { t } = useTranslation();
   const { latitude, longitude, accuracy, error } = useGeolocation();
   const { isOnline, isVerified, onReconnect } = useConnectivity();
   const storage = usePersistentStorage();
@@ -20,25 +22,19 @@ export const App = () => {
     <Layout>
       {error && <div className={styles.errorBanner}>{error}</div>}
       {!isOnline && (
-        <div className={styles.warningBanner}>
-          You are offline. Reports will sync when connected. Some map areas may
-          be unavailable.
-        </div>
+        <div className={styles.warningBanner}>{t("app.offline")}</div>
       )}
       {storage.persisted === false && !isOnline && (
-        <div className={styles.warningBanner}>
-          Offline storage may be limited. Reports queued offline could be lost
-          if storage is full.
-        </div>
+        <div className={styles.warningBanner}>{t("app.storageLimited")}</div>
       )}
       {pendingCount > 0 && isOnline && (
         <div className={styles.syncBanner}>
-          Syncing {pendingCount} report{pendingCount !== 1 ? "s" : ""}...
+          {t("app.syncing", { count: pendingCount })}
         </div>
       )}
       {counts.failed > 0 && (
         <div className={styles.errorBanner}>
-          {counts.failed} report{counts.failed !== 1 ? "s" : ""} failed to sync.
+          {t("app.syncFailed", { count: counts.failed })}
         </div>
       )}
       <ReportFlow

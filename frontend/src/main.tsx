@@ -2,6 +2,7 @@ import { StrictMode, lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router";
 import "./styles/global.css";
+import "./i18n";
 import { App } from "./app.tsx";
 
 const DashboardPage = lazy(() => import("./pages/dashboard.tsx"));
