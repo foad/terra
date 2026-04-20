@@ -21,7 +21,8 @@ export const App = () => {
       {error && <div className={styles.errorBanner}>{error}</div>}
       {!isOnline && (
         <div className={styles.warningBanner}>
-          You are offline. Reports will be queued and synced when connectivity returns.
+          You are offline. Reports will sync when connected. Some map areas may
+          be unavailable.
         </div>
       )}
       {storage.persisted === false && !isOnline && (
