@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "./language-switcher";
 import styles from "./layout.module.css";
 
 interface LayoutProps {
@@ -14,6 +15,7 @@ export const Layout = ({ children }: LayoutProps) => {
         <div className={styles.headerInner}>
           <h1 className={styles.title}>{t("app.title")}</h1>
           <span className={styles.subtitle}>{t("app.subtitle")}</span>
+          <LanguageSwitcher />
         </div>
       </header>
       <main className={styles.main}>{children}</main>
