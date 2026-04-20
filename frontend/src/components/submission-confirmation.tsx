@@ -1,4 +1,5 @@
 import { CircleCheck, CloudOff } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import styles from "./submission-confirmation.module.css";
 
 interface SubmissionConfirmationProps {
@@ -10,6 +11,7 @@ export const SubmissionConfirmation = ({
   isOnline,
   onSubmitAnother,
 }: SubmissionConfirmationProps) => {
+  const { t } = useTranslation();
   return (
     <div className={styles.container}>
       {isOnline ? (
@@ -18,19 +20,19 @@ export const SubmissionConfirmation = ({
         <CloudOff size={56} className={styles.iconQueued} />
       )}
       <h2 className={styles.title}>
-        {isOnline ? "Report Submitted" : "Report Queued"}
+        {isOnline ? t("confirmation.submitted") : t("confirmation.queued")}
       </h2>
       <p className={styles.message}>
         {isOnline
-          ? "Thank you for your report. Your submission is helping response teams prioritise recovery efforts in your area."
-          : "Your report has been saved and will be submitted automatically when connectivity returns."}
+          ? t("confirmation.submittedMessage")
+          : t("confirmation.queuedMessage")}
       </p>
       <a
         role="button"
         className="button button-primary button-without-arrow"
         onClick={onSubmitAnother}
       >
-        Submit Another Report
+        {t("confirmation.submitAnother")}
       </a>
     </div>
   );

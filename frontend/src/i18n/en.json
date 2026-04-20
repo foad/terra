@@ -1,0 +1,143 @@
+{
+  "app": {
+    "title": "TERRA",
+    "subtitle": "Crisis Damage Assessment",
+    "offline": "You are offline. Reports will sync when connected. Some map areas may be unavailable.",
+    "storageLimited": "Offline storage may be limited. Reports queued offline could be lost if storage is full.",
+    "syncing": "Syncing {{count}} report...",
+    "syncing_plural": "Syncing {{count}} reports...",
+    "syncFailed": "{{count}} report failed to sync.",
+    "syncFailed_plural": "{{count}} reports failed to sync."
+  },
+  "common": {
+    "next": "Next",
+    "back": "Back",
+    "submit": "Submit Report",
+    "submitting": "Submitting...",
+    "yes": "Yes",
+    "no": "No",
+    "from": "From",
+    "to": "To",
+    "clearAll": "Clear all",
+    "otherSpecify": "Other, please specify:"
+  },
+  "location": {
+    "selectBuilding": "Tap a building on the map to select it",
+    "describeLocation": "Or describe the location:",
+    "descriptionPlaceholder": "e.g. The school near the central market",
+    "selectedBuilding": "Selected building"
+  },
+  "photo": {
+    "title": "Take a Photo",
+    "uploadLabel": "Upload a photo",
+    "uploadHint": "Take a photo of the damaged infrastructure or choose an existing one",
+    "takePhoto": "Take Photo",
+    "chooseGallery": "Choose from Gallery",
+    "compressing": "Compressing image...",
+    "uploading": "Uploading... {{progress}}%",
+    "uploaded": "Photo uploaded",
+    "saved": "Photo saved — will upload when online",
+    "retry": "Retry"
+  },
+  "damage": {
+    "title": "Damage Assessment",
+    "label": "Damage level",
+    "minimal": "Minimal / No damage",
+    "minimalDesc": "Structurally sound and functional, showing only cosmetic or no visible damage",
+    "partial": "Partially damaged",
+    "partialDesc": "Repairable, and remains usable with caution",
+    "complete": "Completely damaged",
+    "completeDesc": "Structurally unsafe or destroyed",
+    "aiConfidence": "AI: {{confidence}}%"
+  },
+  "survey": {
+    "title": "Survey ({{current}}/{{total}})",
+    "infrastructureType": "Type of infrastructure:",
+    "infrastructureTypes": {
+      "residential": "Residential Infrastructure (Houses and apartments)",
+      "commercial": "Commercial Infrastructure (Markets, malls, shops, hotels, banks, industries, etc.)",
+      "government": "Government Building (Administrative buildings, courthouses, police stations, fire stations, etc.)",
+      "utility": "Utility Infrastructure (Water pumps, power plants, waste treatment plants, etc.)",
+      "transport": "Transport and Communication Infrastructure (Roads, cell towers, bridges, railway station, bus station, etc.)",
+      "community": "Community Infrastructure (Schools, hospitals, community halls, public toilets, etc.)",
+      "publicSpaces": "Public spaces/Recreation Infrastructure (stadiums, playgrounds, religious buildings, etc.)"
+    },
+    "infrastructureDetails": "Provide more details on the nature of the infrastructure, including the name of the infrastructure:",
+    "infrastructureNamePlaceholder": "e.g. Al-Noor Primary School",
+    "crisisNature": "Nature of the crisis:",
+    "crisisGroups": {
+      "natural": "Natural hazards",
+      "technological": "Technological/industrial hazards",
+      "humanMade": "Human-made crises"
+    },
+    "crisisTypes": {
+      "earthquake": "Earthquake",
+      "flood": "Flood",
+      "tsunami": "Tsunami",
+      "hurricane": "Hurricane/Cyclone",
+      "wildfire": "Wildfire",
+      "explosion": "Explosion",
+      "chemical": "Chemical incident",
+      "conflict": "Conflict",
+      "civilUnrest": "Civil unrest"
+    },
+    "debris": "Is there any debris that requires clearing on or near the infrastructure site?",
+    "electricity": "What is the current condition of electricity infrastructure in your community following the crisis?",
+    "electricityOptions": {
+      "none": "No damage observed",
+      "minor": "Minor damage (service disruptions but quickly repairable)",
+      "moderate": "Moderate damage (partial outages requiring repairs)",
+      "severe": "Severe damage (major infrastructure damaged, prolonged outages)",
+      "destroyed": "Completely destroyed (no electricity infrastructure functioning)",
+      "unknown": "Unknown/cannot be assessed"
+    },
+    "health": "How would you rate the overall functioning of health services in your community since the event?",
+    "healthOptions": {
+      "functional": "Fully functional",
+      "partial": "Partially functional",
+      "disrupted": "Largely disrupted",
+      "notFunctioning": "Not functioning at all",
+      "unknown": "Unknown"
+    },
+    "pressingNeeds": "What are the most pressing needs?",
+    "pressingNeedOptions": {
+      "food": "Food assistance and safe drinking water",
+      "cash": "Cash or financial assistance",
+      "healthcare": "Access to healthcare and essential medicines",
+      "shelter": "Shelter, housing repair, or temporary accommodation",
+      "livelihoods": "Restoration of livelihoods or income sources",
+      "wash": "Water, sanitation, and hygiene (toilets, washing facilities)",
+      "services": "Restoration of basic services and infrastructure (electricity, roads, schools)",
+      "protection": "Protection services and psychosocial support",
+      "localSupport": "Support from local authorities and community organizations"
+    }
+  },
+  "confirmation": {
+    "submitted": "Report Submitted",
+    "queued": "Report Queued",
+    "submittedMessage": "Thank you for your report. Your submission is helping response teams prioritise recovery efforts in your area.",
+    "queuedMessage": "Your report has been saved and will be submitted automatically when connectivity returns.",
+    "submitAnother": "Submit Another Report"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "loading": "Loading...",
+    "reportCount": "{{count}} reports",
+    "filters": "Filters",
+    "damageLevel": "Damage Level",
+    "infrastructureType": "Infrastructure Type",
+    "allTypes": "All types",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "crisisType": "Crisis Type",
+    "allCrisisTypes": "All crisis types",
+    "dateRange": "Date Range",
+    "reportDetail": "Report Detail",
+    "infrastructure": "Infrastructure",
+    "name": "Name",
+    "crisis": "Crisis",
+    "submitted": "Submitted",
+    "versions": "{{count}} report(s) for this location",
+    "locationLabel": "Location"
+  }
+}

@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Map } from "./map";
 import type { SelectedBuilding } from "./map";
 import { BuildingSelection } from "./building-selection";
@@ -30,6 +31,7 @@ export const ReportFlow = ({
   longitude,
   accuracy,
 }: ReportFlowProps) => {
+  const { t } = useTranslation();
   const [step, setStep] = useState<Step>("location");
   const [selectedBuilding, setSelectedBuilding] =
     useState<SelectedBuilding | null>(null);
@@ -55,7 +57,6 @@ export const ReportFlow = ({
     setSubmitError(null);
 
     try {
-      // Queue to IndexedDB — background sync handles the actual upload
       await reportQueue.add({
         id: crypto.randomUUID(),
         photo: photo?.blob ? await photo.blob.arrayBuffer() : null,
@@ -117,7 +118,7 @@ export const ReportFlow = ({
             className={`button button-primary ${!hasLocation ? "disabled" : ""}`}
             onClick={hasLocation ? () => setStep("photo") : undefined}
           >
-            Next
+            {t("common.next")}
           </a>
         </div>
       </div>
@@ -134,9 +135,9 @@ export const ReportFlow = ({
             className="button button-secondary button-without-arrow"
             onClick={() => setStep("location")}
           >
-            Back
+            {t("common.back")}
           </a>
-          <span className={styles.stepTitle}>Take a Photo</span>
+          <span className={styles.stepTitle}>{t("photo.title")}</span>
         </div>
         <PhotoCapture onPhotoUploaded={setPhoto} />
         <div className={styles.actions}>
@@ -146,7 +147,7 @@ export const ReportFlow = ({
             className={`button button-primary ${!photo ? "disabled" : ""}`}
             onClick={photo ? () => setStep("damage") : undefined}
           >
-            Next
+            {t("common.next")}
           </a>
         </div>
       </div>
@@ -163,9 +164,9 @@ export const ReportFlow = ({
             className="button button-secondary button-without-arrow"
             onClick={() => setStep("photo")}
           >
-            Back
+            {t("common.back")}
           </a>
-          <span className={styles.stepTitle}>Damage Assessment</span>
+          <span className={styles.stepTitle}>{t("damage.title")}</span>
         </div>
         <DamageClassification value={damageLevel} onChange={setDamageLevel} />
         <div className={styles.actions}>
@@ -175,7 +176,7 @@ export const ReportFlow = ({
             className={`button button-primary ${!damageLevel ? "disabled" : ""}`}
             onClick={damageLevel ? () => setStep("survey") : undefined}
           >
-            Next
+            {t("common.next")}
           </a>
         </div>
       </div>
@@ -212,10 +213,10 @@ export const ReportFlow = ({
             className={`button button-secondary button-without-arrow ${isSubmitting ? "disabled" : ""}`}
             onClick={isSubmitting ? undefined : handleBack}
           >
-            Back
+            {t("common.back")}
           </a>
           <span className={styles.stepTitle}>
-            Survey ({surveyStep + 1}/{SURVEY_STEP_COUNT})
+            {t("survey.title", { current: surveyStep + 1, total: SURVEY_STEP_COUNT })}
           </span>
         </div>
         <SurveyForm step={surveyStep} value={survey} onChange={setSurvey} />
@@ -230,10 +231,10 @@ export const ReportFlow = ({
             onClick={canAdvance && !isSubmitting ? handleNext : undefined}
           >
             {isSubmitting
-              ? "Submitting..."
+              ? t("common.submitting")
               : isLastSurveyStep
-                ? "Submit Report"
-                : "Next"}
+                ? t("common.submit")
+                : t("common.next")}
           </a>
         </div>
       </div>

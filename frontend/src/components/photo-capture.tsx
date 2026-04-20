@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import imageCompression from "browser-image-compression";
 import { Camera } from "lucide-react";
 import { api } from "../utils/api";
@@ -17,6 +18,7 @@ interface PhotoCaptureProps {
 type UploadState = "idle" | "compressing" | "uploading" | "done" | "saved" | "error";
 
 export const PhotoCapture = ({ onPhotoUploaded }: PhotoCaptureProps) => {
+  const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [state, setState] = useState<UploadState>("idle");
   const [progress, setProgress] = useState(0);
@@ -25,11 +27,9 @@ export const PhotoCapture = ({ onPhotoUploaded }: PhotoCaptureProps) => {
 
   const handleFile = async (file: File) => {
     try {
-      // Preview
       const preview = URL.createObjectURL(file);
       setPreviewUrl(preview);
 
-      // Compress
       setState("compressing");
       const compressed = await imageCompression(file, {
         maxSizeMB: 1,
@@ -37,7 +37,6 @@ export const PhotoCapture = ({ onPhotoUploaded }: PhotoCaptureProps) => {
         useWebWorker: true,
       });
 
-      // Try to upload now if online, otherwise just store the blob
       let photoKey: string | null = null;
 
       if (navigator.onLine) {
@@ -56,7 +55,6 @@ export const PhotoCapture = ({ onPhotoUploaded }: PhotoCaptureProps) => {
 
           photoKey = photo_key;
         } catch {
-          // Upload failed — photo will be uploaded during background sync
           photoKey = null;
         }
       }
@@ -94,17 +92,15 @@ export const PhotoCapture = ({ onPhotoUploaded }: PhotoCaptureProps) => {
             onChange={handleInputChange}
           />
           <Camera size={48} className={styles.captureIcon} />
-          <div className={styles.captureLabel}>Upload a photo</div>
-          <div className={styles.captureHint}>
-            Take a photo of the damaged infrastructure or choose an existing one
-          </div>
+          <div className={styles.captureLabel}>{t("photo.uploadLabel")}</div>
+          <div className={styles.captureHint}>{t("photo.uploadHint")}</div>
           <div className={styles.captureButtons}>
             <a
               role="button"
               className="button button-primary button-without-arrow"
               onClick={() => fileInputRef.current?.click()}
             >
-              Take Photo
+              {t("photo.takePhoto")}
             </a>
             <a
               role="button"
@@ -117,7 +113,7 @@ export const PhotoCapture = ({ onPhotoUploaded }: PhotoCaptureProps) => {
                 }
               }}
             >
-              Choose from Gallery
+              {t("photo.chooseGallery")}
             </a>
           </div>
         </div>
@@ -125,17 +121,19 @@ export const PhotoCapture = ({ onPhotoUploaded }: PhotoCaptureProps) => {
 
       {previewUrl && (
         <div className={styles.preview}>
-          <img src={previewUrl} alt="Captured photo" className={styles.previewImage} />
+          <img src={previewUrl} alt="" className={styles.previewImage} />
         </div>
       )}
 
       {state === "compressing" && (
-        <div className={styles.status}>Compressing image...</div>
+        <div className={styles.status}>{t("photo.compressing")}</div>
       )}
 
       {state === "uploading" && (
         <div className={styles.status}>
-          <div className={styles.progressLabel}>Uploading... {Math.round(progress)}%</div>
+          <div className={styles.progressLabel}>
+            {t("photo.uploading", { progress: Math.round(progress) })}
+          </div>
           <div className={styles.progressBar}>
             <div className={styles.progressFill} style={{ width: `${progress}%` }} />
           </div>
@@ -143,11 +141,11 @@ export const PhotoCapture = ({ onPhotoUploaded }: PhotoCaptureProps) => {
       )}
 
       {state === "done" && (
-        <div className={styles.status} data-testid="photo-uploaded">Photo uploaded</div>
+        <div className={styles.status} data-testid="photo-uploaded">{t("photo.uploaded")}</div>
       )}
 
       {state === "saved" && (
-        <div className={styles.status} data-testid="photo-uploaded">Photo saved — will upload when online</div>
+        <div className={styles.status} data-testid="photo-uploaded">{t("photo.saved")}</div>
       )}
 
       {state === "error" && (
@@ -158,7 +156,7 @@ export const PhotoCapture = ({ onPhotoUploaded }: PhotoCaptureProps) => {
             className="button button-secondary button-without-arrow"
             onClick={handleRetry}
           >
-            Retry
+            {t("photo.retry")}
           </a>
         </div>
       )}
