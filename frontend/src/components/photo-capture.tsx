@@ -44,8 +44,10 @@ export const PhotoCapture = ({ onPhotoUploaded }: PhotoCaptureProps) => {
         try {
           setState("uploading");
           setProgress(0);
+          const contentType = compressed.type || "image/jpeg";
           const { photo_key, upload_url } = await api("/photos/upload", {
             method: "POST",
+            body: JSON.stringify({ content_type: contentType }),
           });
 
           await uploadWithProgress(upload_url, compressed, (pct) => {
@@ -172,7 +174,7 @@ const uploadWithProgress = (
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("PUT", url);
-    xhr.setRequestHeader("Content-Type", "image/jpeg");
+    xhr.setRequestHeader("Content-Type", file.type || "image/jpeg");
 
     xhr.upload.addEventListener("progress", (e) => {
       if (e.lengthComputable) {

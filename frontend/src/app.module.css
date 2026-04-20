@@ -11,3 +11,10 @@
   color: var(--undpds-color-black);
   font-size: 0.8125rem;
 }
+
+.syncBanner {
+  padding: 8px 16px;
+  background: var(--undpds-color-blue-200);
+  color: var(--undpds-color-black);
+  font-size: 0.8125rem;
+}
