@@ -270,7 +270,8 @@ erDiagram
     PENDING_REPORTS {
         string id PK "offline_queue_id"
         string status "pending | syncing | synced | failed"
-        blob photo "compressed JPEG blob"
+        arraybuffer photo "compressed image as ArrayBuffer (not Blob — Firefox IDB blob handles invalidate)"
+        string photo_content_type "image/jpeg, image/png, etc."
         string photo_key "S3 key (set after upload)"
         float latitude
         float longitude
