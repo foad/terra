@@ -7,7 +7,8 @@ export type ReportStatus = "pending" | "syncing" | "synced" | "failed";
 export interface QueuedReport {
   id: string; // offline_queue_id
   status: ReportStatus;
-  photo: Blob | null;
+  photo: ArrayBuffer | null;
+  photoContentType: string | null;
   photoKey: string | null; // set after photo upload succeeds
   latitude: number;
   longitude: number;

@@ -58,7 +58,8 @@ export const ReportFlow = ({
       // Queue to IndexedDB — background sync handles the actual upload
       await reportQueue.add({
         id: crypto.randomUUID(),
-        photo: photo?.blob ?? null,
+        photo: photo?.blob ? await photo.blob.arrayBuffer() : null,
+        photoContentType: photo?.blob?.type ?? null,
         photoKey: photo?.photoKey ?? null,
         latitude,
         longitude,
