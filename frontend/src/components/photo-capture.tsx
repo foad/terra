@@ -5,15 +5,16 @@ import { api } from "../utils/api";
 import styles from "./photo-capture.module.css";
 
 export interface PhotoResult {
-  photoKey: string;
+  photoKey: string | null;
   previewUrl: string;
+  blob: Blob;
 }
 
 interface PhotoCaptureProps {
   onPhotoUploaded: (result: PhotoResult) => void;
 }
 
-type UploadState = "idle" | "compressing" | "uploading" | "done" | "error";
+type UploadState = "idle" | "compressing" | "uploading" | "done" | "saved" | "error";
 
 export const PhotoCapture = ({ onPhotoUploaded }: PhotoCaptureProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -36,20 +37,30 @@ export const PhotoCapture = ({ onPhotoUploaded }: PhotoCaptureProps) => {
         useWebWorker: true,
       });
 
-      // Get presigned URL
-      setState("uploading");
-      setProgress(0);
-      const { photo_key, upload_url } = await api("/photos/upload", {
-        method: "POST",
-      });
+      // Try to upload now if online, otherwise just store the blob
+      let photoKey: string | null = null;
 
-      // Upload to S3
-      await uploadWithProgress(upload_url, compressed, (pct) => {
-        setProgress(pct);
-      });
+      if (navigator.onLine) {
+        try {
+          setState("uploading");
+          setProgress(0);
+          const { photo_key, upload_url } = await api("/photos/upload", {
+            method: "POST",
+          });
 
-      setState("done");
-      onPhotoUploaded({ photoKey: photo_key, previewUrl: preview });
+          await uploadWithProgress(upload_url, compressed, (pct) => {
+            setProgress(pct);
+          });
+
+          photoKey = photo_key;
+        } catch {
+          // Upload failed — photo will be uploaded during background sync
+          photoKey = null;
+        }
+      }
+
+      setState(photoKey ? "done" : "saved");
+      onPhotoUploaded({ photoKey, previewUrl: preview, blob: compressed });
     } catch (err) {
       setState("error");
       setErrorMessage(err instanceof Error ? err.message : "Upload failed");
@@ -131,6 +142,10 @@ export const PhotoCapture = ({ onPhotoUploaded }: PhotoCaptureProps) => {
 
       {state === "done" && (
         <div className={styles.status} data-testid="photo-uploaded">Photo uploaded</div>
+      )}
+
+      {state === "saved" && (
+        <div className={styles.status} data-testid="photo-uploaded">Photo saved — will upload when online</div>
       )}
 
       {state === "error" && (

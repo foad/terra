@@ -1,28 +1,30 @@
-import { CircleCheck } from "lucide-react";
+import { CircleCheck, CloudOff } from "lucide-react";
 import styles from "./submission-confirmation.module.css";
 
 interface SubmissionConfirmationProps {
-  areaReportCount: number;
+  isOnline: boolean;
   onSubmitAnother: () => void;
 }
 
 export const SubmissionConfirmation = ({
-  areaReportCount,
+  isOnline,
   onSubmitAnother,
 }: SubmissionConfirmationProps) => {
   return (
     <div className={styles.container}>
-      <CircleCheck size={56} className={styles.icon} />
-      <h2 className={styles.title}>Report Submitted</h2>
-      <p className={styles.message}>
-        Thank you for your report. Your submission is helping response teams
-        prioritise recovery efforts in your area.
-      </p>
-      {areaReportCount > 1 && (
-        <p className={styles.count}>
-          {areaReportCount} reports have been submitted in your area.
-        </p>
+      {isOnline ? (
+        <CircleCheck size={56} className={styles.icon} />
+      ) : (
+        <CloudOff size={56} className={styles.iconQueued} />
       )}
+      <h2 className={styles.title}>
+        {isOnline ? "Report Submitted" : "Report Queued"}
+      </h2>
+      <p className={styles.message}>
+        {isOnline
+          ? "Thank you for your report. Your submission is helping response teams prioritise recovery efforts in your area."
+          : "Your report has been saved and will be submitted automatically when connectivity returns."}
+      </p>
       <a
         role="button"
         className="button button-primary button-without-arrow"

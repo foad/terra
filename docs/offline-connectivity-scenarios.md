@@ -234,13 +234,15 @@ flowchart TD
     Request[Tile Request] --> SW{Service Worker}
     SW -->|App shell| Precache[Precache: Cache Only]
     SW -->|PMTiles range| PMCache["CacheFirst: 206→200 wrap, keyed by URL+Range"]
-    SW -->|OSM raster| OSMCache[CacheFirst: 30 day TTL]
-    SW -->|API GET /reports| APICache[NetworkFirst: 5 min TTL]
-    SW -->|API POST| NoCache[Network Only → IndexedDB fallback]
+    SW -->|OSM raster| OSMCache["CacheFirst: transparent PNG fallback offline"]
+    SW -->|UNDP assets| UNDPCache[CacheFirst]
+    SW -->|API requests| PassThrough["Not intercepted (cross-origin CORS)"]
 
-    Reconnect[Online Event] --> Verify[HEAD /health]
-    Verify -->|Verified| Reload[Reload map sources]
-    Reload --> Repaint[MapLibre triggerRepaint]
+    API["API offline handling"] --> IDB["IndexedDB queue (submissions)"]
+    API --> Connectivity["useConnectivity hook (health probe)"]
+
+    Reconnect[Online Event] --> Verify[GET /health]
+    Verify -->|Verified| Reload[Reload map sources + process sync queue]
 ```
 
 ### PMTiles Caching Detail

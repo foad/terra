@@ -26,7 +26,7 @@ export const useConnectivity = () => {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), VERIFY_TIMEOUT);
       const res = await fetch(HEALTH_URL, {
-        method: "HEAD",
+        method: "GET",
         signal: controller.signal,
         cache: "no-store",
       });

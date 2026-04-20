@@ -14,7 +14,7 @@ import {
 } from "./survey-form";
 import type { SurveyData } from "./survey-form";
 import { SubmissionConfirmation } from "./submission-confirmation";
-import { api } from "../utils/api";
+import { reportQueue } from "../utils/report-queue";
 import styles from "./report-flow.module.css";
 
 type Step = "location" | "photo" | "damage" | "survey" | "submitting" | "confirmation";
@@ -38,7 +38,6 @@ export const ReportFlow = ({
   const [damageLevel, setDamageLevel] = useState<DamageLevel | null>(null);
   const [survey, setSurvey] = useState<SurveyData>(EMPTY_SURVEY);
   const [surveyStep, setSurveyStep] = useState(0);
-  const [areaReportCount, setAreaReportCount] = useState(0);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleBuildingSelect = useCallback(
@@ -56,31 +55,23 @@ export const ReportFlow = ({
     setSubmitError(null);
 
     try {
-      const result = await api("/reports", {
-        method: "POST",
-        body: JSON.stringify({
-          latitude,
-          longitude,
-          s2_id: selectedBuilding?.s2Id ?? null,
-          location_description: locationFallback || null,
-          damage_level: damageLevel,
-          photo_key: photo?.photoKey ?? null,
-          infrastructure_type: survey.infrastructureType,
-          infrastructure_type_other: survey.infrastructureTypeOther || null,
-          infrastructure_name: survey.infrastructureName || null,
-          crisis_nature: survey.crisisNature,
-          debris_present: survey.debrisPresent,
-          electricity_status: survey.electricityStatus || null,
-          health_status: survey.healthStatus || null,
-          pressing_needs: survey.pressingNeeds,
-          pressing_needs_other: survey.pressingNeedsOther || null,
-        }),
+      // Queue to IndexedDB — background sync handles the actual upload
+      await reportQueue.add({
+        id: crypto.randomUUID(),
+        photo: photo?.blob ?? null,
+        photoKey: photo?.photoKey ?? null,
+        latitude,
+        longitude,
+        s2Id: selectedBuilding?.s2Id ?? null,
+        locationDescription: locationFallback || null,
+        damageLevel,
+        surveyData: { ...survey },
+        createdAt: new Date().toISOString(),
       });
 
-      setAreaReportCount(result.area_report_count);
       setStep("confirmation");
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "Submission failed");
+      setSubmitError(err instanceof Error ? err.message : "Failed to queue report");
       setStep("survey");
       setSurveyStep(SURVEY_STEP_COUNT - 1);
     }
@@ -94,7 +85,6 @@ export const ReportFlow = ({
     setDamageLevel(null);
     setSurvey(EMPTY_SURVEY);
     setSurveyStep(0);
-    setAreaReportCount(0);
     setSubmitError(null);
   };
 
@@ -253,7 +243,7 @@ export const ReportFlow = ({
     return (
       <div className={styles.step} data-testid="step-confirmation">
         <SubmissionConfirmation
-          areaReportCount={areaReportCount}
+          isOnline={navigator.onLine}
           onSubmitAnother={handleSubmitAnother}
         />
       </div>
