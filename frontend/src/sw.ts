@@ -1,44 +1,59 @@
 /// <reference lib="webworker" />
 import { precacheAndRoute } from "workbox-precaching";
 import { registerRoute } from "workbox-routing";
-import { CacheFirst, NetworkFirst } from "workbox-strategies";
-import { ExpirationPlugin } from "workbox-expiration";
-import { CacheableResponsePlugin } from "workbox-cacheable-response";
 
 declare let self: ServiceWorkerGlobalScope;
 
 // Precache app shell (manifest injected by VitePWA)
 precacheAndRoute(self.__WB_MANIFEST);
 
-// OSM raster tiles — CacheFirst
+// OSM raster tiles — CacheFirst with silent offline fallback
+const OSM_CACHE = "osm-tiles-cache";
+
 registerRoute(
   ({ url }) => url.hostname === "tile.openstreetmap.org",
-  new CacheFirst({
-    cacheName: "osm-tiles-cache",
-    plugins: [
-      new CacheableResponsePlugin({ statuses: [0, 200] }),
-      new ExpirationPlugin({
-        maxAgeSeconds: 60 * 60 * 24 * 30,
-        maxEntries: 2000,
-      }),
-    ],
-  }),
+  async ({ request }) => {
+    const cache = await caches.open(OSM_CACHE);
+    const cached = await cache.match(request);
+    if (cached) return cached;
+
+    try {
+      const response = await fetch(request);
+      if (response.ok) {
+        await cache.put(request, response.clone());
+      }
+      return response;
+    } catch {
+      // Return transparent 1x1 PNG instead of failing noisily
+      return new Response(
+        Uint8Array.from(atob("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQABNjN9GQAAAABJRleErkJggg=="), c => c.charCodeAt(0)),
+        { status: 200, headers: { "Content-Type": "image/png" } },
+      );
+    }
+  },
 );
 
-// UNDP design system assets
+// UNDP design system assets — CacheFirst
+const UNDP_CACHE = "undp-assets-cache";
+
 registerRoute(
   ({ url }) =>
     url.hostname === "cdn.jsdelivr.net" && url.pathname.includes("@undp/"),
-  new CacheFirst({
-    cacheName: "undp-assets-cache",
-    plugins: [
-      new CacheableResponsePlugin({ statuses: [0, 200] }),
-      new ExpirationPlugin({
-        maxAgeSeconds: 60 * 60 * 24 * 90,
-        maxEntries: 100,
-      }),
-    ],
-  }),
+  async ({ request }) => {
+    const cache = await caches.open(UNDP_CACHE);
+    const cached = await cache.match(request);
+    if (cached) return cached;
+
+    try {
+      const response = await fetch(request);
+      if (response.ok) {
+        await cache.put(request, response.clone());
+      }
+      return response;
+    } catch {
+      return new Response("", { status: 503 });
+    }
+  },
 );
 
 // PMTiles range requests — custom handler
@@ -107,36 +122,5 @@ registerRoute(
   },
 );
 
-// API GET /reports — NetworkFirst with timeout
-registerRoute(
-  ({ url, request }) =>
-    url.pathname.includes("/reports") && request.method === "GET",
-  new NetworkFirst({
-    cacheName: "api-reports-cache",
-    networkTimeoutSeconds: 10,
-    plugins: [
-      new CacheableResponsePlugin({ statuses: [0, 200] }),
-      new ExpirationPlugin({
-        maxAgeSeconds: 60 * 5,
-        maxEntries: 50,
-      }),
-    ],
-  }),
-);
-
-// API GET /health — NetworkFirst
-registerRoute(
-  ({ url, request }) =>
-    url.pathname.endsWith("/health") && request.method === "GET",
-  new NetworkFirst({
-    cacheName: "api-health-cache",
-    networkTimeoutSeconds: 5,
-    plugins: [
-      new CacheableResponsePlugin({ statuses: [0, 200] }),
-      new ExpirationPlugin({
-        maxAgeSeconds: 60,
-        maxEntries: 1,
-      }),
-    ],
-  }),
-);
+// API requests are cross-origin — don't intercept them in the SW.
+// The connectivity hook and report queue handle offline gracefully.

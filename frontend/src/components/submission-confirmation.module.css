@@ -13,6 +13,10 @@
   color: var(--undpds-color-green);
 }
 
+.iconQueued {
+  color: var(--undpds-color-yellow-600);
+}
+
 .title {
   font-size: 1.5rem;
   font-weight: 700;
@@ -24,10 +28,4 @@
   color: var(--undpds-color-gray-600);
   line-height: 1.5;
   max-width: 320px;
-}
-
-.count {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--undpds-color-blue-600);
 }
