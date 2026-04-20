@@ -1,0 +1,143 @@
+{
+  "app": {
+    "title": "TERRA",
+    "subtitle": "Evaluación de daños en crisis",
+    "offline": "Está sin conexión. Los informes se sincronizarán cuando se conecte. Algunas áreas del mapa pueden no estar disponibles.",
+    "storageLimited": "El almacenamiento sin conexión puede ser limitado. Los informes en cola podrían perderse si el almacenamiento está lleno.",
+    "syncing": "Sincronizando {{count}} informe...",
+    "syncing_plural": "Sincronizando {{count}} informes...",
+    "syncFailed": "{{count}} informe no se pudo sincronizar.",
+    "syncFailed_plural": "{{count}} informes no se pudieron sincronizar."
+  },
+  "common": {
+    "next": "Siguiente",
+    "back": "Atrás",
+    "submit": "Enviar informe",
+    "submitting": "Enviando...",
+    "yes": "Sí",
+    "no": "No",
+    "from": "Desde",
+    "to": "Hasta",
+    "clearAll": "Borrar todo",
+    "otherSpecify": "Otro, especifique:"
+  },
+  "location": {
+    "selectBuilding": "Toque un edificio en el mapa para seleccionarlo",
+    "describeLocation": "O describa la ubicación:",
+    "descriptionPlaceholder": "ej. La escuela cerca del mercado central",
+    "selectedBuilding": "Edificio seleccionado"
+  },
+  "photo": {
+    "title": "Tomar una foto",
+    "uploadLabel": "Subir una foto",
+    "uploadHint": "Tome una foto de la infraestructura dañada o elija una existente",
+    "takePhoto": "Tomar foto",
+    "chooseGallery": "Elegir de la galería",
+    "compressing": "Comprimiendo imagen...",
+    "uploading": "Subiendo... {{progress}}%",
+    "uploaded": "Foto subida",
+    "saved": "Foto guardada — se subirá cuando esté en línea",
+    "retry": "Reintentar"
+  },
+  "damage": {
+    "title": "Evaluación de daños",
+    "label": "Nivel de daño",
+    "minimal": "Daño mínimo / Sin daño",
+    "minimalDesc": "Estructuralmente sólido y funcional, con solo daños cosméticos o sin daños visibles",
+    "partial": "Parcialmente dañado",
+    "partialDesc": "Reparable, y utilizable con precaución",
+    "complete": "Completamente dañado",
+    "completeDesc": "Estructuralmente inseguro o destruido",
+    "aiConfidence": "IA: {{confidence}}%"
+  },
+  "survey": {
+    "title": "Encuesta ({{current}}/{{total}})",
+    "infrastructureType": "Tipo de infraestructura:",
+    "infrastructureTypes": {
+      "residential": "Infraestructura residencial (casas y apartamentos)",
+      "commercial": "Infraestructura comercial (mercados, centros comerciales, tiendas, hoteles, bancos, industrias, etc.)",
+      "government": "Edificio gubernamental (edificios administrativos, tribunales, comisarías, estaciones de bomberos, etc.)",
+      "utility": "Infraestructura de servicios públicos (bombas de agua, plantas de energía, plantas de tratamiento de residuos, etc.)",
+      "transport": "Infraestructura de transporte y comunicación (carreteras, torres de telecomunicaciones, puentes, estación de tren, estación de autobuses, etc.)",
+      "community": "Infraestructura comunitaria (escuelas, hospitales, salones comunitarios, baños públicos, etc.)",
+      "publicSpaces": "Espacios públicos / Infraestructura recreativa (estadios, parques infantiles, edificios religiosos, etc.)"
+    },
+    "infrastructureDetails": "Proporcione más detalles sobre la naturaleza de la infraestructura, incluyendo el nombre de la infraestructura:",
+    "infrastructureNamePlaceholder": "ej. Escuela Primaria Al-Noor",
+    "crisisNature": "Naturaleza de la crisis:",
+    "crisisGroups": {
+      "natural": "Amenazas naturales",
+      "technological": "Amenazas tecnológicas/industriales",
+      "humanMade": "Crisis provocadas por el hombre"
+    },
+    "crisisTypes": {
+      "earthquake": "Terremoto",
+      "flood": "Inundación",
+      "tsunami": "Tsunami",
+      "hurricane": "Huracán/Ciclón",
+      "wildfire": "Incendio forestal",
+      "explosion": "Explosión",
+      "chemical": "Incidente químico",
+      "conflict": "Conflicto",
+      "civilUnrest": "Disturbios civiles"
+    },
+    "debris": "¿Hay escombros que requieran limpieza en o cerca del sitio de la infraestructura?",
+    "electricity": "¿Cuál es la condición actual de la infraestructura eléctrica en su comunidad después de la crisis?",
+    "electricityOptions": {
+      "none": "No se observan daños",
+      "minor": "Daños menores (interrupciones del servicio pero rápidamente reparables)",
+      "moderate": "Daños moderados (cortes parciales que requieren reparaciones)",
+      "severe": "Daños graves (infraestructura principal dañada, cortes prolongados)",
+      "destroyed": "Completamente destruido (ninguna infraestructura eléctrica en funcionamiento)",
+      "unknown": "Desconocido / no se puede evaluar"
+    },
+    "health": "¿Cómo calificaría el funcionamiento general de los servicios de salud en su comunidad desde el evento?",
+    "healthOptions": {
+      "functional": "Totalmente funcional",
+      "partial": "Parcialmente funcional",
+      "disrupted": "En gran parte interrumpido",
+      "notFunctioning": "No funciona en absoluto",
+      "unknown": "Desconocido"
+    },
+    "pressingNeeds": "¿Cuáles son las necesidades más urgentes?",
+    "pressingNeedOptions": {
+      "food": "Asistencia alimentaria y agua potable segura",
+      "cash": "Asistencia en efectivo o financiera",
+      "healthcare": "Acceso a atención médica y medicamentos esenciales",
+      "shelter": "Refugio, reparación de vivienda o alojamiento temporal",
+      "livelihoods": "Restauración de medios de vida o fuentes de ingresos",
+      "wash": "Agua, saneamiento e higiene (baños, instalaciones de lavado)",
+      "services": "Restauración de servicios básicos e infraestructura (electricidad, carreteras, escuelas)",
+      "protection": "Servicios de protección y apoyo psicosocial",
+      "localSupport": "Apoyo de autoridades locales y organizaciones comunitarias"
+    }
+  },
+  "confirmation": {
+    "submitted": "Informe enviado",
+    "queued": "Informe en cola",
+    "submittedMessage": "Gracias por su informe. Su contribución está ayudando a los equipos de respuesta a priorizar los esfuerzos de recuperación en su área.",
+    "queuedMessage": "Su informe ha sido guardado y se enviará automáticamente cuando se restablezca la conectividad.",
+    "submitAnother": "Enviar otro informe"
+  },
+  "dashboard": {
+    "title": "Panel de control",
+    "loading": "Cargando...",
+    "reportCount": "{{count}} informes",
+    "filters": "Filtros",
+    "damageLevel": "Nivel de daño",
+    "infrastructureType": "Tipo de infraestructura",
+    "allTypes": "Todos los tipos",
+    "selectAll": "Seleccionar todo",
+    "deselectAll": "Deseleccionar todo",
+    "crisisType": "Tipo de crisis",
+    "allCrisisTypes": "Todos los tipos de crisis",
+    "dateRange": "Rango de fechas",
+    "reportDetail": "Detalle del informe",
+    "infrastructure": "Infraestructura",
+    "name": "Nombre",
+    "crisis": "Crisis",
+    "submitted": "Enviado",
+    "versions": "{{count}} informe(s) para esta ubicación",
+    "locationLabel": "Ubicación"
+  }
+}

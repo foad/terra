@@ -1,0 +1,143 @@
+{
+  "app": {
+    "title": "TERRA",
+    "subtitle": "危机损害评估",
+    "offline": "您处于离线状态。报告将在连接后同步。部分地图区域可能不可用。",
+    "storageLimited": "离线存储空间可能有限。离线排队的报告可能在存储空间满时丢失。",
+    "syncing": "正在同步 {{count}} 份报告...",
+    "syncing_plural": "正在同步 {{count}} 份报告...",
+    "syncFailed": "{{count}} 份报告同步失败。",
+    "syncFailed_plural": "{{count}} 份报告同步失败。"
+  },
+  "common": {
+    "next": "下一步",
+    "back": "返回",
+    "submit": "提交报告",
+    "submitting": "正在提交...",
+    "yes": "是",
+    "no": "否",
+    "from": "从",
+    "to": "至",
+    "clearAll": "清除全部",
+    "otherSpecify": "其他，请说明："
+  },
+  "location": {
+    "selectBuilding": "点击地图上的建筑物进行选择",
+    "describeLocation": "或描述位置：",
+    "descriptionPlaceholder": "例如：中央市场附近的学校",
+    "selectedBuilding": "已选建筑"
+  },
+  "photo": {
+    "title": "拍摄照片",
+    "uploadLabel": "上传照片",
+    "uploadHint": "拍摄受损基础设施的照片或选择现有照片",
+    "takePhoto": "拍摄照片",
+    "chooseGallery": "从相册选择",
+    "compressing": "正在压缩图片...",
+    "uploading": "正在上传... {{progress}}%",
+    "uploaded": "照片已上传",
+    "saved": "照片已保存——将在联网后上传",
+    "retry": "重试"
+  },
+  "damage": {
+    "title": "损害评估",
+    "label": "损害程度",
+    "minimal": "轻微/无损害",
+    "minimalDesc": "结构完好且功能正常，仅有外观或无可见损害",
+    "partial": "部分损坏",
+    "partialDesc": "可修复，谨慎使用仍可正常使用",
+    "complete": "完全损坏",
+    "completeDesc": "结构不安全或已毁坏",
+    "aiConfidence": "AI：{{confidence}}%"
+  },
+  "survey": {
+    "title": "调查问卷 ({{current}}/{{total}})",
+    "infrastructureType": "基础设施类型：",
+    "infrastructureTypes": {
+      "residential": "住宅基础设施（房屋和公寓）",
+      "commercial": "商业基础设施（市场、商场、商店、酒店、银行、工业等）",
+      "government": "政府建筑（行政大楼、法院、警察局、消防站等）",
+      "utility": "公用事业基础设施（水泵、发电厂、废物处理厂等）",
+      "transport": "交通和通信基础设施（道路、通信塔、桥梁、火车站、汽车站等）",
+      "community": "社区基础设施（学校、医院、社区大厅、公共厕所等）",
+      "publicSpaces": "公共空间/休闲基础设施（体育场、游乐场、宗教建筑等）"
+    },
+    "infrastructureDetails": "请提供有关基础设施性质的更多详细信息，包括基础设施的名称：",
+    "infrastructureNamePlaceholder": "例如：光明小学",
+    "crisisNature": "危机性质：",
+    "crisisGroups": {
+      "natural": "自然灾害",
+      "technological": "技术/工业灾害",
+      "humanMade": "人为危机"
+    },
+    "crisisTypes": {
+      "earthquake": "地震",
+      "flood": "洪水",
+      "tsunami": "海啸",
+      "hurricane": "飓风/台风",
+      "wildfire": "野火",
+      "explosion": "爆炸",
+      "chemical": "化学事故",
+      "conflict": "冲突",
+      "civilUnrest": "社会动荡"
+    },
+    "debris": "基础设施现场或附近是否有需要清理的废墟？",
+    "electricity": "危机发生后，您所在社区的电力基础设施目前状况如何？",
+    "electricityOptions": {
+      "none": "未观察到损害",
+      "minor": "轻微损害（服务中断但可快速修复）",
+      "moderate": "中等损害（部分停电，需要维修）",
+      "severe": "严重损害（主要基础设施受损，长时间停电）",
+      "destroyed": "完全毁坏（无电力基础设施运行）",
+      "unknown": "未知/无法评估"
+    },
+    "health": "自事件发生以来，您如何评价社区卫生服务的整体运行状况？",
+    "healthOptions": {
+      "functional": "完全正常运行",
+      "partial": "部分运行",
+      "disrupted": "基本中断",
+      "notFunctioning": "完全停止运行",
+      "unknown": "未知"
+    },
+    "pressingNeeds": "最紧迫的需求是什么？",
+    "pressingNeedOptions": {
+      "food": "食品援助和安全饮用水",
+      "cash": "现金或财务援助",
+      "healthcare": "获得医疗保健和基本药物",
+      "shelter": "住所、房屋修缮或临时住所",
+      "livelihoods": "恢复生计或收入来源",
+      "wash": "水、卫生和个人卫生（厕所、洗涤设施）",
+      "services": "恢复基本服务和基础设施（电力、道路、学校）",
+      "protection": "保护服务和心理社会支持",
+      "localSupport": "地方当局和社区组织的支持"
+    }
+  },
+  "confirmation": {
+    "submitted": "报告已提交",
+    "queued": "报告已排队",
+    "submittedMessage": "感谢您的报告。您的提交正在帮助响应团队确定您所在地区的恢复工作优先级。",
+    "queuedMessage": "您的报告已保存，将在恢复连接后自动提交。",
+    "submitAnother": "提交另一份报告"
+  },
+  "dashboard": {
+    "title": "仪表板",
+    "loading": "加载中...",
+    "reportCount": "{{count}} 份报告",
+    "filters": "筛选条件",
+    "damageLevel": "损害程度",
+    "infrastructureType": "基础设施类型",
+    "allTypes": "所有类型",
+    "selectAll": "全选",
+    "deselectAll": "取消全选",
+    "crisisType": "危机类型",
+    "allCrisisTypes": "所有危机类型",
+    "dateRange": "日期范围",
+    "reportDetail": "报告详情",
+    "infrastructure": "基础设施",
+    "name": "名称",
+    "crisis": "危机",
+    "submitted": "提交时间",
+    "versions": "此位置有 {{count}} 份报告",
+    "locationLabel": "位置"
+  }
+}
