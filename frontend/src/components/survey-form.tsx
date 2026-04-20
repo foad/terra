@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import styles from "./survey-form.module.css";
 
 export interface SurveyData {
@@ -24,49 +25,62 @@ export const EMPTY_SURVEY: SurveyData = {
   pressingNeedsOther: "",
 };
 
+// Values stored in the database (always English)
 const INFRASTRUCTURE_TYPES = [
-  "Residential Infrastructure (Houses and apartments)",
-  "Commercial Infrastructure (Markets, malls, shops, hotels, banks, industries, etc.)",
-  "Government Building (Administrative buildings, courthouses, police stations, fire stations, etc.)",
-  "Utility Infrastructure (Water pumps, power plants, waste treatment plants, etc.)",
-  "Transport and Communication Infrastructure (Roads, cell towers, bridges, railway station, bus station, etc.)",
-  "Community Infrastructure (Schools, hospitals, community halls, public toilets, etc.)",
-  "Public spaces/Recreation Infrastructure (stadiums, playgrounds, religious buildings, etc.)",
+  { key: "residential", value: "Residential Infrastructure (Houses and apartments)" },
+  { key: "commercial", value: "Commercial Infrastructure (Markets, malls, shops, hotels, banks, industries, etc.)" },
+  { key: "government", value: "Government Building (Administrative buildings, courthouses, police stations, fire stations, etc.)" },
+  { key: "utility", value: "Utility Infrastructure (Water pumps, power plants, waste treatment plants, etc.)" },
+  { key: "transport", value: "Transport and Communication Infrastructure (Roads, cell towers, bridges, railway station, bus station, etc.)" },
+  { key: "community", value: "Community Infrastructure (Schools, hospitals, community halls, public toilets, etc.)" },
+  { key: "publicSpaces", value: "Public spaces/Recreation Infrastructure (stadiums, playgrounds, religious buildings, etc.)" },
 ];
 
-const CRISIS_NATURES = [
-  { group: "Natural hazards", options: ["Earthquake", "Flood", "Tsunami", "Hurricane/Cyclone", "Wildfire"] },
-  { group: "Technological/industrial hazards", options: ["Explosion", "Chemical incident"] },
-  { group: "Human-made crises", options: ["Conflict", "Civil unrest"] },
+const CRISIS_GROUPS = [
+  { key: "natural", types: [
+    { key: "earthquake", value: "Earthquake" },
+    { key: "flood", value: "Flood" },
+    { key: "tsunami", value: "Tsunami" },
+    { key: "hurricane", value: "Hurricane/Cyclone" },
+    { key: "wildfire", value: "Wildfire" },
+  ]},
+  { key: "technological", types: [
+    { key: "explosion", value: "Explosion" },
+    { key: "chemical", value: "Chemical incident" },
+  ]},
+  { key: "humanMade", types: [
+    { key: "conflict", value: "Conflict" },
+    { key: "civilUnrest", value: "Civil unrest" },
+  ]},
 ];
 
 const ELECTRICITY_OPTIONS = [
-  "No damage observed",
-  "Minor damage (service disruptions but quickly repairable)",
-  "Moderate damage (partial outages requiring repairs)",
-  "Severe damage (major infrastructure damaged, prolonged outages)",
-  "Completely destroyed (no electricity infrastructure functioning)",
-  "Unknown/cannot be assessed",
+  { key: "none", value: "No damage observed" },
+  { key: "minor", value: "Minor damage (service disruptions but quickly repairable)" },
+  { key: "moderate", value: "Moderate damage (partial outages requiring repairs)" },
+  { key: "severe", value: "Severe damage (major infrastructure damaged, prolonged outages)" },
+  { key: "destroyed", value: "Completely destroyed (no electricity infrastructure functioning)" },
+  { key: "unknown", value: "Unknown/cannot be assessed" },
 ];
 
 const HEALTH_OPTIONS = [
-  "Fully functional",
-  "Partially functional",
-  "Largely disrupted",
-  "Not functioning at all",
-  "Unknown",
+  { key: "functional", value: "Fully functional" },
+  { key: "partial", value: "Partially functional" },
+  { key: "disrupted", value: "Largely disrupted" },
+  { key: "notFunctioning", value: "Not functioning at all" },
+  { key: "unknown", value: "Unknown" },
 ];
 
 const PRESSING_NEEDS = [
-  "Food assistance and safe drinking water",
-  "Cash or financial assistance",
-  "Access to healthcare and essential medicines",
-  "Shelter, housing repair, or temporary accommodation",
-  "Restoration of livelihoods or income sources",
-  "Water, sanitation, and hygiene (toilets, washing facilities)",
-  "Restoration of basic services and infrastructure (electricity, roads, schools)",
-  "Protection services and psychosocial support",
-  "Support from local authorities and community organizations",
+  { key: "food", value: "Food assistance and safe drinking water" },
+  { key: "cash", value: "Cash or financial assistance" },
+  { key: "healthcare", value: "Access to healthcare and essential medicines" },
+  { key: "shelter", value: "Shelter, housing repair, or temporary accommodation" },
+  { key: "livelihoods", value: "Restoration of livelihoods or income sources" },
+  { key: "wash", value: "Water, sanitation, and hygiene (toilets, washing facilities)" },
+  { key: "services", value: "Restoration of basic services and infrastructure (electricity, roads, schools)" },
+  { key: "protection", value: "Protection services and psychosocial support" },
+  { key: "localSupport", value: "Support from local authorities and community organizations" },
 ];
 
 export const SURVEY_STEP_COUNT = 7;
@@ -74,7 +88,7 @@ export const SURVEY_STEP_COUNT = 7;
 export const isSurveyStepComplete = (step: number, data: SurveyData): boolean => {
   switch (step) {
     case 0: return data.infrastructureType.length > 0;
-    case 1: return true; // name is optional
+    case 1: return true;
     case 2: return data.crisisNature.length > 0;
     case 3: return data.debrisPresent !== null;
     case 4: return data.electricityStatus !== "";
@@ -91,6 +105,8 @@ interface SurveyFormProps {
 }
 
 export const SurveyForm = ({ step, value, onChange }: SurveyFormProps) => {
+  const { t } = useTranslation();
+
   const toggleMultiSelect = (field: keyof SurveyData, option: string) => {
     const current = value[field] as string[];
     const updated = current.includes(option)
@@ -102,17 +118,19 @@ export const SurveyForm = ({ step, value, onChange }: SurveyFormProps) => {
   if (step === 0) {
     return (
       <div className={styles.container} data-testid="survey-step-0">
-        <h2 className={styles.question}>Type of infrastructure:</h2>
+        <h2 className={styles.question}>{t("survey.infrastructureType")}</h2>
         <div className={styles.options}>
           {INFRASTRUCTURE_TYPES.map((type) => (
-            <div className="form-check" key={type}>
+            <div className="form-check" key={type.key}>
               <input
                 type="checkbox"
-                id={`infra-${type}`}
-                checked={value.infrastructureType.includes(type)}
-                onChange={() => toggleMultiSelect("infrastructureType", type)}
+                id={`infra-${type.value}`}
+                checked={value.infrastructureType.includes(type.value)}
+                onChange={() => toggleMultiSelect("infrastructureType", type.value)}
               />
-              <label htmlFor={`infra-${type}`}>{type}</label>
+              <label htmlFor={`infra-${type.value}`}>
+                {t(`survey.infrastructureTypes.${type.key}`)}
+              </label>
             </div>
           ))}
           <div className="form-check">
@@ -122,12 +140,11 @@ export const SurveyForm = ({ step, value, onChange }: SurveyFormProps) => {
               checked={value.infrastructureType.includes("Other")}
               onChange={() => toggleMultiSelect("infrastructureType", "Other")}
             />
-            <label htmlFor="infra-other">Other, please specify:</label>
+            <label htmlFor="infra-other">{t("common.otherSpecify")}</label>
           </div>
           {value.infrastructureType.includes("Other") && (
             <input
               type="text"
-              placeholder="Specify other infrastructure type"
               value={value.infrastructureTypeOther}
               onChange={(e) => onChange({ ...value, infrastructureTypeOther: e.target.value })}
             />
@@ -140,14 +157,12 @@ export const SurveyForm = ({ step, value, onChange }: SurveyFormProps) => {
   if (step === 1) {
     return (
       <div className={styles.container} data-testid="survey-step-1">
-        <h2 className={styles.question}>
-          Provide more details on the nature of the infrastructure, including the name of the infrastructure:
-        </h2>
+        <h2 className={styles.question}>{t("survey.infrastructureDetails")}</h2>
         <div className={styles.options}>
           <input
             type="text"
             id="infra-name"
-            placeholder="e.g. Al-Noor Primary School"
+            placeholder={t("survey.infrastructureNamePlaceholder")}
             value={value.infrastructureName}
             onChange={(e) => onChange({ ...value, infrastructureName: e.target.value })}
           />
@@ -159,20 +174,24 @@ export const SurveyForm = ({ step, value, onChange }: SurveyFormProps) => {
   if (step === 2) {
     return (
       <div className={styles.container} data-testid="survey-step-2">
-        <h2 className={styles.question}>Nature of the crisis:</h2>
+        <h2 className={styles.question}>{t("survey.crisisNature")}</h2>
         <div className={styles.options}>
-          {CRISIS_NATURES.map((group) => (
-            <div key={group.group} className={styles.optionGroup}>
-              <div className={styles.optionGroupLabel}>{group.group}</div>
-              {group.options.map((option) => (
-                <div className="form-check" key={option}>
+          {CRISIS_GROUPS.map((group) => (
+            <div key={group.key} className={styles.optionGroup}>
+              <div className={styles.optionGroupLabel}>
+                {t(`survey.crisisGroups.${group.key}`)}
+              </div>
+              {group.types.map((type) => (
+                <div className="form-check" key={type.key}>
                   <input
                     type="checkbox"
-                    id={`crisis-${option}`}
-                    checked={value.crisisNature.includes(option)}
-                    onChange={() => toggleMultiSelect("crisisNature", option)}
+                    id={`crisis-${type.value}`}
+                    checked={value.crisisNature.includes(type.value)}
+                    onChange={() => toggleMultiSelect("crisisNature", type.value)}
                   />
-                  <label htmlFor={`crisis-${option}`}>{option}</label>
+                  <label htmlFor={`crisis-${type.value}`}>
+                    {t(`survey.crisisTypes.${type.key}`)}
+                  </label>
                 </div>
               ))}
             </div>
@@ -185,9 +204,7 @@ export const SurveyForm = ({ step, value, onChange }: SurveyFormProps) => {
   if (step === 3) {
     return (
       <div className={styles.container} data-testid="survey-step-3">
-        <h2 className={styles.question}>
-          Is there any debris that requires clearing on or near the infrastructure site?
-        </h2>
+        <h2 className={styles.question}>{t("survey.debris")}</h2>
         <div className={styles.options}>
           <div className="form-check">
             <input
@@ -197,7 +214,7 @@ export const SurveyForm = ({ step, value, onChange }: SurveyFormProps) => {
               checked={value.debrisPresent === true}
               onChange={() => onChange({ ...value, debrisPresent: true })}
             />
-            <label htmlFor="debris-yes">Yes</label>
+            <label htmlFor="debris-yes">{t("common.yes")}</label>
           </div>
           <div className="form-check">
             <input
@@ -207,7 +224,7 @@ export const SurveyForm = ({ step, value, onChange }: SurveyFormProps) => {
               checked={value.debrisPresent === false}
               onChange={() => onChange({ ...value, debrisPresent: false })}
             />
-            <label htmlFor="debris-no">No</label>
+            <label htmlFor="debris-no">{t("common.no")}</label>
           </div>
         </div>
       </div>
@@ -217,20 +234,20 @@ export const SurveyForm = ({ step, value, onChange }: SurveyFormProps) => {
   if (step === 4) {
     return (
       <div className={styles.container} data-testid="survey-step-4">
-        <h2 className={styles.question}>
-          What is the current condition of electricity infrastructure in your community following the crisis?
-        </h2>
+        <h2 className={styles.question}>{t("survey.electricity")}</h2>
         <div className={styles.options}>
           {ELECTRICITY_OPTIONS.map((option) => (
-            <div className="form-check" key={option}>
+            <div className="form-check" key={option.key}>
               <input
                 type="radio"
-                id={`elec-${option}`}
+                id={`elec-${option.value}`}
                 name="electricity"
-                checked={value.electricityStatus === option}
-                onChange={() => onChange({ ...value, electricityStatus: option })}
+                checked={value.electricityStatus === option.value}
+                onChange={() => onChange({ ...value, electricityStatus: option.value })}
               />
-              <label htmlFor={`elec-${option}`}>{option}</label>
+              <label htmlFor={`elec-${option.value}`}>
+                {t(`survey.electricityOptions.${option.key}`)}
+              </label>
             </div>
           ))}
         </div>
@@ -241,20 +258,20 @@ export const SurveyForm = ({ step, value, onChange }: SurveyFormProps) => {
   if (step === 5) {
     return (
       <div className={styles.container} data-testid="survey-step-5">
-        <h2 className={styles.question}>
-          How would you rate the overall functioning of health services in your community since the event?
-        </h2>
+        <h2 className={styles.question}>{t("survey.health")}</h2>
         <div className={styles.options}>
           {HEALTH_OPTIONS.map((option) => (
-            <div className="form-check" key={option}>
+            <div className="form-check" key={option.key}>
               <input
                 type="radio"
-                id={`health-${option}`}
+                id={`health-${option.value}`}
                 name="health"
-                checked={value.healthStatus === option}
-                onChange={() => onChange({ ...value, healthStatus: option })}
+                checked={value.healthStatus === option.value}
+                onChange={() => onChange({ ...value, healthStatus: option.value })}
               />
-              <label htmlFor={`health-${option}`}>{option}</label>
+              <label htmlFor={`health-${option.value}`}>
+                {t(`survey.healthOptions.${option.key}`)}
+              </label>
             </div>
           ))}
         </div>
@@ -265,17 +282,19 @@ export const SurveyForm = ({ step, value, onChange }: SurveyFormProps) => {
   if (step === 6) {
     return (
       <div className={styles.container} data-testid="survey-step-6">
-        <h2 className={styles.question}>What are the most pressing needs?</h2>
+        <h2 className={styles.question}>{t("survey.pressingNeeds")}</h2>
         <div className={styles.options}>
           {PRESSING_NEEDS.map((need) => (
-            <div className="form-check" key={need}>
+            <div className="form-check" key={need.key}>
               <input
                 type="checkbox"
-                id={`need-${need}`}
-                checked={value.pressingNeeds.includes(need)}
-                onChange={() => toggleMultiSelect("pressingNeeds", need)}
+                id={`need-${need.value}`}
+                checked={value.pressingNeeds.includes(need.value)}
+                onChange={() => toggleMultiSelect("pressingNeeds", need.value)}
               />
-              <label htmlFor={`need-${need}`}>{need}</label>
+              <label htmlFor={`need-${need.value}`}>
+                {t(`survey.pressingNeedOptions.${need.key}`)}
+              </label>
             </div>
           ))}
           <div className="form-check">
@@ -285,12 +304,11 @@ export const SurveyForm = ({ step, value, onChange }: SurveyFormProps) => {
               checked={value.pressingNeeds.includes("Other")}
               onChange={() => toggleMultiSelect("pressingNeeds", "Other")}
             />
-            <label htmlFor="need-other">Other, please specify:</label>
+            <label htmlFor="need-other">{t("common.otherSpecify")}</label>
           </div>
           {value.pressingNeeds.includes("Other") && (
             <input
               type="text"
-              placeholder="Specify other pressing needs"
               value={value.pressingNeedsOther}
               onChange={(e) => onChange({ ...value, pressingNeedsOther: e.target.value })}
             />
