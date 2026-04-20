@@ -42,3 +42,30 @@ class TestGetUploadUrl:
         result2 = get_upload_url()
 
         assert result1["photo_key"] != result2["photo_key"]
+
+    @patch("src.handlers.photos.s3")
+    @patch.dict(os.environ, {"PHOTOS_BUCKET": "test-bucket"})
+    def test_png_content_type(self, mock_s3):
+        mock_s3.generate_presigned_url.return_value = "https://s3.example.com/presigned"
+
+        result = get_upload_url({"content_type": "image/png"})
+
+        assert result["photo_key"].endswith(".png")
+        mock_s3.generate_presigned_url.assert_called_once_with(
+            "put_object",
+            Params={
+                "Bucket": "test-bucket",
+                "Key": result["photo_key"],
+                "ContentType": "image/png",
+            },
+            ExpiresIn=900,
+        )
+
+    @patch("src.handlers.photos.s3")
+    @patch.dict(os.environ, {"PHOTOS_BUCKET": "test-bucket"})
+    def test_invalid_content_type_defaults_to_jpeg(self, mock_s3):
+        mock_s3.generate_presigned_url.return_value = "https://s3.example.com/presigned"
+
+        result = get_upload_url({"content_type": "application/pdf"})
+
+        assert result["photo_key"].endswith(".jpg")

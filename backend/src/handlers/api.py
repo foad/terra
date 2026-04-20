@@ -21,7 +21,8 @@ def health():
 @app.post("/photos/upload")
 @tracer.capture_method
 def post_photo_upload():
-    return get_upload_url()
+    body = app.current_event.json_body if app.current_event.body else None
+    return get_upload_url(body)
 
 
 @app.get("/reports")
