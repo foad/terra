@@ -1,9 +1,12 @@
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import imageCompression from "browser-image-compression";
 import { Camera } from "lucide-react";
 import { api } from "../utils/api";
 import styles from "./photo-capture.module.css";
+
+const MAX_DIMENSION = 2048;
+const MAX_SIZE_BYTES = 1_048_576;
+const QUALITY_STEPS = [0.85, 0.7, 0.55, 0.4];
 
 export interface PhotoResult {
   photoKey: string | null;
@@ -31,11 +34,7 @@ export const PhotoCapture = ({ onPhotoUploaded }: PhotoCaptureProps) => {
       setPreviewUrl(preview);
 
       setState("compressing");
-      const compressed = await imageCompression(file, {
-        maxSizeMB: 1,
-        maxWidthOrHeight: 2048,
-        useWebWorker: true,
-      });
+      const compressed = await compressImage(file);
 
       let photoKey: string | null = null;
 
@@ -63,30 +62,11 @@ export const PhotoCapture = ({ onPhotoUploaded }: PhotoCaptureProps) => {
       onPhotoUploaded({ photoKey, previewUrl: preview, blob: compressed });
     } catch (err) {
       console.error("photo upload failed", err, file);
-      let name: string;
-      let msg: string;
-      let stack = "";
-      if (err instanceof Error) {
-        name = err.name;
-        msg = err.message;
-        stack = err.stack ?? "";
-      } else if (err instanceof Event) {
-        const target = err.target as
-          | { error?: { name?: string; message?: string } | null; readyState?: number }
-          | null;
-        name = `${err.constructor.name}(${err.type})`;
-        msg = target?.error
-          ? `${target.error.name ?? "?"}: ${target.error.message ?? "?"}`
-          : `target=${target?.constructor?.name ?? "?"} readyState=${target?.readyState ?? "?"}`;
-      } else {
-        name = typeof err;
-        msg = String(err);
-      }
       setState("error");
       setErrorMessage(
-        `${name}: ${msg || "(no message)"}\n` +
-          `file: name=${file.name} type=${file.type || "(none)"} size=${file.size}\n` +
-          stack.split("\n").slice(0, 4).join("\n"),
+        err instanceof Error && err.message
+          ? err.message
+          : "Couldn't process this photo. Please try another.",
       );
     }
   };
@@ -186,6 +166,40 @@ export const PhotoCapture = ({ onPhotoUploaded }: PhotoCaptureProps) => {
       )}
     </div>
   );
+};
+
+const compressImage = async (file: Blob): Promise<Blob> => {
+  const bitmap = await createImageBitmap(file, {
+    imageOrientation: "from-image",
+  });
+  try {
+    const scale = Math.min(
+      1,
+      MAX_DIMENSION / Math.max(bitmap.width, bitmap.height),
+    );
+    const width = Math.round(bitmap.width * scale);
+    const height = Math.round(bitmap.height * scale);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Canvas 2D context unavailable");
+    ctx.drawImage(bitmap, 0, 0, width, height);
+
+    let lastBlob: Blob | null = null;
+    for (const quality of QUALITY_STEPS) {
+      const blob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob(resolve, "image/jpeg", quality),
+      );
+      if (!blob) throw new Error("Image encoding failed");
+      lastBlob = blob;
+      if (blob.size <= MAX_SIZE_BYTES) return blob;
+    }
+    return lastBlob!;
+  } finally {
+    bitmap.close();
+  }
 };
 
 const uploadWithProgress = (
