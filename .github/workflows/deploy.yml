@@ -114,22 +114,30 @@ jobs:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Deploy terra-api
+      - name: Stage Lambda zip in S3
         if: steps.changes.outputs.changed == 'true'
         working-directory: backend
         run: |
+          KEY="lambda-deploy/$GITHUB_SHA.zip"
+          aws s3 cp .build/lambda.zip "s3://${{ vars.ASSETS_BUCKET }}/$KEY"
+          echo "DEPLOY_KEY=$KEY" >> "$GITHUB_ENV"
+
+      - name: Deploy terra-api
+        if: steps.changes.outputs.changed == 'true'
+        run: |
           aws lambda update-function-code \
             --function-name terra-api \
-            --zip-file fileb://.build/lambda.zip \
+            --s3-bucket "${{ vars.ASSETS_BUCKET }}" \
+            --s3-key "$DEPLOY_KEY" \
             --query 'FunctionName' --output text
 
       - name: Deploy terra-photo-processor
         if: steps.changes.outputs.changed == 'true'
-        working-directory: backend
         run: |
           aws lambda update-function-code \
             --function-name terra-photo-processor \
-            --zip-file fileb://.build/lambda.zip \
+            --s3-bucket "${{ vars.ASSETS_BUCKET }}" \
+            --s3-key "$DEPLOY_KEY" \
             --query 'FunctionName' --output text
 
   e2e:
