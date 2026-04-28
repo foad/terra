@@ -124,6 +124,12 @@ export const ReportFlow = ({
     [],
   );
 
+  const handlePhotoCleared = useCallback(() => {
+    setPhoto(null);
+    setAiClassification(null);
+    classifiedKeyRef.current = null;
+  }, []);
+
   const handleSubmit = async () => {
     if (!damageLevel || !latitude || !longitude) return;
 
@@ -222,7 +228,11 @@ export const ReportFlow = ({
           </a>
           <span className={styles.stepTitle}>{t("photo.title")}</span>
         </div>
-        <PhotoCapture onPhotoUploaded={setPhoto} existingPhoto={photo} />
+        <PhotoCapture
+          onPhotoUploaded={setPhoto}
+          onPhotoCleared={handlePhotoCleared}
+          existingPhoto={photo}
+        />
         <div className={styles.actions}>
           <a
             role="button"

@@ -38,7 +38,8 @@
     "uploading": "Subiendo... {{progress}}%",
     "uploaded": "Foto subida",
     "saved": "Foto guardada — se subirá cuando esté en línea",
-    "retry": "Reintentar"
+    "retry": "Reintentar",
+    "replace": "Reemplazar foto"
   },
   "damage": {
     "title": "Evaluación de daños",

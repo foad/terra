@@ -38,7 +38,8 @@
     "uploading": "正在上传... {{progress}}%",
     "uploaded": "照片已上传",
     "saved": "照片已保存——将在联网后上传",
-    "retry": "重试"
+    "retry": "重试",
+    "replace": "更换照片"
   },
   "damage": {
     "title": "损害评估",
