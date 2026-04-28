@@ -38,7 +38,8 @@
     "uploading": "Téléchargement... {{progress}} %",
     "uploaded": "Photo téléchargée",
     "saved": "Photo enregistrée — sera téléchargée une fois en ligne",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "replace": "Remplacer la photo"
   },
   "damage": {
     "title": "Évaluation des dommages",

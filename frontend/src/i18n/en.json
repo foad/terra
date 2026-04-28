@@ -38,7 +38,8 @@
     "uploading": "Uploading... {{progress}}%",
     "uploaded": "Photo uploaded",
     "saved": "Photo saved — will upload when online",
-    "retry": "Retry"
+    "retry": "Retry",
+    "replace": "Replace photo"
   },
   "damage": {
     "title": "Damage Assessment",

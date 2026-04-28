@@ -16,12 +16,13 @@ export interface PhotoResult {
 
 interface PhotoCaptureProps {
   onPhotoUploaded: (result: PhotoResult) => void;
+  onPhotoCleared?: () => void;
   existingPhoto?: PhotoResult | null;
 }
 
 type UploadState = "idle" | "compressing" | "uploading" | "done" | "saved" | "error";
 
-export const PhotoCapture = ({ onPhotoUploaded, existingPhoto }: PhotoCaptureProps) => {
+export const PhotoCapture = ({ onPhotoUploaded, onPhotoCleared, existingPhoto }: PhotoCaptureProps) => {
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [state, setState] = useState<UploadState>(() =>
@@ -81,6 +82,14 @@ export const PhotoCapture = ({ onPhotoUploaded, existingPhoto }: PhotoCapturePro
     setPreviewUrl(null);
     setErrorMessage(null);
     setProgress(0);
+  };
+
+  const handleReplace = () => {
+    setState("idle");
+    setPreviewUrl(null);
+    setErrorMessage(null);
+    setProgress(0);
+    onPhotoCleared?.();
   };
 
   return (
@@ -144,12 +153,19 @@ export const PhotoCapture = ({ onPhotoUploaded, existingPhoto }: PhotoCapturePro
         </div>
       )}
 
-      {state === "done" && (
-        <div className={styles.status} data-testid="photo-uploaded">{t("photo.uploaded")}</div>
-      )}
-
-      {state === "saved" && (
-        <div className={styles.status} data-testid="photo-uploaded">{t("photo.saved")}</div>
+      {(state === "done" || state === "saved") && (
+        <div className={styles.status}>
+          <span data-testid="photo-uploaded">
+            {state === "done" ? t("photo.uploaded") : t("photo.saved")}
+          </span>
+          <a
+            role="button"
+            className="button button-secondary button-without-arrow"
+            onClick={handleReplace}
+          >
+            {t("photo.replace")}
+          </a>
+        </div>
       )}
 
       {state === "error" && (
