@@ -13,7 +13,6 @@
   "dependencies": {
     "@undp/design-system": "^1.7.3",
     "@undp/design-system-assets": "^1.7.3",
-    "browser-image-compression": "^2.0.2",
     "i18next": "^26.0.6",
     "lucide-react": "^1.8.0",
     "maplibre-gl": "^5.23.0",
