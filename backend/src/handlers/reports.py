@@ -18,6 +18,7 @@ class ReportSubmission(BaseModel):
     damage_level: str = Field(pattern="^(minimal|partial|complete)$")
     photo_key: str | None = None
     ai_damage_level: str | None = None
+    ai_infrastructure_type: list[str] | None = None
     ai_confidence: float | None = None
     infrastructure_type: list[str] = Field(min_length=1)
     infrastructure_type_other: str | None = None
@@ -70,14 +71,14 @@ def create_report(body: dict) -> dict:
             """
             INSERT INTO reports (
                 id, location, h3_r12, h3_r8, s2_id, location_description,
-                damage_level, ai_damage_level, ai_confidence,
+                damage_level, ai_damage_level, ai_infrastructure_type, ai_confidence,
                 photo_url, infrastructure_type, infrastructure_name,
                 crisis_nature, debris_present, electricity_status,
                 health_status, pressing_needs, version_chain_id,
                 device_id, offline_queue_id
             ) VALUES (
                 %s, ST_SetSRID(ST_MakePoint(%s, %s), 4326), %s, %s, %s, %s,
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
             )
             """,
             (
@@ -90,6 +91,7 @@ def create_report(body: dict) -> dict:
                 submission.location_description,
                 submission.damage_level,
                 submission.ai_damage_level,
+                submission.ai_infrastructure_type,
                 submission.ai_confidence,
                 photo_url,
                 submission.infrastructure_type,
@@ -189,7 +191,7 @@ def query_reports(params: dict) -> dict:
             SELECT
                 id, ST_X(location) as lng, ST_Y(location) as lat,
                 s2_id, location_description, damage_level,
-                ai_damage_level, ai_confidence, photo_url,
+                ai_damage_level, ai_infrastructure_type, ai_confidence, photo_url,
                 infrastructure_type, infrastructure_name,
                 crisis_nature, debris_present, electricity_status,
                 health_status, pressing_needs, version_chain_id,
@@ -225,19 +227,20 @@ def query_reports(params: dict) -> dict:
                 "location_description": row[4],
                 "damage_level": row[5],
                 "ai_damage_level": row[6],
-                "ai_confidence": row[7],
-                "photo_url": row[8],
-                "infrastructure_type": row[9],
-                "infrastructure_name": row[10],
-                "crisis_nature": row[11],
-                "debris_present": row[12],
-                "electricity_status": row[13],
-                "health_status": row[14],
-                "pressing_needs": row[15],
-                "version_chain_id": str(row[16]),
-                "is_latest": row[17],
-                "submitted_at": row[18].isoformat() if row[18] else None,
-                "version_count": row[19],
+                "ai_infrastructure_type": row[7],
+                "ai_confidence": row[8],
+                "photo_url": row[9],
+                "infrastructure_type": row[10],
+                "infrastructure_name": row[11],
+                "crisis_nature": row[12],
+                "debris_present": row[13],
+                "electricity_status": row[14],
+                "health_status": row[15],
+                "pressing_needs": row[16],
+                "version_chain_id": str(row[17]),
+                "is_latest": row[18],
+                "submitted_at": row[19].isoformat() if row[19] else None,
+                "version_count": row[20],
             },
         })
 
