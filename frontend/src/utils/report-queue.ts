@@ -15,6 +15,9 @@ export interface QueuedReport {
   s2Id: string | null;
   locationDescription: string | null;
   damageLevel: string;
+  aiDamageLevel: string | null;
+  aiInfrastructureType: string[] | null;
+  aiConfidence: number | null;
   surveyData: {
     infrastructureType: string[];
     infrastructureTypeOther: string;

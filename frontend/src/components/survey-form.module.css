@@ -40,3 +40,20 @@
   color: var(--undpds-color-gray-600);
   margin-top: var(--undpds-spacing-03);
 }
+
+.checkLabel {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--undpds-spacing-03);
+}
+
+.aiBadge {
+  background: var(--undpds-color-blue-600);
+  color: var(--undpds-color-white);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}

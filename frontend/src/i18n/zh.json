@@ -19,7 +19,8 @@
     "from": "从",
     "to": "至",
     "clearAll": "清除全部",
-    "otherSpecify": "其他，请说明："
+    "otherSpecify": "其他，请说明：",
+    "aiConfidence": "置信度：{{confidence}}%"
   },
   "location": {
     "selectBuilding": "点击地图上的建筑物进行选择",
@@ -47,8 +48,7 @@
     "partial": "部分损坏",
     "partialDesc": "可修复，谨慎使用仍可正常使用",
     "complete": "完全损坏",
-    "completeDesc": "结构不安全或已毁坏",
-    "aiConfidence": "AI：{{confidence}}%"
+    "completeDesc": "结构不安全或已毁坏"
   },
   "survey": {
     "title": "调查问卷 ({{current}}/{{total}})",

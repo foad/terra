@@ -56,7 +56,7 @@ export const DamageClassification = ({
               </div>
               {isAiSuggested && aiConfidence != null && (
                 <div className={styles.aiBadge}>
-                  {t("damage.aiConfidence", { confidence: Math.round(aiConfidence * 100) })}
+                  {t("common.aiConfidence", { confidence: Math.round(aiConfidence * 100) })}
                 </div>
               )}
             </button>
