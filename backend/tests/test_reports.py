@@ -64,6 +64,36 @@ class TestReportSubmissionValidation:
             sub = ReportSubmission(**_valid_body(damage_level=level))
             assert sub.damage_level == level
 
+    def test_location_description_too_long_rejected(self):
+        import pytest
+        with pytest.raises(Exception):
+            ReportSubmission(**_valid_body(location_description="a" * 501))
+
+    def test_infrastructure_name_too_long_rejected(self):
+        import pytest
+        with pytest.raises(Exception):
+            ReportSubmission(**_valid_body(infrastructure_name="a" * 201))
+
+    def test_invalid_photo_key_pattern_rejected(self):
+        import pytest
+        with pytest.raises(Exception):
+            ReportSubmission(**_valid_body(photo_key="../etc/passwd"))
+
+    def test_offline_queue_id_with_special_chars_rejected(self):
+        import pytest
+        with pytest.raises(Exception):
+            ReportSubmission(**_valid_body(offline_queue_id="abc; DROP TABLE reports;"))
+
+    def test_ai_confidence_out_of_range_rejected(self):
+        import pytest
+        with pytest.raises(Exception):
+            ReportSubmission(**_valid_body(ai_confidence=1.5))
+
+    def test_too_many_infrastructure_types_rejected(self):
+        import pytest
+        with pytest.raises(Exception):
+            ReportSubmission(**_valid_body(infrastructure_type=["x"] * 11))
+
 
 class TestCreateReport:
     @patch("src.handlers.reports.get_connection")
@@ -109,13 +139,14 @@ class TestCreateReport:
         mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
         mock_get_conn.return_value = mock_conn
 
-        result = create_report(_valid_body(photo_key="uploads/test.jpg"))
+        photo_key = "uploads/12345678-1234-1234-1234-123456789abc.jpg"
+        result = create_report(_valid_body(photo_key=photo_key))
 
         assert result["status"] == "created"
         # Verify the INSERT was called with photo_url containing the key
         insert_call = mock_cursor.execute.call_args_list[-2]
         params = insert_call[0][1]
-        assert any("uploads/test.jpg" in str(p) for p in params if p)
+        assert any(photo_key in str(p) for p in params if p)
 
 
 class TestQueryReports:
@@ -186,21 +217,29 @@ class TestQueryReports:
         assert "is_latest = true" not in main_where
         assert "s2_id = %s" in main_where
 
-    @patch("src.handlers.reports.get_connection")
-    def test_limit_capped_at_1000(self, mock_get_conn):
-        mock_conn = MagicMock()
-        mock_cursor = MagicMock()
-        mock_cursor.fetchall.return_value = []
-        mock_cursor.fetchone.return_value = (0,)
-        mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
-        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
-        mock_get_conn.return_value = mock_conn
+    def test_limit_over_1000_rejected(self):
+        import pytest
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError):
+            query_reports({"limit": "5000"})
 
-        query_reports({"limit": "5000"})
+    def test_non_numeric_limit_rejected(self):
+        import pytest
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError):
+            query_reports({"limit": "abc"})
 
-        sql_params = mock_cursor.execute.call_args_list[0][0][1]
-        # Last two params are limit and offset
-        assert sql_params[-2] == 1000
+    def test_invalid_h3_pattern_rejected(self):
+        import pytest
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError):
+            query_reports({"h3": "DROP TABLE reports"})
+
+    def test_lat_out_of_range_rejected(self):
+        import pytest
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError):
+            query_reports({"north": "200"})
 
     @patch("src.handlers.reports.get_connection")
     def test_damage_level_filter(self, mock_get_conn):

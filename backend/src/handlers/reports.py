@@ -1,9 +1,10 @@
 import os
 import uuid
+from datetime import datetime
 
 import h3
 from aws_lambda_powertools import Logger
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from src.utils.db import get_connection
 
@@ -13,24 +14,44 @@ logger = Logger()
 class ReportSubmission(BaseModel):
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
-    s2_id: str | None = None
-    location_description: str | None = None
+    s2_id: str | None = Field(None, max_length=32)
+    location_description: str | None = Field(None, max_length=500)
     damage_level: str = Field(pattern="^(minimal|partial|complete)$")
-    photo_key: str | None = None
-    ai_damage_level: str | None = None
+    photo_key: str | None = Field(None, pattern=r"^uploads/[a-f0-9-]+\.(jpg|png|webp)$")
+    ai_damage_level: str | None = Field(None, pattern="^(minimal|partial|complete)$")
     ai_infrastructure_type: list[str] | None = None
-    ai_confidence: float | None = None
-    infrastructure_type: list[str] = Field(min_length=1)
-    infrastructure_type_other: str | None = None
-    infrastructure_name: str | None = None
-    crisis_nature: list[str] = Field(min_length=1)
+    ai_confidence: float | None = Field(None, ge=0, le=1)
+    infrastructure_type: list[str] = Field(min_length=1, max_length=10)
+    infrastructure_type_other: str | None = Field(None, max_length=200)
+    infrastructure_name: str | None = Field(None, max_length=200)
+    crisis_nature: list[str] = Field(min_length=1, max_length=10)
     debris_present: bool | None = None
-    electricity_status: str | None = None
-    health_status: str | None = None
-    pressing_needs: list[str] = []
-    pressing_needs_other: str | None = None
-    device_id: str | None = None
-    offline_queue_id: str | None = None
+    electricity_status: str | None = Field(None, max_length=200)
+    health_status: str | None = Field(None, max_length=200)
+    pressing_needs: list[str] = Field(default_factory=list, max_length=20)
+    pressing_needs_other: str | None = Field(None, max_length=500)
+    device_id: str | None = Field(None, max_length=128)
+    offline_queue_id: str | None = Field(None, max_length=64, pattern=r"^[a-zA-Z0-9-]+$")
+
+
+class ReportsQueryParams(BaseModel):
+    """Validated query params for GET /reports."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    west: float | None = Field(None, ge=-180, le=180)
+    south: float | None = Field(None, ge=-90, le=90)
+    east: float | None = Field(None, ge=-180, le=180)
+    north: float | None = Field(None, ge=-90, le=90)
+    h3: str | None = Field(None, max_length=64, pattern=r"^[0-9a-f]+$")
+    damage_level: str | None = Field(None, max_length=64)
+    infrastructure_type: str | None = Field(None, max_length=2000)
+    crisis_nature: str | None = Field(None, max_length=500)
+    from_: datetime | None = Field(None, alias="from")
+    to: datetime | None = None
+    s2_id: str | None = Field(None, max_length=32)
+    limit: int = Field(500, ge=1, le=1000)
+    offset: int = Field(0, ge=0)
 
 
 def create_report(body: dict) -> dict:
@@ -132,64 +153,64 @@ def create_report(body: dict) -> dict:
 
 def query_reports(params: dict) -> dict:
     """Query reports with spatial, temporal, and attribute filters. Returns GeoJSON."""
+    q = ReportsQueryParams(**params)
     conn = get_connection()
 
     conditions = ["is_latest = true"]
     values = []
 
     # Bounding box filter
-    if all(k in params for k in ("west", "south", "east", "north")):
+    if all(v is not None for v in (q.west, q.south, q.east, q.north)):
         conditions.append(
             "ST_Intersects(location, ST_MakeEnvelope(%s, %s, %s, %s, 4326))"
         )
-        values.extend([params["west"], params["south"], params["east"], params["north"]])
+        values.extend([q.west, q.south, q.east, q.north])
 
     # H3 cell filter
-    if "h3" in params:
+    if q.h3:
         conditions.append("h3_r8 = %s")
-        values.append(params["h3"])
+        values.append(q.h3)
 
     # Damage level filter
-    if "damage_level" in params:
-        levels = params["damage_level"].split(",")
+    if q.damage_level:
+        levels = q.damage_level.split(",")
         placeholders = ",".join(["%s"] * len(levels))
         conditions.append(f"damage_level IN ({placeholders})")
         values.extend(levels)
 
     # Infrastructure type filter (pipe-separated, values contain commas)
-    if "infrastructure_type" in params:
-        types = params["infrastructure_type"].split("|")
+    if q.infrastructure_type:
+        types = q.infrastructure_type.split("|")
         placeholders = " OR ".join(["%s = ANY(infrastructure_type)"] * len(types))
         conditions.append(f"({placeholders})")
         values.extend(types)
 
     # Crisis nature filter (pipe-separated, values may contain commas)
-    if "crisis_nature" in params:
-        natures = params["crisis_nature"].split("|")
+    if q.crisis_nature:
+        natures = q.crisis_nature.split("|")
         placeholders = " OR ".join(["%s = ANY(crisis_nature)"] * len(natures))
         conditions.append(f"({placeholders})")
         values.extend(natures)
 
     # Date range filter
-    if "from" in params:
+    if q.from_:
         conditions.append("submitted_at >= %s")
-        values.append(params["from"])
-    if "to" in params:
+        values.append(q.from_)
+    if q.to:
         conditions.append("submitted_at <= %s")
-        values.append(params["to"])
+        values.append(q.to)
 
     # S2 ID filter (for version history)
-    if "s2_id" in params:
+    if q.s2_id:
         # When querying by s2_id, show all versions not just latest
         conditions = [c for c in conditions if c != "is_latest = true"]
         conditions.append("s2_id = %s")
-        values.append(params["s2_id"])
+        values.append(q.s2_id)
 
     where = " AND ".join(conditions)
 
-    # Pagination
-    limit = min(int(params.get("limit", 500)), 1000)
-    offset = int(params.get("offset", 0))
+    limit = q.limit
+    offset = q.offset
 
     with conn.cursor() as cur:
         cur.execute(
