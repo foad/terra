@@ -41,6 +41,46 @@ Body: <image binary>
 
 The presigned URL expires after 15 minutes.
 
+## POST /photos/classify
+
+Run AI vision classification on an uploaded photo. Returns suggested damage level and infrastructure type with confidence scores. The frontend calls this asynchronously after photo upload; the result is purely additive (used to pre-select the AI's choices in the report flow).
+
+**Request**
+
+```json
+{
+  "photo_key": "uploads/59a7cb76-0b9f-4f45-a91d-e237a3760a31.jpg"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `photo_key` | string | yes | Key returned from `POST /photos/upload`. Format: `uploads/<uuid>.{jpg,png,webp}` |
+
+**Response**
+
+```json
+{
+  "damage_level": "partial",
+  "damage_confidence": 0.85,
+  "infrastructure_type": ["residential"],
+  "infrastructure_confidence": 0.92
+}
+```
+
+`damage_level` is one of `minimal | partial | complete`. `infrastructure_type` is a non-empty array drawn from `residential | commercial | government | utility | transport | community | publicSpaces`. Confidence values are 0.0–1.0.
+
+**Errors**
+
+| Status | Reason |
+|--------|--------|
+| 400 | Invalid `photo_key` format or unsupported image content-type |
+| 404 | Photo not found in S3 |
+| 502 | Bedrock returned an unexpected response |
+| 503 | Bedrock throttling — retry later |
+
+The frontend treats every error as a silent drop and lets the user proceed without AI assistance.
+
 ## GET /reports
 
 Query reports. Returns a GeoJSON FeatureCollection.
@@ -109,6 +149,7 @@ Submit a damage assessment report.
 | `location_description` | string | no | Text description when GPS/building unavailable |
 | `photo_key` | string | no | Key returned from POST /photos/upload |
 | `ai_damage_level` | string | no | AI-suggested damage level |
+| `ai_infrastructure_type` | string[] | no | AI-suggested infrastructure type(s) |
 | `ai_confidence` | float | no | AI confidence score (0-1) |
 | `infrastructure_type_other` | string | no | Free text when "Other" selected |
 | `infrastructure_name` | string | no | Name of the infrastructure |
