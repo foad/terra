@@ -61,13 +61,8 @@ export const PhotoCapture = ({ onPhotoUploaded }: PhotoCaptureProps) => {
       setState(photoKey ? "done" : "saved");
       onPhotoUploaded({ photoKey, previewUrl: preview, blob: compressed });
     } catch (err) {
-      console.error("photo upload failed", err, file);
       setState("error");
-      setErrorMessage(
-        err instanceof Error && err.message
-          ? err.message
-          : "Couldn't process this photo. Please try another.",
-      );
+      setErrorMessage(err instanceof Error ? err.message : "Upload failed");
     }
   };
 
