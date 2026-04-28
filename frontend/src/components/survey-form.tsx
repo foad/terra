@@ -165,6 +165,7 @@ export const SurveyForm = ({
           {value.infrastructureType.includes("Other") && (
             <input
               type="text"
+              maxLength={200}
               value={value.infrastructureTypeOther}
               onChange={(e) => onChange({ ...value, infrastructureTypeOther: e.target.value })}
             />
@@ -183,6 +184,7 @@ export const SurveyForm = ({
             type="text"
             id="infra-name"
             placeholder={t("survey.infrastructureNamePlaceholder")}
+            maxLength={200}
             value={value.infrastructureName}
             onChange={(e) => onChange({ ...value, infrastructureName: e.target.value })}
           />
@@ -329,6 +331,7 @@ export const SurveyForm = ({
           {value.pressingNeeds.includes("Other") && (
             <input
               type="text"
+              maxLength={500}
               value={value.pressingNeedsOther}
               onChange={(e) => onChange({ ...value, pressingNeedsOther: e.target.value })}
             />

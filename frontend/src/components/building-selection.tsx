@@ -41,6 +41,7 @@ export const BuildingSelection = ({
               type="text"
               data-testid="input-location-fallback"
               placeholder={t("location.descriptionPlaceholder")}
+              maxLength={500}
               value={locationFallback}
               onChange={(e) => onLocationFallbackChange(e.target.value)}
             />

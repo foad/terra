@@ -70,3 +70,9 @@ class TestGetUploadUrl:
         result = get_upload_url({"content_type": "application/pdf"})
 
         assert result["photo_key"].endswith(".jpg")
+
+    def test_oversized_content_type_rejected(self):
+        import pytest
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError):
+            get_upload_url({"content_type": "x" * 100})
