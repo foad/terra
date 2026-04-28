@@ -19,7 +19,8 @@
     "from": "С",
     "to": "По",
     "clearAll": "Очистить все",
-    "otherSpecify": "Другое, укажите:"
+    "otherSpecify": "Другое, укажите:",
+    "aiConfidence": "Уверенность: {{confidence}}%"
   },
   "location": {
     "selectBuilding": "Нажмите на здание на карте, чтобы выбрать его",
@@ -47,8 +48,7 @@
     "partial": "Частично повреждено",
     "partialDesc": "Подлежит ремонту, пригодно к использованию с осторожностью",
     "complete": "Полностью повреждено",
-    "completeDesc": "Конструктивно небезопасно или разрушено",
-    "aiConfidence": "ИИ: {{confidence}}%"
+    "completeDesc": "Конструктивно небезопасно или разрушено"
   },
   "survey": {
     "title": "Опрос ({{current}}/{{total}})",

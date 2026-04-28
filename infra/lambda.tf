@@ -52,21 +52,33 @@ resource "aws_iam_role_policy_attachment" "lambda_s3" {
 # Bedrock access for AI features.
 # Cross-region inference profiles need permission on both the profile and every
 # underlying foundation model the profile may route to (any region).
+# Marketplace permissions let Bedrock auto-subscribe to the model on first
+# invocation in each region the inference profile routes to.
 resource "aws_iam_policy" "lambda_bedrock" {
   name = "${var.project_name}-lambda-bedrock"
 
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Action = [
-        "bedrock:InvokeModel",
-      ]
-      Resource = [
-        "arn:aws:bedrock:*::foundation-model/*",
-        "arn:aws:bedrock:*:${local.account_id}:inference-profile/*",
-      ]
-    }]
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "bedrock:InvokeModel",
+        ]
+        Resource = [
+          "arn:aws:bedrock:*::foundation-model/*",
+          "arn:aws:bedrock:*:${local.account_id}:inference-profile/*",
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "aws-marketplace:Subscribe",
+          "aws-marketplace:ViewSubscriptions",
+        ]
+        Resource = "*"
+      },
+    ]
   })
 }
 
