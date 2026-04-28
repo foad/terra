@@ -4,6 +4,7 @@ version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = [
     "aws-lambda-powertools[all]>=3.0",
+    "Pillow>=11.0",
     "psycopg2-binary>=2.9",
     "h3>=4.0",
     "shapely>=2.0",
@@ -17,6 +18,7 @@ dev = [
     "ruff>=0.4",
     "boto3>=1.35",
     "moto[s3]>=5.0",
+    "piexif>=1.1",
 ]
 
 [tool.ruff]

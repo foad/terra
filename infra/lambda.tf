@@ -167,3 +167,12 @@ resource "aws_cloudwatch_log_group" "photo_processor" {
   name              = "/aws/lambda/${aws_lambda_function.photo_processor.function_name}"
   retention_in_days = 14
 }
+
+# Allow S3 to invoke the photo_processor Lambda on uploads/ PUT events.
+resource "aws_lambda_permission" "s3_invoke_photo_processor" {
+  statement_id  = "AllowS3InvokePhotoProcessor"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.photo_processor.function_name
+  principal     = "s3.amazonaws.com"
+  source_arn    = aws_s3_bucket.photos.arn
+}

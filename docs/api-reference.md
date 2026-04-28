@@ -41,6 +41,16 @@ Body: <image binary>
 
 The presigned URL expires after 15 minutes.
 
+**Server-side post-processing**
+
+When a photo lands in `uploads/` an S3 PUT event triggers the `photo_processor` Lambda which:
+
+1. Extracts EXIF GPS coordinates (if present) and stores them as S3 user-defined metadata (`exif-latitude`, `exif-longitude`) on the original object.
+2. Generates a 300×300 JPEG thumbnail at `thumbnails/<uuid>.jpg` (always JPEG regardless of source format).
+3. Strips EXIF/XMP/IPTC from the original by re-saving the pixels and marks the rewritten object with metadata `processed=true`.
+
+The Lambda short-circuits when invoked again on an object with `processed=true`, so the post-strip re-upload doesn't recurse. Frontends should treat the original `photo_key` as stable — the object at that key is replaced in place with the sanitised version a few hundred ms after upload.
+
 ## POST /photos/classify
 
 Run AI vision classification on an uploaded photo. Returns suggested damage level and infrastructure type with confidence scores. The frontend calls this asynchronously after photo upload; the result is purely additive (used to pre-select the AI's choices in the report flow).
