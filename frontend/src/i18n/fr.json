@@ -19,7 +19,8 @@
     "from": "Du",
     "to": "Au",
     "clearAll": "Tout effacer",
-    "otherSpecify": "Autre, veuillez préciser :"
+    "otherSpecify": "Autre, veuillez préciser :",
+    "aiConfidence": "Confiance : {{confidence}} %"
   },
   "location": {
     "selectBuilding": "Appuyez sur un bâtiment sur la carte pour le sélectionner",
@@ -47,8 +48,7 @@
     "partial": "Partiellement endommagé",
     "partialDesc": "Réparable, et utilisable avec précaution",
     "complete": "Complètement endommagé",
-    "completeDesc": "Structurellement dangereux ou détruit",
-    "aiConfidence": "IA : {{confidence}} %"
+    "completeDesc": "Structurellement dangereux ou détruit"
   },
   "survey": {
     "title": "Enquête ({{current}}/{{total}})",

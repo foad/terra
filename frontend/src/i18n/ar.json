@@ -19,7 +19,8 @@
     "from": "من",
     "to": "إلى",
     "clearAll": "مسح الكل",
-    "otherSpecify": "أخرى، يرجى التحديد:"
+    "otherSpecify": "أخرى، يرجى التحديد:",
+    "aiConfidence": "الثقة: {{confidence}}%"
   },
   "location": {
     "selectBuilding": "انقر على مبنى على الخريطة لتحديده",
@@ -47,8 +48,7 @@
     "partial": "متضرر جزئياً",
     "partialDesc": "قابل للإصلاح، ويمكن استخدامه بحذر",
     "complete": "متضرر بالكامل",
-    "completeDesc": "غير آمن هيكلياً أو مدمر",
-    "aiConfidence": "ذكاء اصطناعي: {{confidence}}%"
+    "completeDesc": "غير آمن هيكلياً أو مدمر"
   },
   "survey": {
     "title": "استبيان ({{current}}/{{total}})",

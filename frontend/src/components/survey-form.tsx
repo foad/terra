@@ -26,7 +26,7 @@ export const EMPTY_SURVEY: SurveyData = {
 };
 
 // Values stored in the database (always English)
-const INFRASTRUCTURE_TYPES = [
+export const INFRASTRUCTURE_TYPES = [
   { key: "residential", value: "Residential Infrastructure (Houses and apartments)" },
   { key: "commercial", value: "Commercial Infrastructure (Markets, malls, shops, hotels, banks, industries, etc.)" },
   { key: "government", value: "Government Building (Administrative buildings, courthouses, police stations, fire stations, etc.)" },
@@ -102,10 +102,24 @@ interface SurveyFormProps {
   step: number;
   value: SurveyData;
   onChange: (data: SurveyData) => void;
+  aiInfrastructure?: string[] | null;
+  aiInfrastructureConfidence?: number | null;
 }
 
-export const SurveyForm = ({ step, value, onChange }: SurveyFormProps) => {
+export const SurveyForm = ({
+  step,
+  value,
+  onChange,
+  aiInfrastructure,
+  aiInfrastructureConfidence,
+}: SurveyFormProps) => {
   const { t } = useTranslation();
+  const aiInfraBadge =
+    aiInfrastructure && aiInfrastructureConfidence != null
+      ? t("common.aiConfidence", {
+          confidence: Math.round(aiInfrastructureConfidence * 100),
+        })
+      : null;
 
   const toggleMultiSelect = (field: keyof SurveyData, option: string) => {
     const current = value[field] as string[];
@@ -120,19 +134,25 @@ export const SurveyForm = ({ step, value, onChange }: SurveyFormProps) => {
       <div className={styles.container} data-testid="survey-step-0">
         <h2 className={styles.question}>{t("survey.infrastructureType")}</h2>
         <div className={styles.options}>
-          {INFRASTRUCTURE_TYPES.map((type) => (
-            <div className="form-check" key={type.key}>
-              <input
-                type="checkbox"
-                id={`infra-${type.value}`}
-                checked={value.infrastructureType.includes(type.value)}
-                onChange={() => toggleMultiSelect("infrastructureType", type.value)}
-              />
-              <label htmlFor={`infra-${type.value}`}>
-                {t(`survey.infrastructureTypes.${type.key}`)}
-              </label>
-            </div>
-          ))}
+          {INFRASTRUCTURE_TYPES.map((type) => {
+            const isAiSuggested = aiInfrastructure?.includes(type.key) ?? false;
+            return (
+              <div className="form-check" key={type.key}>
+                <input
+                  type="checkbox"
+                  id={`infra-${type.value}`}
+                  checked={value.infrastructureType.includes(type.value)}
+                  onChange={() => toggleMultiSelect("infrastructureType", type.value)}
+                />
+                <label htmlFor={`infra-${type.value}`} className={styles.checkLabel}>
+                  <span>{t(`survey.infrastructureTypes.${type.key}`)}</span>
+                  {isAiSuggested && aiInfraBadge && (
+                    <span className={styles.aiBadge}>{aiInfraBadge}</span>
+                  )}
+                </label>
+              </div>
+            );
+          })}
           <div className="form-check">
             <input
               type="checkbox"

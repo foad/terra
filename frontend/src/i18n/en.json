@@ -19,7 +19,8 @@
     "from": "From",
     "to": "To",
     "clearAll": "Clear all",
-    "otherSpecify": "Other, please specify:"
+    "otherSpecify": "Other, please specify:",
+    "aiConfidence": "Confidence: {{confidence}}%"
   },
   "location": {
     "selectBuilding": "Tap a building on the map to select it",
@@ -47,8 +48,7 @@
     "partial": "Partially damaged",
     "partialDesc": "Repairable, and remains usable with caution",
     "complete": "Completely damaged",
-    "completeDesc": "Structurally unsafe or destroyed",
-    "aiConfidence": "AI: {{confidence}}%"
+    "completeDesc": "Structurally unsafe or destroyed"
   },
   "survey": {
     "title": "Survey ({{current}}/{{total}})",
