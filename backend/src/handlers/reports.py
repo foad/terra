@@ -59,9 +59,14 @@ def create_report(body: dict) -> dict:
     # Determine version chain
     version_chain_id = _find_version_chain(submission.s2_id, h3_r12)
 
-    # Build photo URL from key
+    # Build photo URL from key. Thumbnail follows convention written by the
+    # photo_processor Lambda: uploads/<uuid>.<ext> -> thumbnails/<uuid>.jpg.
     photos_bucket = os.environ.get("PHOTOS_BUCKET", "")
     photo_url = f"s3://{photos_bucket}/{submission.photo_key}" if submission.photo_key else None
+    thumbnail_url = None
+    if submission.photo_key and submission.photo_key.startswith("uploads/"):
+        stem = submission.photo_key[len("uploads/"):].rsplit(".", 1)[0]
+        thumbnail_url = f"s3://{photos_bucket}/thumbnails/{stem}.jpg"
 
     # Insert report
     report_id = str(uuid.uuid4())
@@ -72,13 +77,13 @@ def create_report(body: dict) -> dict:
             INSERT INTO reports (
                 id, location, h3_r12, h3_r8, s2_id, location_description,
                 damage_level, ai_damage_level, ai_infrastructure_type, ai_confidence,
-                photo_url, infrastructure_type, infrastructure_name,
+                photo_url, thumbnail_url, infrastructure_type, infrastructure_name,
                 crisis_nature, debris_present, electricity_status,
                 health_status, pressing_needs, version_chain_id,
                 device_id, offline_queue_id
             ) VALUES (
                 %s, ST_SetSRID(ST_MakePoint(%s, %s), 4326), %s, %s, %s, %s,
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
             )
             """,
             (
@@ -94,6 +99,7 @@ def create_report(body: dict) -> dict:
                 submission.ai_infrastructure_type,
                 submission.ai_confidence,
                 photo_url,
+                thumbnail_url,
                 submission.infrastructure_type,
                 submission.infrastructure_name,
                 submission.crisis_nature,

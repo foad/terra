@@ -32,7 +32,7 @@ resource "aws_iam_role" "github_actions" {
   })
 }
 
-# S3 access for frontend deployment
+# S3 access for frontend deployment + Lambda zip staging
 resource "aws_iam_role_policy" "github_actions_s3" {
   name = "s3-deploy"
   role = aws_iam_role.github_actions.id
@@ -50,6 +50,8 @@ resource "aws_iam_role_policy" "github_actions_s3" {
       Resource = [
         aws_s3_bucket.frontend.arn,
         "${aws_s3_bucket.frontend.arn}/*",
+        aws_s3_bucket.assets.arn,
+        "${aws_s3_bucket.assets.arn}/*",
       ]
     }]
   })

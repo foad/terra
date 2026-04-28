@@ -41,6 +41,21 @@ resource "aws_s3_bucket_cors_configuration" "photos" {
   }
 }
 
+# Trigger photo_processor Lambda on PUT to uploads/. The Lambda short-circuits
+# when the object's metadata says processed=true, so re-uploads (after EXIF
+# stripping) don't recurse.
+resource "aws_s3_bucket_notification" "photos" {
+  bucket = aws_s3_bucket.photos.id
+
+  lambda_function {
+    lambda_function_arn = aws_lambda_function.photo_processor.arn
+    events              = ["s3:ObjectCreated:Put"]
+    filter_prefix       = "uploads/"
+  }
+
+  depends_on = [aws_lambda_permission.s3_invoke_photo_processor]
+}
+
 # Static assets bucket — PMTiles, basemap tiles, building footprints
 resource "aws_s3_bucket" "assets" {
   bucket = "${var.project_name}-assets-${local.account_id}"
