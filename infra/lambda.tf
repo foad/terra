@@ -49,7 +49,9 @@ resource "aws_iam_role_policy_attachment" "lambda_s3" {
   policy_arn = aws_iam_policy.lambda_s3.arn
 }
 
-# Bedrock access for AI features
+# Bedrock access for AI features.
+# Cross-region inference profiles need permission on both the profile and every
+# underlying foundation model the profile may route to (any region).
 resource "aws_iam_policy" "lambda_bedrock" {
   name = "${var.project_name}-lambda-bedrock"
 
@@ -60,7 +62,10 @@ resource "aws_iam_policy" "lambda_bedrock" {
       Action = [
         "bedrock:InvokeModel",
       ]
-      Resource = "arn:aws:bedrock:${var.aws_region}::foundation-model/*"
+      Resource = [
+        "arn:aws:bedrock:*::foundation-model/*",
+        "arn:aws:bedrock:*:${local.account_id}:inference-profile/*",
+      ]
     }]
   })
 }
@@ -106,6 +111,7 @@ resource "aws_lambda_function" "api" {
       POWERTOOLS_PARAMETERS_SSM_PREFIX = "/${var.project_name}"
       LOG_LEVEL                        = "INFO"
       PHOTOS_BUCKET                    = aws_s3_bucket.photos.id
+      BEDROCK_MODEL_ID                 = var.bedrock_model_id
     }
   }
 

@@ -1,6 +1,7 @@
 import uuid
-from unittest.mock import patch, MagicMock
-from src.handlers.reports import create_report, query_reports, _find_version_chain, ReportSubmission
+from unittest.mock import MagicMock, patch
+
+from src.handlers.reports import ReportSubmission, _find_version_chain, create_report, query_reports
 
 
 def _valid_body(**overrides):
@@ -127,7 +128,7 @@ class TestQueryReports:
             (
                 "report-id-1", 36.16, 36.2,
                 "s2-123", None, "partial",
-                None, None, None,
+                None, None, None, None,
                 ["Residential Infrastructure (Houses and apartments)"], None,
                 ["Earthquake"], True, None,
                 None, ["Food assistance and safe drinking water"],
