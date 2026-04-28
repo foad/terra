@@ -62,8 +62,32 @@ export const PhotoCapture = ({ onPhotoUploaded }: PhotoCaptureProps) => {
       setState(photoKey ? "done" : "saved");
       onPhotoUploaded({ photoKey, previewUrl: preview, blob: compressed });
     } catch (err) {
+      console.error("photo upload failed", err, file);
+      let name: string;
+      let msg: string;
+      let stack = "";
+      if (err instanceof Error) {
+        name = err.name;
+        msg = err.message;
+        stack = err.stack ?? "";
+      } else if (err instanceof Event) {
+        const target = err.target as
+          | { error?: { name?: string; message?: string } | null; readyState?: number }
+          | null;
+        name = `${err.constructor.name}(${err.type})`;
+        msg = target?.error
+          ? `${target.error.name ?? "?"}: ${target.error.message ?? "?"}`
+          : `target=${target?.constructor?.name ?? "?"} readyState=${target?.readyState ?? "?"}`;
+      } else {
+        name = typeof err;
+        msg = String(err);
+      }
       setState("error");
-      setErrorMessage(err instanceof Error ? err.message : "Upload failed");
+      setErrorMessage(
+        `${name}: ${msg || "(no message)"}\n` +
+          `file: name=${file.name} type=${file.type || "(none)"} size=${file.size}\n` +
+          stack.split("\n").slice(0, 4).join("\n"),
+      );
     }
   };
 
