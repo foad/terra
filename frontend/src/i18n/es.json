@@ -19,7 +19,8 @@
     "from": "Desde",
     "to": "Hasta",
     "clearAll": "Borrar todo",
-    "otherSpecify": "Otro, especifique:"
+    "otherSpecify": "Otro, especifique:",
+    "aiConfidence": "Confianza: {{confidence}}%"
   },
   "location": {
     "selectBuilding": "Toque un edificio en el mapa para seleccionarlo",
@@ -47,8 +48,7 @@
     "partial": "Parcialmente dañado",
     "partialDesc": "Reparable, y utilizable con precaución",
     "complete": "Completamente dañado",
-    "completeDesc": "Estructuralmente inseguro o destruido",
-    "aiConfidence": "IA: {{confidence}}%"
+    "completeDesc": "Estructuralmente inseguro o destruido"
   },
   "survey": {
     "title": "Encuesta ({{current}}/{{total}})",

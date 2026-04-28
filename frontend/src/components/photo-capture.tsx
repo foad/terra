@@ -16,16 +16,21 @@ export interface PhotoResult {
 
 interface PhotoCaptureProps {
   onPhotoUploaded: (result: PhotoResult) => void;
+  existingPhoto?: PhotoResult | null;
 }
 
 type UploadState = "idle" | "compressing" | "uploading" | "done" | "saved" | "error";
 
-export const PhotoCapture = ({ onPhotoUploaded }: PhotoCaptureProps) => {
+export const PhotoCapture = ({ onPhotoUploaded, existingPhoto }: PhotoCaptureProps) => {
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [state, setState] = useState<UploadState>("idle");
+  const [state, setState] = useState<UploadState>(() =>
+    existingPhoto ? (existingPhoto.photoKey ? "done" : "saved") : "idle",
+  );
   const [progress, setProgress] = useState(0);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    existingPhoto?.previewUrl ?? null,
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleFile = async (file: File) => {
