@@ -131,7 +131,9 @@ export const ReportFlow = ({
   }, []);
 
   const handleSubmit = async () => {
-    if (!damageLevel || !latitude || !longitude) return;
+    const reportLat = selectedBuilding?.center[1] ?? latitude;
+    const reportLng = selectedBuilding?.center[0] ?? longitude;
+    if (!damageLevel || reportLat == null || reportLng == null) return;
 
     setStep("submitting");
     setSubmitError(null);
@@ -142,8 +144,8 @@ export const ReportFlow = ({
         photo: photo?.blob ? await photo.blob.arrayBuffer() : null,
         photoContentType: photo?.blob?.type ?? null,
         photoKey: photo?.photoKey ?? null,
-        latitude,
-        longitude,
+        latitude: reportLat,
+        longitude: reportLng,
         s2Id: selectedBuilding?.s2Id ?? null,
         locationDescription: locationFallback || null,
         damageLevel,
