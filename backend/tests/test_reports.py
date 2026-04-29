@@ -100,8 +100,7 @@ class TestCreateReport:
     def test_creates_report(self, mock_get_conn):
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
-        # fetchone calls: version chain s2_id lookup (no match), h3 lookup (no match), area count
-        mock_cursor.fetchone.side_effect = [None, None, (1,)]
+        mock_cursor.fetchone.side_effect = [None, (1,)]
         mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
         mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
         mock_get_conn.return_value = mock_conn
@@ -133,8 +132,7 @@ class TestCreateReport:
     def test_includes_photo_url_when_key_provided(self, mock_get_conn):
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
-        # fetchone calls: version chain s2_id lookup (no match), h3 lookup (no match), area count
-        mock_cursor.fetchone.side_effect = [None, None, (1,)]
+        mock_cursor.fetchone.side_effect = [None, (1,)]
         mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
         mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
         mock_get_conn.return_value = mock_conn
@@ -371,17 +369,30 @@ class TestFindVersionChain:
         assert result == uuid.UUID(chain_id)
 
     @patch("src.handlers.reports.get_connection")
-    def test_falls_back_to_h3(self, mock_get_conn):
+    def test_falls_back_to_h3_only_when_s2_id_absent(self, mock_get_conn):
         chain_id = str(uuid.uuid4())
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
-        mock_cursor.fetchone.side_effect = [None, (chain_id,)]
+        mock_cursor.fetchone.side_effect = [(chain_id,)]
         mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
         mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
         mock_get_conn.return_value = mock_conn
 
-        result = _find_version_chain("no-match-s2", "8a2a1072b59ffff")
+        result = _find_version_chain(None, "8a2a1072b59ffff")
         assert result == uuid.UUID(chain_id)
+
+    @patch("src.handlers.reports.get_connection")
+    def test_unknown_s2_id_does_not_chain_via_h3(self, mock_get_conn):
+        existing_chain = str(uuid.uuid4())
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.side_effect = [None, (existing_chain,)]
+        mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_get_conn.return_value = mock_conn
+
+        result = _find_version_chain("brand-new-s2", "8a2a1072b59ffff")
+        assert result != uuid.UUID(existing_chain)
 
     @patch("src.handlers.reports.get_connection")
     def test_creates_new_chain_when_no_match(self, mock_get_conn):

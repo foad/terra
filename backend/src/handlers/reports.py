@@ -282,7 +282,6 @@ def _find_version_chain(s2_id: str | None, h3_r12: str) -> uuid.UUID:
     """Find existing version chain for this building, or create a new one."""
     conn = get_connection()
     with conn.cursor() as cur:
-        # Match by s2_id first
         if s2_id:
             cur.execute(
                 "SELECT version_chain_id FROM reports WHERE s2_id = %s AND is_latest = true LIMIT 1",
@@ -291,8 +290,8 @@ def _find_version_chain(s2_id: str | None, h3_r12: str) -> uuid.UUID:
             row = cur.fetchone()
             if row:
                 return uuid.UUID(row[0])
+            return uuid.uuid4()
 
-        # Fallback: match by H3 R12 cell
         cur.execute(
             "SELECT version_chain_id FROM reports WHERE h3_r12 = %s AND is_latest = true LIMIT 1",
             (h3_r12,),
