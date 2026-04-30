@@ -8,7 +8,7 @@ def _valid_body(**overrides):
     base = {
         "latitude": 51.5074,
         "longitude": -0.1278,
-        "s2_id": "4899916394579099648",
+        "building_id": "u10k7d2q",
         "damage_level": "partial",
         "infrastructure_type": ["Residential Infrastructure (Houses and apartments)"],
         "crisis_nature": ["Earthquake"],
@@ -156,7 +156,7 @@ class TestQueryReports:
         mock_cursor.fetchall.return_value = [
             (
                 "report-id-1", 36.16, 36.2,
-                "s2-123", None, "partial",
+                "u10k7d2q", None, "partial",
                 None, None, None, None,
                 ["Residential Infrastructure (Houses and apartments)"], None,
                 ["Earthquake"], True, None,
@@ -197,7 +197,7 @@ class TestQueryReports:
         assert result["total"] == 0
 
     @patch("src.handlers.reports.get_connection")
-    def test_s2_id_filter_includes_all_versions(self, mock_get_conn):
+    def test_building_id_filter_includes_all_versions(self, mock_get_conn):
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
         mock_cursor.fetchall.return_value = []
@@ -206,14 +206,14 @@ class TestQueryReports:
         mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
         mock_get_conn.return_value = mock_conn
 
-        query_reports({"s2_id": "test-building"})
+        query_reports({"building_id": "test-building"})
 
         # Verify the main WHERE clause does not filter by is_latest
         sql = mock_cursor.execute.call_args_list[0][0][0]
         # The main WHERE is the last one (after the subquery)
         main_where = sql.split("WHERE")[-1].split("ORDER BY")[0]
         assert "is_latest = true" not in main_where
-        assert "s2_id = %s" in main_where
+        assert "building_id = %s" in main_where
 
     def test_limit_over_1000_rejected(self):
         import pytest
@@ -356,7 +356,7 @@ class TestQueryReports:
 
 class TestFindVersionChain:
     @patch("src.handlers.reports.get_connection")
-    def test_matches_by_s2_id(self, mock_get_conn):
+    def test_matches_by_building_id(self, mock_get_conn):
         chain_id = str(uuid.uuid4())
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -365,11 +365,11 @@ class TestFindVersionChain:
         mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
         mock_get_conn.return_value = mock_conn
 
-        result = _find_version_chain("test-s2-id", "8a2a1072b59ffff")
+        result = _find_version_chain("u10k7d2q", "8a2a1072b59ffff")
         assert result == uuid.UUID(chain_id)
 
     @patch("src.handlers.reports.get_connection")
-    def test_falls_back_to_h3_only_when_s2_id_absent(self, mock_get_conn):
+    def test_falls_back_to_h3_only_when_building_id_absent(self, mock_get_conn):
         chain_id = str(uuid.uuid4())
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -382,7 +382,7 @@ class TestFindVersionChain:
         assert result == uuid.UUID(chain_id)
 
     @patch("src.handlers.reports.get_connection")
-    def test_unknown_s2_id_does_not_chain_via_h3(self, mock_get_conn):
+    def test_unknown_building_id_does_not_chain_via_h3(self, mock_get_conn):
         existing_chain = str(uuid.uuid4())
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
@@ -391,7 +391,7 @@ class TestFindVersionChain:
         mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
         mock_get_conn.return_value = mock_conn
 
-        result = _find_version_chain("brand-new-s2", "8a2a1072b59ffff")
+        result = _find_version_chain("u10k7d2q", "8a2a1072b59ffff")
         assert result != uuid.UUID(existing_chain)
 
     @patch("src.handlers.reports.get_connection")

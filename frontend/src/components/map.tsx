@@ -11,7 +11,7 @@ const BUILDINGS_LAYER = "building-footprints";
 const BUILDINGS_SOURCE_LAYER = "goog_msft_osm_building_footprints";
 
 export interface SelectedBuilding {
-  s2Id: string;
+  buildingId: string;
   center: [number, number];
   areaM2: number;
   source: string;
@@ -147,7 +147,7 @@ export const Map = ({
       });
 
       onBuildingSelectRef.current?.({
-        s2Id: props.s2_id,
+        buildingId: props.geohash,
         center,
         areaM2: props.area_in_meters ?? 0,
         source: props.bf_source ?? "",

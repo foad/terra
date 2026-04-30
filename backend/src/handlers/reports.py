@@ -14,7 +14,7 @@ logger = Logger()
 class ReportSubmission(BaseModel):
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
-    s2_id: str | None = Field(None, max_length=32)
+    building_id: str | None = Field(None, max_length=32)
     location_description: str | None = Field(None, max_length=500)
     damage_level: str = Field(pattern="^(minimal|partial|complete)$")
     photo_key: str | None = Field(None, pattern=r"^uploads/[a-f0-9-]+\.(jpg|png|webp)$")
@@ -49,7 +49,7 @@ class ReportsQueryParams(BaseModel):
     crisis_nature: str | None = Field(None, max_length=500)
     from_: datetime | None = Field(None, alias="from")
     to: datetime | None = None
-    s2_id: str | None = Field(None, max_length=32)
+    building_id: str | None = Field(None, max_length=32)
     limit: int = Field(500, ge=1, le=1000)
     offset: int = Field(0, ge=0)
 
@@ -78,7 +78,7 @@ def create_report(body: dict) -> dict:
     h3_r8 = h3.latlng_to_cell(submission.latitude, submission.longitude, 8)
 
     # Determine version chain
-    version_chain_id = _find_version_chain(submission.s2_id, h3_r12)
+    version_chain_id = _find_version_chain(submission.building_id, h3_r12)
 
     # Build photo URL from key. Thumbnail follows convention written by the
     # photo_processor Lambda: uploads/<uuid>.<ext> -> thumbnails/<uuid>.jpg.
@@ -96,7 +96,7 @@ def create_report(body: dict) -> dict:
         cur.execute(
             """
             INSERT INTO reports (
-                id, location, h3_r12, h3_r8, s2_id, location_description,
+                id, location, h3_r12, h3_r8, building_id, location_description,
                 damage_level, ai_damage_level, ai_infrastructure_type, ai_confidence,
                 photo_url, thumbnail_url, infrastructure_type, infrastructure_name,
                 crisis_nature, debris_present, electricity_status,
@@ -113,7 +113,7 @@ def create_report(body: dict) -> dict:
                 submission.latitude,
                 h3_r12,
                 h3_r8,
-                submission.s2_id,
+                submission.building_id,
                 submission.location_description,
                 submission.damage_level,
                 submission.ai_damage_level,
@@ -200,12 +200,11 @@ def query_reports(params: dict) -> dict:
         conditions.append("submitted_at <= %s")
         values.append(q.to)
 
-    # S2 ID filter (for version history)
-    if q.s2_id:
-        # When querying by s2_id, show all versions not just latest
+    # When querying by building_id, show all versions not just latest
+    if q.building_id:
         conditions = [c for c in conditions if c != "is_latest = true"]
-        conditions.append("s2_id = %s")
-        values.append(q.s2_id)
+        conditions.append("building_id = %s")
+        values.append(q.building_id)
 
     where = " AND ".join(conditions)
 
@@ -217,7 +216,7 @@ def query_reports(params: dict) -> dict:
             f"""
             SELECT
                 id, ST_X(location) as lng, ST_Y(location) as lat,
-                s2_id, location_description, damage_level,
+                building_id, location_description, damage_level,
                 ai_damage_level, ai_infrastructure_type, ai_confidence, photo_url,
                 infrastructure_type, infrastructure_name,
                 crisis_nature, debris_present, electricity_status,
@@ -250,7 +249,7 @@ def query_reports(params: dict) -> dict:
             },
             "properties": {
                 "id": str(row[0]),
-                "s2_id": row[3],
+                "building_id": row[3],
                 "location_description": row[4],
                 "damage_level": row[5],
                 "ai_damage_level": row[6],
@@ -278,14 +277,14 @@ def query_reports(params: dict) -> dict:
     }
 
 
-def _find_version_chain(s2_id: str | None, h3_r12: str) -> uuid.UUID:
+def _find_version_chain(building_id: str | None, h3_r12: str) -> uuid.UUID:
     """Find existing version chain for this building, or create a new one."""
     conn = get_connection()
     with conn.cursor() as cur:
-        if s2_id:
+        if building_id:
             cur.execute(
-                "SELECT version_chain_id FROM reports WHERE s2_id = %s AND is_latest = true LIMIT 1",
-                (s2_id,),
+                "SELECT version_chain_id FROM reports WHERE building_id = %s AND is_latest = true LIMIT 1",
+                (building_id,),
             )
             row = cur.fetchone()
             if row:

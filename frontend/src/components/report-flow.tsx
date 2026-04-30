@@ -146,7 +146,7 @@ export const ReportFlow = ({
         photoKey: photo?.photoKey ?? null,
         latitude: reportLat,
         longitude: reportLng,
-        s2Id: selectedBuilding?.s2Id ?? null,
+        buildingId: selectedBuilding?.buildingId ?? null,
         locationDescription: locationFallback || null,
         damageLevel,
         aiDamageLevel: aiClassification?.damageLevel ?? null,

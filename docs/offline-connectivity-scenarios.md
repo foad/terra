@@ -275,7 +275,7 @@ erDiagram
         string photo_key "S3 key (set after upload)"
         float latitude
         float longitude
-        string s2_id
+        string building_id
         string location_description
         string damage_level
         json survey_data "all survey fields"

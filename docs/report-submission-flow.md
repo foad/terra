@@ -10,7 +10,7 @@ sequenceDiagram
     participant LS as localStorage
 
     Note over U: Step 1 — Location
-    U->>U: Select building on map (s2_id) or describe location
+    U->>U: Select building on map (building_id) or describe location
 
     Note over U: Step 2 — Photo
     U->>API: POST /photos/upload
@@ -34,7 +34,7 @@ sequenceDiagram
     Note over U: Step 5 — Submit
     U->>API: POST /reports (all data + photo_key + AI results)
     API->>DB: Compute H3 R12/R8 indexes
-    API->>DB: Find or create version chain (by s2_id or H3 R12)
+    API->>DB: Find or create version chain (by building_id or H3 R12)
     API->>DB: INSERT report
     API->>DB: SELECT area report count
     API-->>U: { id, status, area_report_count, version_chain_id }
