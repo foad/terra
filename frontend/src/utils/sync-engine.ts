@@ -76,7 +76,7 @@ export const syncEngine = {
         body: JSON.stringify({
           latitude: report.latitude,
           longitude: report.longitude,
-          s2_id: report.s2Id,
+          building_id: report.buildingId,
           location_description: report.locationDescription,
           damage_level: report.damageLevel,
           ai_damage_level: report.aiDamageLevel,

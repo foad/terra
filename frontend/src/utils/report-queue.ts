@@ -12,7 +12,7 @@ export interface QueuedReport {
   photoKey: string | null; // set after photo upload succeeds
   latitude: number;
   longitude: number;
-  s2Id: string | null;
+  buildingId: string | null;
   locationDescription: string | null;
   damageLevel: string;
   aiDamageLevel: string | null;

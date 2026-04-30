@@ -105,7 +105,7 @@ Query reports. Returns a GeoJSON FeatureCollection.
 | `infrastructure_type` | string | Pipe-separated infrastructure types (values contain commas) |
 | `from` | string | ISO datetime, reports submitted after |
 | `to` | string | ISO datetime, reports submitted before |
-| `s2_id` | string | Building ID — returns all versions, not just latest |
+| `building_id` | string | Building ID — returns all versions, not just latest |
 | `limit` | int | Max results (default 500, max 1000) |
 | `offset` | int | Pagination offset |
 
@@ -126,7 +126,7 @@ GET /reports?west=36.1&south=36.1&east=36.3&north=36.3&damage_level=partial,comp
       "geometry": { "type": "Point", "coordinates": [36.16, 36.2] },
       "properties": {
         "id": "59a7cb76-...",
-        "s2_id": "4899916394579099648",
+        "building_id": "u10k7d2q",
         "damage_level": "partial",
         "infrastructure_type": ["Residential Infrastructure (Houses and apartments)"],
         "submitted_at": "2026-04-17T15:35:47+00:00",
@@ -140,7 +140,7 @@ GET /reports?west=36.1&south=36.1&east=36.3&north=36.3&damage_level=partial,comp
 }
 ```
 
-When `s2_id` is provided, all versions for that building are returned (not just `is_latest`), ordered by `submitted_at` descending.
+When `building_id` is provided, all versions for that building are returned (not just `is_latest`), ordered by `submitted_at` descending.
 
 ## POST /reports
 
@@ -155,7 +155,7 @@ Submit a damage assessment report.
 | `damage_level` | string | yes | `minimal`, `partial`, or `complete` |
 | `infrastructure_type` | string[] | yes | At least one type |
 | `crisis_nature` | string[] | yes | At least one nature |
-| `s2_id` | string | no | Building identifier from VIDA PMTiles |
+| `building_id` | string | no | Building identifier from VIDA PMTiles |
 | `location_description` | string | no | Text description when GPS/building unavailable |
 | `photo_key` | string | no | Key returned from POST /photos/upload |
 | `ai_damage_level` | string | no | AI-suggested damage level |
@@ -177,7 +177,7 @@ Submit a damage assessment report.
 {
   "latitude": 51.5074,
   "longitude": -0.1278,
-  "s2_id": "4899916394579099648",
+  "building_id": "u10k7d2q",
   "damage_level": "partial",
   "photo_key": "uploads/59a7cb76-0b9f-4f45-a91d-e237a3760a31.jpg",
   "infrastructure_type": ["Residential Infrastructure (Houses and apartments)"],
@@ -214,4 +214,4 @@ Returned when `offline_queue_id` matches an existing report:
 
 **Version chaining**
 
-When a report is submitted for a building that already has reports (matched by `s2_id` or H3 R12 cell), the new report joins the existing version chain. Previous reports in the chain are marked `is_latest = false` via a database trigger.
+When a report is submitted for a building that already has reports (matched by `building_id` or H3 R12 cell), the new report joins the existing version chain. Previous reports in the chain are marked `is_latest = false` via a database trigger.

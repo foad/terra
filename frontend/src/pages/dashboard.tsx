@@ -12,7 +12,7 @@ export interface ReportFeature {
   };
   properties: {
     id: string;
-    s2_id: string | null;
+    building_id: string | null;
     location_description: string | null;
     damage_level: string;
     ai_damage_level: string | null;
