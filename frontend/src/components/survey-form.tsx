@@ -90,13 +90,21 @@ export const isSurveyStepComplete = (step: number, data: SurveyData): boolean =>
     case 0: return data.infrastructureType.length > 0;
     case 1: return true;
     case 2: return data.crisisNature.length > 0;
-    case 3: return data.debrisPresent !== null;
-    case 4: return data.electricityStatus !== "";
-    case 5: return data.healthStatus !== "";
+    case 3: return data.debrisPresent === true || data.debrisPresent === false;
+    case 4: return Boolean(data.electricityStatus);
+    case 5: return Boolean(data.healthStatus);
     case 6: return data.pressingNeeds.length > 0;
     default: return false;
   }
 };
+
+export interface PreSeeded {
+  crisisNature?: string[];
+  debrisPresent?: boolean;
+  electricityStatus?: string;
+  healthStatus?: string;
+  pressingNeeds?: string[];
+}
 
 interface SurveyFormProps {
   step: number;
@@ -104,6 +112,7 @@ interface SurveyFormProps {
   onChange: (data: SurveyData) => void;
   aiInfrastructure?: string[] | null;
   aiInfrastructureConfidence?: number | null;
+  preSeeded?: PreSeeded;
 }
 
 export const SurveyForm = ({
@@ -112,6 +121,7 @@ export const SurveyForm = ({
   onChange,
   aiInfrastructure,
   aiInfrastructureConfidence,
+  preSeeded,
 }: SurveyFormProps) => {
   const { t } = useTranslation();
   const aiInfraBadge =
@@ -120,6 +130,8 @@ export const SurveyForm = ({
           confidence: Math.round(aiInfrastructureConfidence * 100),
         })
       : null;
+  const currentBadge = t("common.currentBadge");
+  const lastUsedBadge = t("common.lastUsedBadge");
 
   const toggleMultiSelect = (field: keyof SurveyData, option: string) => {
     const current = value[field] as string[];
@@ -203,19 +215,23 @@ export const SurveyForm = ({
               <div className={styles.optionGroupLabel}>
                 {t(`survey.crisisGroups.${group.key}`)}
               </div>
-              {group.types.map((type) => (
-                <div className="form-check" key={type.key}>
-                  <input
-                    type="checkbox"
-                    id={`crisis-${type.value}`}
-                    checked={value.crisisNature.includes(type.value)}
-                    onChange={() => toggleMultiSelect("crisisNature", type.value)}
-                  />
-                  <label htmlFor={`crisis-${type.value}`}>
-                    {t(`survey.crisisTypes.${type.key}`)}
-                  </label>
-                </div>
-              ))}
+              {group.types.map((type) => {
+                const isPreSeeded = preSeeded?.crisisNature?.includes(type.value) ?? false;
+                return (
+                  <div className="form-check" key={type.key}>
+                    <input
+                      type="checkbox"
+                      id={`crisis-${type.value}`}
+                      checked={value.crisisNature.includes(type.value)}
+                      onChange={() => toggleMultiSelect("crisisNature", type.value)}
+                    />
+                    <label htmlFor={`crisis-${type.value}`} className={styles.checkLabel}>
+                      <span>{t(`survey.crisisTypes.${type.key}`)}</span>
+                      {isPreSeeded && <span className={styles.aiBadge}>{currentBadge}</span>}
+                    </label>
+                  </div>
+                );
+              })}
             </div>
           ))}
         </div>
@@ -236,7 +252,12 @@ export const SurveyForm = ({
               checked={value.debrisPresent === true}
               onChange={() => onChange({ ...value, debrisPresent: true })}
             />
-            <label htmlFor="debris-yes">{t("common.yes")}</label>
+            <label htmlFor="debris-yes" className={styles.checkLabel}>
+              <span>{t("common.yes")}</span>
+              {preSeeded?.debrisPresent === true && (
+                <span className={styles.aiBadge}>{lastUsedBadge}</span>
+              )}
+            </label>
           </div>
           <div className="form-check">
             <input
@@ -246,7 +267,12 @@ export const SurveyForm = ({
               checked={value.debrisPresent === false}
               onChange={() => onChange({ ...value, debrisPresent: false })}
             />
-            <label htmlFor="debris-no">{t("common.no")}</label>
+            <label htmlFor="debris-no" className={styles.checkLabel}>
+              <span>{t("common.no")}</span>
+              {preSeeded?.debrisPresent === false && (
+                <span className={styles.aiBadge}>{lastUsedBadge}</span>
+              )}
+            </label>
           </div>
         </div>
       </div>
@@ -258,20 +284,24 @@ export const SurveyForm = ({
       <div className={styles.container} data-testid="survey-step-4">
         <h2 className={styles.question}>{t("survey.electricity")}</h2>
         <div className={styles.options}>
-          {ELECTRICITY_OPTIONS.map((option) => (
-            <div className="form-check" key={option.key}>
-              <input
-                type="radio"
-                id={`elec-${option.value}`}
-                name="electricity"
-                checked={value.electricityStatus === option.value}
-                onChange={() => onChange({ ...value, electricityStatus: option.value })}
-              />
-              <label htmlFor={`elec-${option.value}`}>
-                {t(`survey.electricityOptions.${option.key}`)}
-              </label>
-            </div>
-          ))}
+          {ELECTRICITY_OPTIONS.map((option) => {
+            const isPreSeeded = preSeeded?.electricityStatus === option.value;
+            return (
+              <div className="form-check" key={option.key}>
+                <input
+                  type="radio"
+                  id={`elec-${option.value}`}
+                  name="electricity"
+                  checked={value.electricityStatus === option.value}
+                  onChange={() => onChange({ ...value, electricityStatus: option.value })}
+                />
+                <label htmlFor={`elec-${option.value}`} className={styles.checkLabel}>
+                  <span>{t(`survey.electricityOptions.${option.key}`)}</span>
+                  {isPreSeeded && <span className={styles.aiBadge}>{lastUsedBadge}</span>}
+                </label>
+              </div>
+            );
+          })}
         </div>
       </div>
     );
@@ -282,20 +312,24 @@ export const SurveyForm = ({
       <div className={styles.container} data-testid="survey-step-5">
         <h2 className={styles.question}>{t("survey.health")}</h2>
         <div className={styles.options}>
-          {HEALTH_OPTIONS.map((option) => (
-            <div className="form-check" key={option.key}>
-              <input
-                type="radio"
-                id={`health-${option.value}`}
-                name="health"
-                checked={value.healthStatus === option.value}
-                onChange={() => onChange({ ...value, healthStatus: option.value })}
-              />
-              <label htmlFor={`health-${option.value}`}>
-                {t(`survey.healthOptions.${option.key}`)}
-              </label>
-            </div>
-          ))}
+          {HEALTH_OPTIONS.map((option) => {
+            const isPreSeeded = preSeeded?.healthStatus === option.value;
+            return (
+              <div className="form-check" key={option.key}>
+                <input
+                  type="radio"
+                  id={`health-${option.value}`}
+                  name="health"
+                  checked={value.healthStatus === option.value}
+                  onChange={() => onChange({ ...value, healthStatus: option.value })}
+                />
+                <label htmlFor={`health-${option.value}`} className={styles.checkLabel}>
+                  <span>{t(`survey.healthOptions.${option.key}`)}</span>
+                  {isPreSeeded && <span className={styles.aiBadge}>{lastUsedBadge}</span>}
+                </label>
+              </div>
+            );
+          })}
         </div>
       </div>
     );
@@ -306,19 +340,23 @@ export const SurveyForm = ({
       <div className={styles.container} data-testid="survey-step-6">
         <h2 className={styles.question}>{t("survey.pressingNeeds")}</h2>
         <div className={styles.options}>
-          {PRESSING_NEEDS.map((need) => (
-            <div className="form-check" key={need.key}>
-              <input
-                type="checkbox"
-                id={`need-${need.value}`}
-                checked={value.pressingNeeds.includes(need.value)}
-                onChange={() => toggleMultiSelect("pressingNeeds", need.value)}
-              />
-              <label htmlFor={`need-${need.value}`}>
-                {t(`survey.pressingNeedOptions.${need.key}`)}
-              </label>
-            </div>
-          ))}
+          {PRESSING_NEEDS.map((need) => {
+            const isPreSeeded = preSeeded?.pressingNeeds?.includes(need.value) ?? false;
+            return (
+              <div className="form-check" key={need.key}>
+                <input
+                  type="checkbox"
+                  id={`need-${need.value}`}
+                  checked={value.pressingNeeds.includes(need.value)}
+                  onChange={() => toggleMultiSelect("pressingNeeds", need.value)}
+                />
+                <label htmlFor={`need-${need.value}`} className={styles.checkLabel}>
+                  <span>{t(`survey.pressingNeedOptions.${need.key}`)}</span>
+                  {isPreSeeded && <span className={styles.aiBadge}>{lastUsedBadge}</span>}
+                </label>
+              </div>
+            );
+          })}
           <div className="form-check">
             <input
               type="checkbox"

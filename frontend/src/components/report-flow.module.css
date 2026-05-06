@@ -8,6 +8,19 @@
   flex: 1;
   display: flex;
   min-height: 0;
+  position: relative;
+}
+
+.locationOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: var(--undpds-color-white);
+  max-height: 60%;
+  overflow-y: auto;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .stepHeader {

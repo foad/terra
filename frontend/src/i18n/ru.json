@@ -20,13 +20,26 @@
     "to": "По",
     "clearAll": "Очистить все",
     "otherSpecify": "Другое, укажите:",
-    "aiConfidence": "Уверенность: {{confidence}}%"
+    "aiConfidence": "Уверенность: {{confidence}}%",
+    "currentBadge": "Текущее",
+    "lastUsedBadge": "Прошлый раз"
   },
   "location": {
     "selectBuilding": "Нажмите на здание на карте, чтобы выбрать его",
     "describeLocation": "Или опишите местоположение:",
     "descriptionPlaceholder": "напр. Школа рядом с центральным рынком",
-    "selectedBuilding": "Выбранное здание"
+    "selectedBuilding": "Выбранное здание",
+    "existingReportsTitle_one": "{{count}} существующий отчёт",
+    "existingReportsTitle_few": "{{count}} существующих отчёта",
+    "existingReportsTitle_many": "{{count}} существующих отчётов",
+    "existingReportsTitle_other": "{{count}} существующих отчётов",
+    "existingReportsLatest": "Последний: {{damage}} ({{date}})",
+    "viewExisting": "Показать существующие отчёты",
+    "hideExisting": "Скрыть существующие отчёты",
+    "existingReportsMore_one": "+ ещё {{count}}",
+    "existingReportsMore_few": "+ ещё {{count}}",
+    "existingReportsMore_many": "+ ещё {{count}}",
+    "existingReportsMore_other": "+ ещё {{count}}"
   },
   "photo": {
     "title": "Сделать фото",

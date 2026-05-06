@@ -52,9 +52,9 @@ export const saveSurveyPrefs = (lat: number, lng: number, survey: SurveyData): v
 
 export const mergeEmptyFields = (survey: SurveyData, prefs: StoredPrefs): SurveyData => ({
   ...survey,
-  debrisPresent: survey.debrisPresent ?? prefs.debrisPresent,
-  electricityStatus: survey.electricityStatus || prefs.electricityStatus,
-  healthStatus: survey.healthStatus || prefs.healthStatus,
+  debrisPresent: survey.debrisPresent ?? prefs.debrisPresent ?? null,
+  electricityStatus: survey.electricityStatus || prefs.electricityStatus || "",
+  healthStatus: survey.healthStatus || prefs.healthStatus || "",
   pressingNeeds:
-    survey.pressingNeeds.length > 0 ? survey.pressingNeeds : prefs.pressingNeeds,
+    survey.pressingNeeds.length > 0 ? survey.pressingNeeds : (prefs.pressingNeeds ?? []),
 });

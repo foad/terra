@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Map } from "./map";
 import type { SelectedBuilding } from "./map";
 import { BuildingSelection } from "./building-selection";
+import { ExistingReports } from "./existing-reports";
 import { PhotoCapture } from "./photo-capture";
 import type { PhotoResult } from "./photo-capture";
 import { DamageClassification } from "./damage-classification";
@@ -14,7 +15,7 @@ import {
   isSurveyStepComplete,
   INFRASTRUCTURE_TYPES,
 } from "./survey-form";
-import type { SurveyData } from "./survey-form";
+import type { PreSeeded, SurveyData } from "./survey-form";
 import { SubmissionConfirmation } from "./submission-confirmation";
 import { reportQueue } from "../utils/report-queue";
 import { api } from "../utils/api";
@@ -23,6 +24,7 @@ import {
   mergeEmptyFields,
   saveSurveyPrefs,
 } from "../utils/survey-prefs";
+import type { ReportFeature } from "../pages/dashboard";
 import styles from "./report-flow.module.css";
 
 const AI_CONFIDENCE_THRESHOLD = 0.6;
@@ -62,6 +64,8 @@ export const ReportFlow = ({
   const classifiedKeyRef = useRef<string | null>(null);
   const [activeCrisisType, setActiveCrisisType] = useState<string | null>(null);
   const crisisLookedUpRef = useRef(false);
+  const [existingReports, setExistingReports] = useState<ReportFeature[]>([]);
+  const [preSeeded, setPreSeeded] = useState<PreSeeded>({});
 
   // Fire classification as soon as the photo has been uploaded. Non-blocking:
   // the user can complete the flow whether or not it succeeds. The pre-select
@@ -145,6 +149,26 @@ export const ReportFlow = ({
     })();
   }, [latitude, longitude]);
 
+  useEffect(() => {
+    const buildingId = selectedBuilding?.buildingId;
+    if (!buildingId) {
+      setExistingReports([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const result = await api(`/reports?building_id=${encodeURIComponent(buildingId)}`);
+        if (!cancelled) setExistingReports(result?.features ?? []);
+      } catch {
+        if (!cancelled) setExistingReports([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedBuilding?.buildingId]);
+
   const handlePhotoCleared = useCallback(() => {
     setPhoto(null);
     setAiClassification(null);
@@ -154,17 +178,34 @@ export const ReportFlow = ({
   const handleAdvanceToSurvey = () => {
     const reportLat = selectedBuilding?.center[1] ?? latitude;
     const reportLng = selectedBuilding?.center[0] ?? longitude;
+    const seeded: PreSeeded = {};
     setSurvey((prev) => {
       let next = prev;
       if (reportLat != null && reportLng != null) {
         const prefs = loadSurveyPrefs(reportLat, reportLng);
-        if (prefs) next = mergeEmptyFields(next, prefs);
+        if (prefs) {
+          if (next.debrisPresent === null && prefs.debrisPresent !== null) {
+            seeded.debrisPresent = prefs.debrisPresent;
+          }
+          if (!next.electricityStatus && prefs.electricityStatus) {
+            seeded.electricityStatus = prefs.electricityStatus;
+          }
+          if (!next.healthStatus && prefs.healthStatus) {
+            seeded.healthStatus = prefs.healthStatus;
+          }
+          if (next.pressingNeeds.length === 0 && prefs.pressingNeeds.length > 0) {
+            seeded.pressingNeeds = prefs.pressingNeeds;
+          }
+          next = mergeEmptyFields(next, prefs);
+        }
       }
       if (activeCrisisType && next.crisisNature.length === 0) {
+        seeded.crisisNature = [activeCrisisType];
         next = { ...next, crisisNature: [activeCrisisType] };
       }
       return next;
     });
+    setPreSeeded(seeded);
     setStep("survey");
   };
 
@@ -218,6 +259,7 @@ export const ReportFlow = ({
     setSubmitError(null);
     setAiClassification(null);
     classifiedKeyRef.current = null;
+    setPreSeeded({});
   };
 
   const hasLocation =
@@ -235,12 +277,15 @@ export const ReportFlow = ({
             accuracy={accuracy}
             onBuildingSelect={handleBuildingSelect}
           />
+          <div className={styles.locationOverlay}>
+            <BuildingSelection
+              building={selectedBuilding}
+              locationFallback={locationFallback}
+              onLocationFallbackChange={setLocationFallback}
+            />
+            <ExistingReports reports={existingReports} />
+          </div>
         </div>
-        <BuildingSelection
-          building={selectedBuilding}
-          locationFallback={locationFallback}
-          onLocationFallbackChange={setLocationFallback}
-        />
         <div className={styles.actions}>
           <a
             role="button"
@@ -364,6 +409,7 @@ export const ReportFlow = ({
           onChange={setSurvey}
           aiInfrastructure={aiInfraSuggestion}
           aiInfrastructureConfidence={aiInfraConfidence}
+          preSeeded={preSeeded}
         />
         {submitError && (
           <div className={styles.submitError}>{submitError}</div>

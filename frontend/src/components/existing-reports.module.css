@@ -1,0 +1,74 @@
+.card {
+  padding: 12px 16px;
+  border-top: 1px solid var(--undpds-color-gray-300);
+  background: var(--undpds-color-yellow-50, #fffbe6);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.latest {
+  font-size: 0.8125rem;
+  color: var(--undpds-color-gray-700);
+}
+
+.toggle {
+  align-self: flex-start;
+  font-size: 0.8125rem;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--undpds-color-blue-600);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-top: 1px dashed var(--undpds-color-gray-300);
+  padding-top: 8px;
+}
+
+.item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 0.8125rem;
+}
+
+.itemDate {
+  color: var(--undpds-color-gray-600);
+  white-space: nowrap;
+}
+
+.itemDamage {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.itemDamage.minimal {
+  color: #16a34a;
+}
+
+.itemDamage.partial {
+  color: #d97706;
+}
+
+.itemDamage.complete {
+  color: #dc2626;
+}
+
+.itemDescription {
+  color: var(--undpds-color-gray-700);
+  font-style: italic;
+}
