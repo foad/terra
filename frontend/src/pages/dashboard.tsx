@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { DashboardMap } from "../components/dashboard-map";
 import { DashboardSidebar } from "../components/dashboard-sidebar";
+import { ReportDetailsModal } from "../components/report-details-modal";
 import { api } from "../utils/api";
 import styles from "./dashboard.module.css";
 
@@ -18,6 +19,7 @@ export interface ReportFeature {
     ai_damage_level: string | null;
     ai_confidence: number | null;
     photo_url: string | null;
+    thumbnail_url: string | null;
     infrastructure_type: string[];
     infrastructure_name: string | null;
     crisis_nature: string[];
@@ -53,6 +55,8 @@ const DashboardPage = () => {
   const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [selectedReport, setSelectedReport] = useState<ReportFeature | null>(null);
+  const [history, setHistory] = useState<ReportFeature[]>([]);
+  const [detailsReport, setDetailsReport] = useState<ReportFeature | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchReports = useCallback(async () => {
@@ -97,6 +101,28 @@ const DashboardPage = () => {
     fetchReports();
   }, [fetchReports]);
 
+  useEffect(() => {
+    const buildingId = selectedReport?.properties.building_id;
+    if (!buildingId) {
+      setHistory([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await api(
+          `/reports?building_id=${encodeURIComponent(buildingId)}&limit=100`,
+        );
+        if (!cancelled) setHistory(data.features ?? []);
+      } catch {
+        if (!cancelled) setHistory([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedReport?.properties.building_id]);
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -113,6 +139,8 @@ const DashboardPage = () => {
           filters={filters}
           onFiltersChange={setFilters}
           selectedReport={selectedReport}
+          history={history}
+          onShowDetails={setDetailsReport}
           onClearSelection={() => setSelectedReport(null)}
         />
         <div className={styles.mapArea}>
@@ -122,6 +150,12 @@ const DashboardPage = () => {
           />
         </div>
       </div>
+      {detailsReport && (
+        <ReportDetailsModal
+          report={detailsReport}
+          onClose={() => setDetailsReport(null)}
+        />
+      )}
     </div>
   );
 };

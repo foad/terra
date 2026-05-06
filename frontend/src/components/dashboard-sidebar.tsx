@@ -36,6 +36,8 @@ interface DashboardSidebarProps {
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
   selectedReport: ReportFeature | null;
+  history: ReportFeature[];
+  onShowDetails: (report: ReportFeature) => void;
   onClearSelection: () => void;
 }
 
@@ -43,6 +45,8 @@ export const DashboardSidebar = ({
   filters,
   onFiltersChange,
   selectedReport,
+  history,
+  onShowDetails,
   onClearSelection,
 }: DashboardSidebarProps) => {
   const toggleDamageLevel = (level: string) => {
@@ -64,7 +68,11 @@ export const DashboardSidebar = ({
       {selectedReport ? (
         <div className={styles.detail}>
           <div className={styles.detailHeader}>
-            <h2 className={styles.detailTitle}>Report Detail</h2>
+            <h2 className={styles.detailTitle}>
+              {history.length > 1
+                ? `${history.length} reports for this building`
+                : "Report Detail"}
+            </h2>
             <button
               type="button"
               className={styles.closeButton}
@@ -74,18 +82,6 @@ export const DashboardSidebar = ({
             </button>
           </div>
           <div className={styles.detailBody}>
-            <div className={styles.field}>
-              <div className={styles.fieldLabel}>Damage Level</div>
-              <div className={`${styles.damageBadge} ${styles[selectedReport.properties.damage_level]}`}>
-                {selectedReport.properties.damage_level}
-              </div>
-            </div>
-            <div className={styles.field}>
-              <div className={styles.fieldLabel}>Infrastructure</div>
-              <div className={styles.fieldValue}>
-                {selectedReport.properties.infrastructure_type.join(", ")}
-              </div>
-            </div>
             {selectedReport.properties.infrastructure_name && (
               <div className={styles.field}>
                 <div className={styles.fieldLabel}>Name</div>
@@ -94,32 +90,50 @@ export const DashboardSidebar = ({
                 </div>
               </div>
             )}
-            <div className={styles.field}>
-              <div className={styles.fieldLabel}>Crisis</div>
-              <div className={styles.fieldValue}>
-                {selectedReport.properties.crisis_nature.join(", ")}
-              </div>
-            </div>
-            <div className={styles.field}>
-              <div className={styles.fieldLabel}>Submitted</div>
-              <div className={styles.fieldValue}>
-                {new Date(selectedReport.properties.submitted_at).toLocaleString()}
-              </div>
-            </div>
-            <div className={styles.field}>
-              <div className={styles.fieldLabel}>Versions</div>
-              <div className={styles.fieldValue}>
-                {selectedReport.properties.version_count} report(s) for this location
-              </div>
-            </div>
-            {selectedReport.properties.location_description && (
-              <div className={styles.field}>
-                <div className={styles.fieldLabel}>Location</div>
-                <div className={styles.fieldValue}>
-                  {selectedReport.properties.location_description}
-                </div>
-              </div>
-            )}
+            <ul className={styles.historyList}>
+              {(history.length > 0 ? history : [selectedReport]).map((r) => (
+                  <li
+                    key={r.properties.id}
+                    className={styles.historyItem}
+                  >
+                    {(r.properties.thumbnail_url || r.properties.photo_url) ? (
+                      <img
+                        src={r.properties.thumbnail_url ?? r.properties.photo_url ?? ""}
+                        alt=""
+                        className={styles.historyThumb}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className={styles.historyThumbPlaceholder} />
+                    )}
+                    <div className={styles.historyMeta}>
+                      <div className={styles.historyMetaTop}>
+                        <span className={`${styles.damageBadge} ${styles[r.properties.damage_level]}`}>
+                          {r.properties.damage_level}
+                        </span>
+                        {r.properties.is_latest && (
+                          <span className={styles.currentTag}>Current</span>
+                        )}
+                      </div>
+                      <div className={styles.historyDate}>
+                        {new Date(r.properties.submitted_at).toLocaleString()}
+                      </div>
+                      {r.properties.location_description && (
+                        <div className={styles.historyDesc}>
+                          {r.properties.location_description}
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        className={styles.detailsButton}
+                        onClick={() => onShowDetails(r)}
+                      >
+                        Details
+                      </button>
+                    </div>
+                  </li>
+              ))}
+            </ul>
           </div>
         </div>
       ) : (
