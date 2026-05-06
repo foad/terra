@@ -1,0 +1,108 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: var(--undpds-spacing-05);
+}
+
+.modal {
+  background: var(--undpds-color-white);
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--undpds-spacing-04) var(--undpds-spacing-05);
+  border-bottom: 1px solid var(--undpds-color-gray-300);
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+.close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--undpds-color-gray-600);
+  padding: 4px;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--undpds-spacing-05);
+  padding: var(--undpds-spacing-05);
+  overflow-y: auto;
+}
+
+.photo {
+  width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+  background: var(--undpds-color-gray-100);
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--undpds-spacing-04);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fieldLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--undpds-color-gray-600);
+}
+
+.fieldValue {
+  font-size: 0.875rem;
+}
+
+.damageBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.damageBadge.minimal {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.damageBadge.partial {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.damageBadge.complete {
+  background: #fee2e2;
+  color: #991b1b;
+}

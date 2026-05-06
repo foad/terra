@@ -2,6 +2,7 @@ import os
 import uuid
 from datetime import datetime
 
+import boto3
 import h3
 from aws_lambda_powertools import Logger
 from pydantic import BaseModel, ConfigDict, Field
@@ -9,6 +10,22 @@ from pydantic import BaseModel, ConfigDict, Field
 from src.utils.db import get_connection
 
 logger = Logger()
+s3 = boto3.client("s3")
+
+PHOTO_URL_EXPIRY_SECONDS = 3600
+
+
+def _presigned(uri: str | None) -> str | None:
+    if not uri or not uri.startswith("s3://"):
+        return None
+    bucket, _, key = uri[5:].partition("/")
+    if not bucket or not key:
+        return None
+    return s3.generate_presigned_url(
+        "get_object",
+        Params={"Bucket": bucket, "Key": key},
+        ExpiresIn=PHOTO_URL_EXPIRY_SECONDS,
+    )
 
 
 class ReportSubmission(BaseModel):
@@ -217,7 +234,8 @@ def query_reports(params: dict) -> dict:
             SELECT
                 id, ST_X(location) as lng, ST_Y(location) as lat,
                 building_id, location_description, damage_level,
-                ai_damage_level, ai_infrastructure_type, ai_confidence, photo_url,
+                ai_damage_level, ai_infrastructure_type, ai_confidence,
+                photo_url, thumbnail_url,
                 infrastructure_type, infrastructure_name,
                 crisis_nature, debris_present, electricity_status,
                 health_status, pressing_needs, version_chain_id,
@@ -255,18 +273,19 @@ def query_reports(params: dict) -> dict:
                 "ai_damage_level": row[6],
                 "ai_infrastructure_type": row[7],
                 "ai_confidence": row[8],
-                "photo_url": row[9],
-                "infrastructure_type": row[10],
-                "infrastructure_name": row[11],
-                "crisis_nature": row[12],
-                "debris_present": row[13],
-                "electricity_status": row[14],
-                "health_status": row[15],
-                "pressing_needs": row[16],
-                "version_chain_id": str(row[17]),
-                "is_latest": row[18],
-                "submitted_at": row[19].isoformat() if row[19] else None,
-                "version_count": row[20],
+                "photo_url": _presigned(row[9]),
+                "thumbnail_url": _presigned(row[10]),
+                "infrastructure_type": row[11],
+                "infrastructure_name": row[12],
+                "crisis_nature": row[13],
+                "debris_present": row[14],
+                "electricity_status": row[15],
+                "health_status": row[16],
+                "pressing_needs": row[17],
+                "version_chain_id": str(row[18]),
+                "is_latest": row[19],
+                "submitted_at": row[20].isoformat() if row[20] else None,
+                "version_count": row[21],
             },
         })
 
