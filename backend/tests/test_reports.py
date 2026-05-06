@@ -157,7 +157,7 @@ class TestQueryReports:
             (
                 "report-id-1", 36.16, 36.2,
                 "u10k7d2q", None, "partial",
-                None, None, None, None,
+                None, None, None, None, None,
                 ["Residential Infrastructure (Houses and apartments)"], None,
                 ["Earthquake"], True, None,
                 None, ["Food assistance and safe drinking water"],
