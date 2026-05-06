@@ -60,6 +60,8 @@ export const ReportFlow = ({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [aiClassification, setAiClassification] = useState<AiClassification | null>(null);
   const classifiedKeyRef = useRef<string | null>(null);
+  const [activeCrisisType, setActiveCrisisType] = useState<string | null>(null);
+  const crisisLookedUpRef = useRef(false);
 
   // Fire classification as soon as the photo has been uploaded. Non-blocking:
   // the user can complete the flow whether or not it succeeds. The pre-select
@@ -129,6 +131,20 @@ export const ReportFlow = ({
     [],
   );
 
+  useEffect(() => {
+    if (crisisLookedUpRef.current) return;
+    if (latitude == null || longitude == null) return;
+    crisisLookedUpRef.current = true;
+    (async () => {
+      try {
+        const result = await api(`/crisis-events/active?lat=${latitude}&lng=${longitude}`);
+        if (result?.crisis_type) setActiveCrisisType(result.crisis_type);
+      } catch {
+        // No active crisis at this location, or network error — silent drop.
+      }
+    })();
+  }, [latitude, longitude]);
+
   const handlePhotoCleared = useCallback(() => {
     setPhoto(null);
     setAiClassification(null);
@@ -138,10 +154,17 @@ export const ReportFlow = ({
   const handleAdvanceToSurvey = () => {
     const reportLat = selectedBuilding?.center[1] ?? latitude;
     const reportLng = selectedBuilding?.center[0] ?? longitude;
-    if (reportLat != null && reportLng != null) {
-      const prefs = loadSurveyPrefs(reportLat, reportLng);
-      if (prefs) setSurvey((prev) => mergeEmptyFields(prev, prefs));
-    }
+    setSurvey((prev) => {
+      let next = prev;
+      if (reportLat != null && reportLng != null) {
+        const prefs = loadSurveyPrefs(reportLat, reportLng);
+        if (prefs) next = mergeEmptyFields(next, prefs);
+      }
+      if (activeCrisisType && next.crisisNature.length === 0) {
+        next = { ...next, crisisNature: [activeCrisisType] };
+      }
+      return next;
+    });
     setStep("survey");
   };
 

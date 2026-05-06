@@ -11,6 +11,7 @@ from aws_lambda_powertools.logging import correlation_paths
 from pydantic import ValidationError
 
 from src.handlers.classify import BedrockFailedError, BedrockThrottledError, classify_photo
+from src.handlers.crisis_events import get_active_crisis
 from src.handlers.photos import get_upload_url
 from src.handlers.reports import create_report, query_reports
 
@@ -65,6 +66,19 @@ def get_reports():
         return query_reports(params)
     except ValidationError as e:
         raise BadRequestError(_first_validation_message(e)) from e
+
+
+@app.get("/crisis-events/active")
+@tracer.capture_method
+def get_active_crisis_event():
+    params = app.current_event.query_string_parameters or {}
+    try:
+        result = get_active_crisis(params)
+    except ValidationError as e:
+        raise BadRequestError(_first_validation_message(e)) from e
+    if result is None:
+        raise NotFoundError("No active crisis event at this location")
+    return result
 
 
 @app.post("/reports")
