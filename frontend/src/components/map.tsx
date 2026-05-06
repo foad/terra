@@ -94,7 +94,7 @@ export const Map = ({
     map.addControl(new maplibregl.NavigationControl(), "top-right");
     map.addControl(
       new maplibregl.AttributionControl({ compact: true }),
-      "bottom-right",
+      "top-left",
     );
 
     // Selection highlight layer (GeoJSON source, populated on click)

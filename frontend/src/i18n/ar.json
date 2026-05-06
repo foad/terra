@@ -20,13 +20,30 @@
     "to": "إلى",
     "clearAll": "مسح الكل",
     "otherSpecify": "أخرى، يرجى التحديد:",
-    "aiConfidence": "الثقة: {{confidence}}%"
+    "aiConfidence": "الثقة: {{confidence}}%",
+    "currentBadge": "حالي",
+    "lastUsedBadge": "آخر استخدام"
   },
   "location": {
     "selectBuilding": "انقر على مبنى على الخريطة لتحديده",
     "describeLocation": "أو صف الموقع:",
     "descriptionPlaceholder": "مثال: المدرسة بالقرب من السوق المركزي",
-    "selectedBuilding": "المبنى المحدد"
+    "selectedBuilding": "المبنى المحدد",
+    "existingReportsTitle_zero": "لا توجد تقارير سابقة",
+    "existingReportsTitle_one": "تقرير واحد موجود",
+    "existingReportsTitle_two": "تقريران موجودان",
+    "existingReportsTitle_few": "{{count}} تقارير موجودة",
+    "existingReportsTitle_many": "{{count}} تقريرًا موجودًا",
+    "existingReportsTitle_other": "{{count}} تقرير موجود",
+    "existingReportsLatest": "الأحدث: {{damage}} في {{date}}",
+    "viewExisting": "عرض التقارير الموجودة",
+    "hideExisting": "إخفاء التقارير الموجودة",
+    "existingReportsMore_zero": "",
+    "existingReportsMore_one": "+ تقرير آخر",
+    "existingReportsMore_two": "+ تقريران آخران",
+    "existingReportsMore_few": "+ {{count}} تقارير أخرى",
+    "existingReportsMore_many": "+ {{count}} تقريرًا آخر",
+    "existingReportsMore_other": "+ {{count}} تقرير آخر"
   },
   "photo": {
     "title": "التقاط صورة",

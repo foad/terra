@@ -20,13 +20,20 @@
     "to": "至",
     "clearAll": "清除全部",
     "otherSpecify": "其他，请说明：",
-    "aiConfidence": "置信度：{{confidence}}%"
+    "aiConfidence": "置信度：{{confidence}}%",
+    "currentBadge": "当前",
+    "lastUsedBadge": "上次使用"
   },
   "location": {
     "selectBuilding": "点击地图上的建筑物进行选择",
     "describeLocation": "或描述位置：",
     "descriptionPlaceholder": "例如：中央市场附近的学校",
-    "selectedBuilding": "已选建筑"
+    "selectedBuilding": "已选建筑",
+    "existingReportsTitle_other": "已有 {{count}} 份报告",
+    "existingReportsLatest": "最新：{{damage}}（{{date}}）",
+    "viewExisting": "查看已有报告",
+    "hideExisting": "隐藏已有报告",
+    "existingReportsMore_other": "+ 还有 {{count}} 份"
   },
   "photo": {
     "title": "拍摄照片",
