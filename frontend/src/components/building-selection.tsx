@@ -18,16 +18,11 @@ export const BuildingSelection = ({
     <div className={styles.container}>
       {building ? (
         <div className={styles.selected}>
-          <div className={styles.label}>{t("location.selectedBuilding")}</div>
-          <div className={styles.details}>
-            <span className={styles.area}>
-              {Math.round(building.areaM2)} m²
-            </span>
-            <span className={styles.source}>{building.source}</span>
-          </div>
-          <div className={styles.coords}>
+          <span className={styles.label}>{t("location.selectedBuilding")}</span>
+          <span className={styles.area}>{Math.round(building.areaM2)} m²</span>
+          <span className={styles.coords}>
             {building.center[1].toFixed(5)}, {building.center[0].toFixed(5)}
-          </div>
+          </span>
         </div>
       ) : (
         <div className={styles.unselected}>

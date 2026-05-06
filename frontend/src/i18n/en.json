@@ -20,13 +20,22 @@
     "to": "To",
     "clearAll": "Clear all",
     "otherSpecify": "Other, please specify:",
-    "aiConfidence": "Confidence: {{confidence}}%"
+    "aiConfidence": "Confidence: {{confidence}}%",
+    "currentBadge": "Current",
+    "lastUsedBadge": "Last used"
   },
   "location": {
     "selectBuilding": "Tap a building on the map to select it",
     "describeLocation": "Or describe the location:",
     "descriptionPlaceholder": "e.g. The school near the central market",
-    "selectedBuilding": "Selected building"
+    "selectedBuilding": "Selected building",
+    "existingReportsTitle_one": "{{count}} existing report",
+    "existingReportsTitle_other": "{{count}} existing reports",
+    "existingReportsLatest": "Latest: {{damage}} on {{date}}",
+    "viewExisting": "View existing reports",
+    "hideExisting": "Hide existing reports",
+    "existingReportsMore_one": "+ {{count}} more",
+    "existingReportsMore_other": "+ {{count}} more"
   },
   "photo": {
     "title": "Take a Photo",

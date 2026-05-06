@@ -20,13 +20,22 @@
     "to": "Au",
     "clearAll": "Tout effacer",
     "otherSpecify": "Autre, veuillez préciser :",
-    "aiConfidence": "Confiance : {{confidence}} %"
+    "aiConfidence": "Confiance : {{confidence}} %",
+    "currentBadge": "Actuel",
+    "lastUsedBadge": "Dernier utilisé"
   },
   "location": {
     "selectBuilding": "Appuyez sur un bâtiment sur la carte pour le sélectionner",
     "describeLocation": "Ou décrivez l'emplacement :",
     "descriptionPlaceholder": "ex. L'école près du marché central",
-    "selectedBuilding": "Bâtiment sélectionné"
+    "selectedBuilding": "Bâtiment sélectionné",
+    "existingReportsTitle_one": "{{count}} rapport existant",
+    "existingReportsTitle_other": "{{count}} rapports existants",
+    "existingReportsLatest": "Dernier : {{damage}} le {{date}}",
+    "viewExisting": "Voir les rapports existants",
+    "hideExisting": "Masquer les rapports existants",
+    "existingReportsMore_one": "+ {{count}} de plus",
+    "existingReportsMore_other": "+ {{count}} de plus"
   },
   "photo": {
     "title": "Prendre une photo",
