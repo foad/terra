@@ -18,6 +18,11 @@ import type { SurveyData } from "./survey-form";
 import { SubmissionConfirmation } from "./submission-confirmation";
 import { reportQueue } from "../utils/report-queue";
 import { api } from "../utils/api";
+import {
+  loadSurveyPrefs,
+  mergeEmptyFields,
+  saveSurveyPrefs,
+} from "../utils/survey-prefs";
 import styles from "./report-flow.module.css";
 
 const AI_CONFIDENCE_THRESHOLD = 0.6;
@@ -130,6 +135,16 @@ export const ReportFlow = ({
     classifiedKeyRef.current = null;
   }, []);
 
+  const handleAdvanceToSurvey = () => {
+    const reportLat = selectedBuilding?.center[1] ?? latitude;
+    const reportLng = selectedBuilding?.center[0] ?? longitude;
+    if (reportLat != null && reportLng != null) {
+      const prefs = loadSurveyPrefs(reportLat, reportLng);
+      if (prefs) setSurvey((prev) => mergeEmptyFields(prev, prefs));
+    }
+    setStep("survey");
+  };
+
   const handleSubmit = async () => {
     const reportLat = selectedBuilding?.center[1] ?? latitude;
     const reportLng = selectedBuilding?.center[0] ?? longitude;
@@ -160,6 +175,7 @@ export const ReportFlow = ({
         createdAt: new Date().toISOString(),
       });
 
+      saveSurveyPrefs(reportLat, reportLng, survey);
       setStep("confirmation");
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Failed to queue report");
@@ -274,7 +290,7 @@ export const ReportFlow = ({
             role="button"
             data-testid="btn-next"
             className={`button button-primary ${!damageLevel ? "disabled" : ""}`}
-            onClick={damageLevel ? () => setStep("survey") : undefined}
+            onClick={damageLevel ? handleAdvanceToSurvey : undefined}
           >
             {t("common.next")}
           </a>
