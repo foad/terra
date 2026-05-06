@@ -91,6 +91,29 @@ Run AI vision classification on an uploaded photo. Returns suggested damage leve
 
 The frontend treats every error as a silent drop and lets the user proceed without AI assistance.
 
+## GET /crisis-events/active
+
+Return the active crisis event whose `region_bbox` contains the given point. Used by the PWA to pre-fill the survey's crisis nature field. 404 if no active event covers the point.
+
+**Query Parameters**
+
+| Param | Type | Description |
+|-------|------|-------------|
+| `lat` | float | Latitude (-90 to 90) |
+| `lng` | float | Longitude (-180 to 180) |
+
+**Response**
+
+```json
+{
+  "id": "59a7cb76-...",
+  "name": "Kent Floods 2026",
+  "crisis_type": "Flood"
+}
+```
+
+`crisis_type` matches the English display strings stored in `reports.crisis_nature`.
+
 ## GET /reports
 
 Query reports. Returns a GeoJSON FeatureCollection.
