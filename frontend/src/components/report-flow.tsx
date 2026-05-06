@@ -18,6 +18,7 @@ import {
 import type { PreSeeded, SurveyData } from "./survey-form";
 import { SubmissionConfirmation } from "./submission-confirmation";
 import { reportQueue } from "../utils/report-queue";
+import { syncEngine } from "../utils/sync-engine";
 import { api } from "../utils/api";
 import {
   loadSurveyPrefs,
@@ -240,6 +241,7 @@ export const ReportFlow = ({
       });
 
       saveSurveyPrefs(reportLat, reportLng, survey);
+      syncEngine.processQueue();
       setStep("confirmation");
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Failed to queue report");
