@@ -38,7 +38,13 @@ interface AiClassification {
   infrastructureConfidence: number;
 }
 
-type Step = "location" | "photo" | "damage" | "survey" | "submitting" | "confirmation";
+type Step =
+  | "location"
+  | "photo"
+  | "damage"
+  | "survey"
+  | "submitting"
+  | "confirmation";
 
 interface ReportFlowProps {
   latitude: number | null;
@@ -61,7 +67,8 @@ export const ReportFlow = ({
   const [survey, setSurvey] = useState<SurveyData>(EMPTY_SURVEY);
   const [surveyStep, setSurveyStep] = useState(0);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [aiClassification, setAiClassification] = useState<AiClassification | null>(null);
+  const [aiClassification, setAiClassification] =
+    useState<AiClassification | null>(null);
   const classifiedKeyRef = useRef<string | null>(null);
   const [activeCrisisType, setActiveCrisisType] = useState<string | null>(null);
   const crisisLookedUpRef = useRef(false);
@@ -96,9 +103,13 @@ export const ReportFlow = ({
           setDamageLevel((prev) => prev ?? classification.damageLevel);
         }
 
-        if (classification.infrastructureConfidence >= AI_CONFIDENCE_THRESHOLD) {
+        if (
+          classification.infrastructureConfidence >= AI_CONFIDENCE_THRESHOLD
+        ) {
           const mapped = classification.infrastructureType
-            .map((key) => INFRASTRUCTURE_TYPES.find((t) => t.key === key)?.value)
+            .map(
+              (key) => INFRASTRUCTURE_TYPES.find((t) => t.key === key)?.value,
+            )
             .filter((v): v is string => Boolean(v));
           if (mapped.length > 0) {
             setSurvey((prev) =>
@@ -115,14 +126,16 @@ export const ReportFlow = ({
   }, [photo?.photoKey]);
 
   const aiDamageVisible =
-    aiClassification && aiClassification.damageConfidence >= AI_CONFIDENCE_THRESHOLD
+    aiClassification &&
+    aiClassification.damageConfidence >= AI_CONFIDENCE_THRESHOLD
       ? aiClassification
       : null;
   const aiDamageSuggestion = aiDamageVisible?.damageLevel ?? null;
   const aiDamageConfidence = aiDamageVisible?.damageConfidence ?? null;
 
   const aiInfraVisible =
-    aiClassification && aiClassification.infrastructureConfidence >= AI_CONFIDENCE_THRESHOLD
+    aiClassification &&
+    aiClassification.infrastructureConfidence >= AI_CONFIDENCE_THRESHOLD
       ? aiClassification
       : null;
   const aiInfraSuggestion = aiInfraVisible?.infrastructureType ?? null;
@@ -132,6 +145,7 @@ export const ReportFlow = ({
     (building: SelectedBuilding | null) => {
       setSelectedBuilding(building);
       if (building) setLocationFallback("");
+      else setExistingReports([]);
     },
     [],
   );
@@ -142,7 +156,9 @@ export const ReportFlow = ({
     crisisLookedUpRef.current = true;
     (async () => {
       try {
-        const result = await api(`/crisis-events/active?lat=${latitude}&lng=${longitude}`);
+        const result = await api(
+          `/crisis-events/active?lat=${latitude}&lng=${longitude}`,
+        );
         if (result?.crisis_type) setActiveCrisisType(result.crisis_type);
       } catch {
         // No active crisis at this location, or network error — silent drop.
@@ -152,14 +168,13 @@ export const ReportFlow = ({
 
   useEffect(() => {
     const buildingId = selectedBuilding?.buildingId;
-    if (!buildingId) {
-      setExistingReports([]);
-      return;
-    }
+    if (!buildingId) return;
     let cancelled = false;
     (async () => {
       try {
-        const result = await api(`/reports?building_id=${encodeURIComponent(buildingId)}`);
+        const result = await api(
+          `/reports?building_id=${encodeURIComponent(buildingId)}`,
+        );
         if (!cancelled) setExistingReports(result?.features ?? []);
       } catch {
         if (!cancelled) setExistingReports([]);
@@ -194,7 +209,10 @@ export const ReportFlow = ({
           if (!next.healthStatus && prefs.healthStatus) {
             seeded.healthStatus = prefs.healthStatus;
           }
-          if (next.pressingNeeds.length === 0 && prefs.pressingNeeds.length > 0) {
+          if (
+            next.pressingNeeds.length === 0 &&
+            prefs.pressingNeeds.length > 0
+          ) {
             seeded.pressingNeeds = prefs.pressingNeeds;
           }
           next = mergeEmptyFields(next, prefs);
@@ -232,7 +250,9 @@ export const ReportFlow = ({
         aiDamageLevel: aiClassification?.damageLevel ?? null,
         aiInfrastructureType: aiClassification
           ? aiClassification.infrastructureType
-              .map((key) => INFRASTRUCTURE_TYPES.find((t) => t.key === key)?.value)
+              .map(
+                (key) => INFRASTRUCTURE_TYPES.find((t) => t.key === key)?.value,
+              )
               .filter((v): v is string => Boolean(v))
           : null,
         aiConfidence: aiClassification?.damageConfidence ?? null,
@@ -244,7 +264,9 @@ export const ReportFlow = ({
       syncEngine.processQueue();
       setStep("confirmation");
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "Failed to queue report");
+      setSubmitError(
+        err instanceof Error ? err.message : "Failed to queue report",
+      );
       setStep("survey");
       setSurveyStep(SURVEY_STEP_COUNT - 1);
     }
@@ -402,7 +424,10 @@ export const ReportFlow = ({
             {t("common.back")}
           </a>
           <span className={styles.stepTitle}>
-            {t("survey.title", { current: surveyStep + 1, total: SURVEY_STEP_COUNT })}
+            {t("survey.title", {
+              current: surveyStep + 1,
+              total: SURVEY_STEP_COUNT,
+            })}
           </span>
         </div>
         <SurveyForm
@@ -413,9 +438,7 @@ export const ReportFlow = ({
           aiInfrastructureConfidence={aiInfraConfidence}
           preSeeded={preSeeded}
         />
-        {submitError && (
-          <div className={styles.submitError}>{submitError}</div>
-        )}
+        {submitError && <div className={styles.submitError}>{submitError}</div>}
         <div className={styles.actions}>
           <a
             role="button"
