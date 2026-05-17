@@ -1,3 +1,5 @@
+import json
+
 from aws_lambda_powertools import Logger
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -35,4 +37,30 @@ def get_active_crisis(params: dict) -> dict | None:
         "id": str(row[0]),
         "name": row[1],
         "crisis_type": row[2],
+    }
+
+
+def list_active_crises() -> dict:
+    conn = get_connection()
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT id, name, crisis_type, ST_AsGeoJSON(region_bbox)
+            FROM crisis_events
+            WHERE is_active = true
+              AND region_bbox IS NOT NULL
+            ORDER BY name
+            """,
+        )
+        rows = cur.fetchall()
+    return {
+        "events": [
+            {
+                "id": str(row[0]),
+                "name": row[1],
+                "crisis_type": row[2],
+                "region_bbox": json.loads(row[3]),
+            }
+            for row in rows
+        ],
     }

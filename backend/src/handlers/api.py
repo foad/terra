@@ -11,7 +11,7 @@ from aws_lambda_powertools.logging import correlation_paths
 from pydantic import ValidationError
 
 from src.handlers.classify import BedrockFailedError, BedrockThrottledError, classify_photo
-from src.handlers.crisis_events import get_active_crisis
+from src.handlers.crisis_events import get_active_crisis, list_active_crises
 from src.handlers.exports import export_reports
 from src.handlers.photos import get_upload_url
 from src.handlers.reports import create_report, query_reports
@@ -83,6 +83,12 @@ def get_reports_export():
         body=body,
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+@app.get("/crisis-events")
+@tracer.capture_method
+def get_crisis_events():
+    return list_active_crises()
 
 
 @app.get("/crisis-events/active")
