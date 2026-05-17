@@ -59,19 +59,6 @@ test.describe("Offline map tile caching", () => {
     // Go offline
     await context.setOffline(true);
 
-    // Track responses while offline
-    let offlineTileCount = 0;
-    let offlineTileErrors = 0;
-    page.on("response", (response) => {
-      if (response.url().includes("source.coop")) {
-        if (response.ok() || response.status() === 206) {
-          offlineTileCount++;
-        } else {
-          offlineTileErrors++;
-        }
-      }
-    });
-
     // Pan the map slightly to trigger tile requests from cache
     if (box) {
       await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);

@@ -19,7 +19,10 @@ interface DashboardMapProps {
   onReportSelect: (report: ReportFeature) => void;
 }
 
-export const DashboardMap = ({ reports, onReportSelect }: DashboardMapProps) => {
+export const DashboardMap = ({
+  reports,
+  onReportSelect,
+}: DashboardMapProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const onReportSelectRef = useRef(onReportSelect);
@@ -96,9 +99,18 @@ export const DashboardMap = ({ reports, onReportSelect }: DashboardMapProps) => 
         clusterMaxZoom: 14,
         clusterRadius: 50,
         clusterProperties: {
-          count_minimal: ["+", ["case", ["==", ["get", "damage_level"], "minimal"], 1, 0]],
-          count_partial: ["+", ["case", ["==", ["get", "damage_level"], "partial"], 1, 0]],
-          count_complete: ["+", ["case", ["==", ["get", "damage_level"], "complete"], 1, 0]],
+          count_minimal: [
+            "+",
+            ["case", ["==", ["get", "damage_level"], "minimal"], 1, 0],
+          ],
+          count_partial: [
+            "+",
+            ["case", ["==", ["get", "damage_level"], "partial"], 1, 0],
+          ],
+          count_complete: [
+            "+",
+            ["case", ["==", ["get", "damage_level"], "complete"], 1, 0],
+          ],
         },
       });
 
@@ -111,21 +123,34 @@ export const DashboardMap = ({ reports, onReportSelect }: DashboardMapProps) => 
         filter: ["has", "point_count"],
         paint: {
           "circle-radius": [
-            "step", ["get", "point_count"],
-            18, 10,
-            24, 50,
-            32, 100,
+            "step",
+            ["get", "point_count"],
+            18,
+            10,
+            24,
+            50,
+            32,
+            100,
             40,
           ],
           "circle-color": [
-            "interpolate", ["linear"],
-            ["/",
-              ["+", ["get", "count_partial"], ["*", 2, ["get", "count_complete"]]],
+            "interpolate",
+            ["linear"],
+            [
+              "/",
+              [
+                "+",
+                ["get", "count_partial"],
+                ["*", 2, ["get", "count_complete"]],
+              ],
               ["get", "point_count"],
             ],
-            0, DAMAGE_COLORS.minimal,
-            1, DAMAGE_COLORS.partial,
-            2, DAMAGE_COLORS.complete,
+            0,
+            DAMAGE_COLORS.minimal,
+            1,
+            DAMAGE_COLORS.partial,
+            2,
+            DAMAGE_COLORS.complete,
           ],
           "circle-opacity": 0.8,
           "circle-stroke-width": 2,
@@ -160,9 +185,12 @@ export const DashboardMap = ({ reports, onReportSelect }: DashboardMapProps) => 
           "circle-color": [
             "match",
             ["get", "damage_level"],
-            "minimal", DAMAGE_COLORS.minimal,
-            "partial", DAMAGE_COLORS.partial,
-            "complete", DAMAGE_COLORS.complete,
+            "minimal",
+            DAMAGE_COLORS.minimal,
+            "partial",
+            DAMAGE_COLORS.partial,
+            "complete",
+            DAMAGE_COLORS.complete,
             "#888",
           ],
           "circle-stroke-width": 2,
@@ -172,13 +200,18 @@ export const DashboardMap = ({ reports, onReportSelect }: DashboardMapProps) => 
 
       // Click cluster to zoom in
       map.on("click", "clusters", (e) => {
-        const features = map.queryRenderedFeatures(e.point, { layers: ["clusters"] });
+        const features = map.queryRenderedFeatures(e.point, {
+          layers: ["clusters"],
+        });
         if (!features.length) return;
         const clusterId = features[0].properties?.cluster_id;
         const source = map.getSource("reports") as maplibregl.GeoJSONSource;
         source.getClusterExpansionZoom(clusterId).then((zoom) => {
           map.easeTo({
-            center: (features[0].geometry as GeoJSON.Point).coordinates as [number, number],
+            center: (features[0].geometry as GeoJSON.Point).coordinates as [
+              number,
+              number,
+            ],
             zoom,
           });
         });
@@ -194,18 +227,23 @@ export const DashboardMap = ({ reports, onReportSelect }: DashboardMapProps) => 
         if (report) onReportSelectRef.current?.(report);
 
         // Show popup
-        const coords = (feature.geometry as GeoJSON.Point).coordinates as [number, number];
+        const coords = (feature.geometry as GeoJSON.Point).coordinates as [
+          number,
+          number,
+        ];
         const props = report?.properties;
         if (props) {
           new maplibregl.Popup({ offset: 12, closeButton: false })
             .setLngLat(coords)
             .setHTML(
               `<div class="${styles.popup}">` +
-              `<strong>${props.damage_level}</strong>` +
-              `<br>${props.infrastructure_type[0]?.split("(")[0]?.trim() ?? ""}` +
-              (props.infrastructure_name ? `<br>${props.infrastructure_name}` : "") +
-              `<br><small>${new Date(props.submitted_at).toLocaleDateString()}</small>` +
-              `</div>`,
+                `<strong>${props.damage_level}</strong>` +
+                `<br>${props.infrastructure_type[0]?.split("(")[0]?.trim() ?? ""}` +
+                (props.infrastructure_name
+                  ? `<br>${props.infrastructure_name}`
+                  : "") +
+                `<br><small>${new Date(props.submitted_at).toLocaleDateString()}</small>` +
+                `</div>`,
             )
             .addTo(map);
         }
@@ -249,7 +287,9 @@ export const DashboardMap = ({ reports, onReportSelect }: DashboardMapProps) => 
     if (!map) return;
 
     const updateData = () => {
-      const source = map.getSource("reports") as maplibregl.GeoJSONSource | undefined;
+      const source = map.getSource("reports") as
+        | maplibregl.GeoJSONSource
+        | undefined;
       if (!source) return;
 
       source.setData({

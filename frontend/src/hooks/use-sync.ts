@@ -9,7 +9,12 @@ export interface QueueCounts {
   failed: number;
 }
 
-const EMPTY_COUNTS: QueueCounts = { pending: 0, syncing: 0, synced: 0, failed: 0 };
+const EMPTY_COUNTS: QueueCounts = {
+  pending: 0,
+  syncing: 0,
+  synced: 0,
+  failed: 0,
+};
 
 export const useSync = (
   connectivity: ConnectivityState,

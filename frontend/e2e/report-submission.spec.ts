@@ -10,20 +10,26 @@ test("full report submission flow", async ({ page }) => {
   await page.goto("/");
 
   // Step 1: Location
-  await expect(page.getByTestId("step-location")).toBeVisible({ timeout: 15000 });
+  await expect(page.getByTestId("step-location")).toBeVisible({
+    timeout: 15000,
+  });
 
   // Wait for map to settle after fly-to
   await page.waitForTimeout(3000);
 
   // Use text fallback since clicking PMTiles features is unreliable in headless
-  await page.getByTestId("input-location-fallback").fill("Test building near central market");
+  await page
+    .getByTestId("input-location-fallback")
+    .fill("Test building near central market");
   await page.getByTestId("btn-next").click();
 
   // Step 2: Photo
   await expect(page.getByTestId("step-photo")).toBeVisible();
   const fileInput = page.locator('input[type="file"]');
   await fileInput.setInputFiles(TEST_PHOTO);
-  await expect(page.getByTestId("photo-uploaded")).toBeVisible({ timeout: 15000 });
+  await expect(page.getByTestId("photo-uploaded")).toBeVisible({
+    timeout: 15000,
+  });
   await page.getByTestId("btn-next").click();
 
   // Step 3: Damage
@@ -35,7 +41,11 @@ test("full report submission flow", async ({ page }) => {
 
   // 4.1 Infrastructure type
   await expect(page.getByTestId("survey-step-0")).toBeVisible();
-  await page.locator("#infra-Residential\\ Infrastructure\\ \\(Houses\\ and\\ apartments\\)").check();
+  await page
+    .locator(
+      "#infra-Residential\\ Infrastructure\\ \\(Houses\\ and\\ apartments\\)",
+    )
+    .check();
   await page.getByTestId("btn-next").click();
 
   // 4.2 Infrastructure name (optional)
@@ -64,9 +74,13 @@ test("full report submission flow", async ({ page }) => {
 
   // 4.7 Pressing needs
   await expect(page.getByTestId("survey-step-6")).toBeVisible();
-  await page.locator("#need-Food\\ assistance\\ and\\ safe\\ drinking\\ water").check();
+  await page
+    .locator("#need-Food\\ assistance\\ and\\ safe\\ drinking\\ water")
+    .check();
   await page.getByTestId("btn-submit").click();
 
   // Confirmation
-  await expect(page.getByTestId("step-confirmation")).toBeVisible({ timeout: 15000 });
+  await expect(page.getByTestId("step-confirmation")).toBeVisible({
+    timeout: 15000,
+  });
 });
