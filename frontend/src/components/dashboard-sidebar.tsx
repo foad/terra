@@ -106,46 +106,49 @@ export const DashboardSidebar = ({
             )}
             <ul className={styles.historyList}>
               {(history.length > 0 ? history : [selectedReport]).map((r) => (
-                  <li
-                    key={r.properties.id}
-                    className={styles.historyItem}
-                  >
-                    {(r.properties.thumbnail_url || r.properties.photo_url) ? (
-                      <img
-                        src={r.properties.thumbnail_url ?? r.properties.photo_url ?? ""}
-                        alt=""
-                        className={styles.historyThumb}
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className={styles.historyThumbPlaceholder} />
-                    )}
-                    <div className={styles.historyMeta}>
-                      <div className={styles.historyMetaTop}>
-                        <span className={`${styles.damageBadge} ${styles[r.properties.damage_level]}`}>
-                          {r.properties.damage_level}
-                        </span>
-                        {r.properties.is_latest && (
-                          <span className={styles.currentTag}>Current</span>
-                        )}
-                      </div>
-                      <div className={styles.historyDate}>
-                        {new Date(r.properties.submitted_at).toLocaleString()}
-                      </div>
-                      {r.properties.location_description && (
-                        <div className={styles.historyDesc}>
-                          {r.properties.location_description}
-                        </div>
-                      )}
-                      <button
-                        type="button"
-                        className={styles.detailsButton}
-                        onClick={() => onShowDetails(r)}
+                <li key={r.properties.id} className={styles.historyItem}>
+                  {r.properties.thumbnail_url || r.properties.photo_url ? (
+                    <img
+                      src={
+                        r.properties.thumbnail_url ??
+                        r.properties.photo_url ??
+                        ""
+                      }
+                      alt=""
+                      className={styles.historyThumb}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className={styles.historyThumbPlaceholder} />
+                  )}
+                  <div className={styles.historyMeta}>
+                    <div className={styles.historyMetaTop}>
+                      <span
+                        className={`${styles.damageBadge} ${styles[r.properties.damage_level]}`}
                       >
-                        Details
-                      </button>
+                        {r.properties.damage_level}
+                      </span>
+                      {r.properties.is_latest && (
+                        <span className={styles.currentTag}>Current</span>
+                      )}
                     </div>
-                  </li>
+                    <div className={styles.historyDate}>
+                      {new Date(r.properties.submitted_at).toLocaleString()}
+                    </div>
+                    {r.properties.location_description && (
+                      <div className={styles.historyDesc}>
+                        {r.properties.location_description}
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      className={styles.detailsButton}
+                      onClick={() => onShowDetails(r)}
+                    >
+                      Details
+                    </button>
+                  </div>
+                </li>
               ))}
             </ul>
           </div>

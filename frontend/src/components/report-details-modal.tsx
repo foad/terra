@@ -7,7 +7,10 @@ interface ReportDetailsModalProps {
   onClose: () => void;
 }
 
-export const ReportDetailsModal = ({ report, onClose }: ReportDetailsModalProps) => {
+export const ReportDetailsModal = ({
+  report,
+  onClose,
+}: ReportDetailsModalProps) => {
   const p = report.properties;
   const photo = p.photo_url ?? p.thumbnail_url;
 
@@ -21,15 +24,15 @@ export const ReportDetailsModal = ({ report, onClose }: ReportDetailsModalProps)
           </button>
         </div>
         <div className={styles.body}>
-          {photo && (
-            <img src={photo} alt="" className={styles.photo} />
-          )}
+          {photo && <img src={photo} alt="" className={styles.photo} />}
           <div className={styles.fields}>
             <Field label="Submitted">
               {new Date(p.submitted_at).toLocaleString()}
             </Field>
             <Field label="Damage level">
-              <span className={`${styles.damageBadge} ${styles[p.damage_level]}`}>
+              <span
+                className={`${styles.damageBadge} ${styles[p.damage_level]}`}
+              >
                 {p.damage_level}
               </span>
             </Field>
@@ -50,7 +53,9 @@ export const ReportDetailsModal = ({ report, onClose }: ReportDetailsModalProps)
               <Field label="Health services">{p.health_status}</Field>
             )}
             {p.pressing_needs.length > 0 && (
-              <Field label="Pressing needs">{p.pressing_needs.join(", ")}</Field>
+              <Field label="Pressing needs">
+                {p.pressing_needs.join(", ")}
+              </Field>
             )}
             {p.location_description && (
               <Field label="Location">{p.location_description}</Field>
@@ -62,7 +67,13 @@ export const ReportDetailsModal = ({ report, onClose }: ReportDetailsModalProps)
   );
 };
 
-const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
+const Field = ({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) => (
   <div className={styles.field}>
     <div className={styles.fieldLabel}>{label}</div>
     <div className={styles.fieldValue}>{children}</div>

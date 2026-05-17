@@ -46,7 +46,12 @@ export const usePrefetchTiles = (
       const allTiles: { x: number; y: number; z: number }[] = [];
       for (const zoom of PREFETCH_ZOOMS) {
         allTiles.push(
-          ...getTilesInRadius(longitude, latitude, PREFETCH_RADIUS_METERS, zoom),
+          ...getTilesInRadius(
+            longitude,
+            latitude,
+            PREFETCH_RADIUS_METERS,
+            zoom,
+          ),
         );
       }
 

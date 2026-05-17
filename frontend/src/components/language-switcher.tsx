@@ -50,7 +50,9 @@ export const LanguageSwitcher = () => {
                 lang={lang.code}
                 onClick={() => handleSelect(lang.code)}
               >
-                <span className={styles.optionCode}>{lang.code.toUpperCase()}</span>
+                <span className={styles.optionCode}>
+                  {lang.code.toUpperCase()}
+                </span>
                 <span>{lang.name}</span>
               </button>
             </li>

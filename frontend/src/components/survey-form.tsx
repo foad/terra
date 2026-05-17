@@ -1,65 +1,53 @@
 import { useTranslation } from "react-i18next";
+import { INFRASTRUCTURE_TYPES } from "./survey-data";
+import type { PreSeeded, SurveyData } from "./survey-data";
 import styles from "./survey-form.module.css";
 
-export interface SurveyData {
-  infrastructureType: string[];
-  infrastructureTypeOther: string;
-  infrastructureName: string;
-  crisisNature: string[];
-  debrisPresent: boolean | null;
-  electricityStatus: string;
-  healthStatus: string;
-  pressingNeeds: string[];
-  pressingNeedsOther: string;
-}
-
-export const EMPTY_SURVEY: SurveyData = {
-  infrastructureType: [],
-  infrastructureTypeOther: "",
-  infrastructureName: "",
-  crisisNature: [],
-  debrisPresent: null,
-  electricityStatus: "",
-  healthStatus: "",
-  pressingNeeds: [],
-  pressingNeedsOther: "",
-};
-
-// Values stored in the database (always English)
-export const INFRASTRUCTURE_TYPES = [
-  { key: "residential", value: "Residential Infrastructure (Houses and apartments)" },
-  { key: "commercial", value: "Commercial Infrastructure (Markets, malls, shops, hotels, banks, industries, etc.)" },
-  { key: "government", value: "Government Building (Administrative buildings, courthouses, police stations, fire stations, etc.)" },
-  { key: "utility", value: "Utility Infrastructure (Water pumps, power plants, waste treatment plants, etc.)" },
-  { key: "transport", value: "Transport and Communication Infrastructure (Roads, cell towers, bridges, railway station, bus station, etc.)" },
-  { key: "community", value: "Community Infrastructure (Schools, hospitals, community halls, public toilets, etc.)" },
-  { key: "publicSpaces", value: "Public spaces/Recreation Infrastructure (stadiums, playgrounds, religious buildings, etc.)" },
-];
-
 const CRISIS_GROUPS = [
-  { key: "natural", types: [
-    { key: "earthquake", value: "Earthquake" },
-    { key: "flood", value: "Flood" },
-    { key: "tsunami", value: "Tsunami" },
-    { key: "hurricane", value: "Hurricane/Cyclone" },
-    { key: "wildfire", value: "Wildfire" },
-  ]},
-  { key: "technological", types: [
-    { key: "explosion", value: "Explosion" },
-    { key: "chemical", value: "Chemical incident" },
-  ]},
-  { key: "humanMade", types: [
-    { key: "conflict", value: "Conflict" },
-    { key: "civilUnrest", value: "Civil unrest" },
-  ]},
+  {
+    key: "natural",
+    types: [
+      { key: "earthquake", value: "Earthquake" },
+      { key: "flood", value: "Flood" },
+      { key: "tsunami", value: "Tsunami" },
+      { key: "hurricane", value: "Hurricane/Cyclone" },
+      { key: "wildfire", value: "Wildfire" },
+    ],
+  },
+  {
+    key: "technological",
+    types: [
+      { key: "explosion", value: "Explosion" },
+      { key: "chemical", value: "Chemical incident" },
+    ],
+  },
+  {
+    key: "humanMade",
+    types: [
+      { key: "conflict", value: "Conflict" },
+      { key: "civilUnrest", value: "Civil unrest" },
+    ],
+  },
 ];
 
 const ELECTRICITY_OPTIONS = [
   { key: "none", value: "No damage observed" },
-  { key: "minor", value: "Minor damage (service disruptions but quickly repairable)" },
-  { key: "moderate", value: "Moderate damage (partial outages requiring repairs)" },
-  { key: "severe", value: "Severe damage (major infrastructure damaged, prolonged outages)" },
-  { key: "destroyed", value: "Completely destroyed (no electricity infrastructure functioning)" },
+  {
+    key: "minor",
+    value: "Minor damage (service disruptions but quickly repairable)",
+  },
+  {
+    key: "moderate",
+    value: "Moderate damage (partial outages requiring repairs)",
+  },
+  {
+    key: "severe",
+    value: "Severe damage (major infrastructure damaged, prolonged outages)",
+  },
+  {
+    key: "destroyed",
+    value: "Completely destroyed (no electricity infrastructure functioning)",
+  },
   { key: "unknown", value: "Unknown/cannot be assessed" },
 ];
 
@@ -75,36 +63,26 @@ const PRESSING_NEEDS = [
   { key: "food", value: "Food assistance and safe drinking water" },
   { key: "cash", value: "Cash or financial assistance" },
   { key: "healthcare", value: "Access to healthcare and essential medicines" },
-  { key: "shelter", value: "Shelter, housing repair, or temporary accommodation" },
+  {
+    key: "shelter",
+    value: "Shelter, housing repair, or temporary accommodation",
+  },
   { key: "livelihoods", value: "Restoration of livelihoods or income sources" },
-  { key: "wash", value: "Water, sanitation, and hygiene (toilets, washing facilities)" },
-  { key: "services", value: "Restoration of basic services and infrastructure (electricity, roads, schools)" },
+  {
+    key: "wash",
+    value: "Water, sanitation, and hygiene (toilets, washing facilities)",
+  },
+  {
+    key: "services",
+    value:
+      "Restoration of basic services and infrastructure (electricity, roads, schools)",
+  },
   { key: "protection", value: "Protection services and psychosocial support" },
-  { key: "localSupport", value: "Support from local authorities and community organizations" },
+  {
+    key: "localSupport",
+    value: "Support from local authorities and community organizations",
+  },
 ];
-
-export const SURVEY_STEP_COUNT = 7;
-
-export const isSurveyStepComplete = (step: number, data: SurveyData): boolean => {
-  switch (step) {
-    case 0: return data.infrastructureType.length > 0;
-    case 1: return true;
-    case 2: return data.crisisNature.length > 0;
-    case 3: return data.debrisPresent === true || data.debrisPresent === false;
-    case 4: return Boolean(data.electricityStatus);
-    case 5: return Boolean(data.healthStatus);
-    case 6: return data.pressingNeeds.length > 0;
-    default: return false;
-  }
-};
-
-export interface PreSeeded {
-  crisisNature?: string[];
-  debrisPresent?: boolean;
-  electricityStatus?: string;
-  healthStatus?: string;
-  pressingNeeds?: string[];
-}
 
 interface SurveyFormProps {
   step: number;
@@ -154,9 +132,14 @@ export const SurveyForm = ({
                   type="checkbox"
                   id={`infra-${type.value}`}
                   checked={value.infrastructureType.includes(type.value)}
-                  onChange={() => toggleMultiSelect("infrastructureType", type.value)}
+                  onChange={() =>
+                    toggleMultiSelect("infrastructureType", type.value)
+                  }
                 />
-                <label htmlFor={`infra-${type.value}`} className={styles.checkLabel}>
+                <label
+                  htmlFor={`infra-${type.value}`}
+                  className={styles.checkLabel}
+                >
                   <span>{t(`survey.infrastructureTypes.${type.key}`)}</span>
                   {isAiSuggested && aiInfraBadge && (
                     <span className={styles.aiBadge}>{aiInfraBadge}</span>
@@ -179,7 +162,9 @@ export const SurveyForm = ({
               type="text"
               maxLength={200}
               value={value.infrastructureTypeOther}
-              onChange={(e) => onChange({ ...value, infrastructureTypeOther: e.target.value })}
+              onChange={(e) =>
+                onChange({ ...value, infrastructureTypeOther: e.target.value })
+              }
             />
           )}
         </div>
@@ -198,7 +183,9 @@ export const SurveyForm = ({
             placeholder={t("survey.infrastructureNamePlaceholder")}
             maxLength={200}
             value={value.infrastructureName}
-            onChange={(e) => onChange({ ...value, infrastructureName: e.target.value })}
+            onChange={(e) =>
+              onChange({ ...value, infrastructureName: e.target.value })
+            }
           />
         </div>
       </div>
@@ -216,18 +203,26 @@ export const SurveyForm = ({
                 {t(`survey.crisisGroups.${group.key}`)}
               </div>
               {group.types.map((type) => {
-                const isPreSeeded = preSeeded?.crisisNature?.includes(type.value) ?? false;
+                const isPreSeeded =
+                  preSeeded?.crisisNature?.includes(type.value) ?? false;
                 return (
                   <div className="form-check" key={type.key}>
                     <input
                       type="checkbox"
                       id={`crisis-${type.value}`}
                       checked={value.crisisNature.includes(type.value)}
-                      onChange={() => toggleMultiSelect("crisisNature", type.value)}
+                      onChange={() =>
+                        toggleMultiSelect("crisisNature", type.value)
+                      }
                     />
-                    <label htmlFor={`crisis-${type.value}`} className={styles.checkLabel}>
+                    <label
+                      htmlFor={`crisis-${type.value}`}
+                      className={styles.checkLabel}
+                    >
                       <span>{t(`survey.crisisTypes.${type.key}`)}</span>
-                      {isPreSeeded && <span className={styles.aiBadge}>{currentBadge}</span>}
+                      {isPreSeeded && (
+                        <span className={styles.aiBadge}>{currentBadge}</span>
+                      )}
                     </label>
                   </div>
                 );
@@ -293,11 +288,18 @@ export const SurveyForm = ({
                   id={`elec-${option.value}`}
                   name="electricity"
                   checked={value.electricityStatus === option.value}
-                  onChange={() => onChange({ ...value, electricityStatus: option.value })}
+                  onChange={() =>
+                    onChange({ ...value, electricityStatus: option.value })
+                  }
                 />
-                <label htmlFor={`elec-${option.value}`} className={styles.checkLabel}>
+                <label
+                  htmlFor={`elec-${option.value}`}
+                  className={styles.checkLabel}
+                >
                   <span>{t(`survey.electricityOptions.${option.key}`)}</span>
-                  {isPreSeeded && <span className={styles.aiBadge}>{lastUsedBadge}</span>}
+                  {isPreSeeded && (
+                    <span className={styles.aiBadge}>{lastUsedBadge}</span>
+                  )}
                 </label>
               </div>
             );
@@ -321,11 +323,18 @@ export const SurveyForm = ({
                   id={`health-${option.value}`}
                   name="health"
                   checked={value.healthStatus === option.value}
-                  onChange={() => onChange({ ...value, healthStatus: option.value })}
+                  onChange={() =>
+                    onChange({ ...value, healthStatus: option.value })
+                  }
                 />
-                <label htmlFor={`health-${option.value}`} className={styles.checkLabel}>
+                <label
+                  htmlFor={`health-${option.value}`}
+                  className={styles.checkLabel}
+                >
                   <span>{t(`survey.healthOptions.${option.key}`)}</span>
-                  {isPreSeeded && <span className={styles.aiBadge}>{lastUsedBadge}</span>}
+                  {isPreSeeded && (
+                    <span className={styles.aiBadge}>{lastUsedBadge}</span>
+                  )}
                 </label>
               </div>
             );
@@ -341,18 +350,26 @@ export const SurveyForm = ({
         <h2 className={styles.question}>{t("survey.pressingNeeds")}</h2>
         <div className={styles.options}>
           {PRESSING_NEEDS.map((need) => {
-            const isPreSeeded = preSeeded?.pressingNeeds?.includes(need.value) ?? false;
+            const isPreSeeded =
+              preSeeded?.pressingNeeds?.includes(need.value) ?? false;
             return (
               <div className="form-check" key={need.key}>
                 <input
                   type="checkbox"
                   id={`need-${need.value}`}
                   checked={value.pressingNeeds.includes(need.value)}
-                  onChange={() => toggleMultiSelect("pressingNeeds", need.value)}
+                  onChange={() =>
+                    toggleMultiSelect("pressingNeeds", need.value)
+                  }
                 />
-                <label htmlFor={`need-${need.value}`} className={styles.checkLabel}>
+                <label
+                  htmlFor={`need-${need.value}`}
+                  className={styles.checkLabel}
+                >
                   <span>{t(`survey.pressingNeedOptions.${need.key}`)}</span>
-                  {isPreSeeded && <span className={styles.aiBadge}>{lastUsedBadge}</span>}
+                  {isPreSeeded && (
+                    <span className={styles.aiBadge}>{lastUsedBadge}</span>
+                  )}
                 </label>
               </div>
             );
@@ -371,7 +388,9 @@ export const SurveyForm = ({
               type="text"
               maxLength={500}
               value={value.pressingNeedsOther}
-              onChange={(e) => onChange({ ...value, pressingNeedsOther: e.target.value })}
+              onChange={(e) =>
+                onChange({ ...value, pressingNeedsOther: e.target.value })
+              }
             />
           )}
         </div>

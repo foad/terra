@@ -20,9 +20,19 @@ interface PhotoCaptureProps {
   existingPhoto?: PhotoResult | null;
 }
 
-type UploadState = "idle" | "compressing" | "uploading" | "done" | "saved" | "error";
+type UploadState =
+  | "idle"
+  | "compressing"
+  | "uploading"
+  | "done"
+  | "saved"
+  | "error";
 
-export const PhotoCapture = ({ onPhotoUploaded, onPhotoCleared, existingPhoto }: PhotoCaptureProps) => {
+export const PhotoCapture = ({
+  onPhotoUploaded,
+  onPhotoCleared,
+  existingPhoto,
+}: PhotoCaptureProps) => {
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [state, setState] = useState<UploadState>(() =>
@@ -148,7 +158,10 @@ export const PhotoCapture = ({ onPhotoUploaded, onPhotoCleared, existingPhoto }:
             {t("photo.uploading", { progress: Math.round(progress) })}
           </div>
           <div className={styles.progressBar}>
-            <div className={styles.progressFill} style={{ width: `${progress}%` }} />
+            <div
+              className={styles.progressFill}
+              style={{ width: `${progress}%` }}
+            />
           </div>
         </div>
       )}

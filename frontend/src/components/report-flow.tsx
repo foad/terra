@@ -8,14 +8,14 @@ import { PhotoCapture } from "./photo-capture";
 import type { PhotoResult } from "./photo-capture";
 import { DamageClassification } from "./damage-classification";
 import type { DamageLevel } from "./damage-classification";
+import { SurveyForm } from "./survey-form";
 import {
-  SurveyForm,
   EMPTY_SURVEY,
+  INFRASTRUCTURE_TYPES,
   SURVEY_STEP_COUNT,
   isSurveyStepComplete,
-  INFRASTRUCTURE_TYPES,
-} from "./survey-form";
-import type { PreSeeded, SurveyData } from "./survey-form";
+} from "./survey-data";
+import type { PreSeeded, SurveyData } from "./survey-data";
 import { SubmissionConfirmation } from "./submission-confirmation";
 import { reportQueue } from "../utils/report-queue";
 import { syncEngine } from "../utils/sync-engine";
