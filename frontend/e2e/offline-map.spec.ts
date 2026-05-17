@@ -1,9 +1,5 @@
 import { test, expect } from "@playwright/test";
 
-// This test must run against the preview server (npm run preview) at port 4173
-// The service worker only works with built files, not the dev server
-const PREVIEW_URL = process.env.E2E_BASE_URL ?? "http://localhost:4173";
-
 test.describe("Offline map tile caching", () => {
   test("building footprints load from cache when offline", async ({
     browser,
@@ -23,7 +19,7 @@ test.describe("Offline map tile caching", () => {
     });
 
     // First visit — installs service worker
-    await page.goto(PREVIEW_URL);
+    await page.goto("/");
     await page.waitForTimeout(2000);
 
     // Second visit — activates service worker
