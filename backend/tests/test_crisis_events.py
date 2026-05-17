@@ -90,6 +90,7 @@ class TestListActiveCrises:
                 "Kent Floods 2026",
                 "Flood",
                 '{"type":"Polygon","coordinates":[[[-1,50.5],[1.5,50.5],[1.5,51.7],[-1,51.7],[-1,50.5]]]}',
+                True,
             ),
         ]
         mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
@@ -104,7 +105,7 @@ class TestListActiveCrises:
                     "id": "id-1",
                     "name": "Kent Floods 2026",
                     "crisis_type": "Flood",
-                    "region_bbox": {
+                    "region": {
                         "type": "Polygon",
                         "coordinates": [
                             [
@@ -116,6 +117,7 @@ class TestListActiveCrises:
                             ]
                         ],
                     },
+                    "is_active": True,
                 }
             ]
         }
@@ -132,7 +134,7 @@ class TestListActiveCrises:
         assert list_active_crises() == {"events": []}
 
     @patch("src.handlers.crisis_events.get_connection")
-    def test_filters_by_is_active_and_non_null_bbox(self, mock_get_conn):
+    def test_filters_by_non_null_region(self, mock_get_conn):
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
         mock_cursor.fetchall.return_value = []
@@ -143,6 +145,126 @@ class TestListActiveCrises:
         list_active_crises()
 
         sql = mock_cursor.execute.call_args[0][0]
-        assert "is_active = true" in sql
-        assert "region_bbox IS NOT NULL" in sql
+        assert "region IS NOT NULL" in sql
         assert "ST_AsGeoJSON" in sql
+
+
+_VALID_POLYGON = {
+    "type": "Polygon",
+    "coordinates": [
+        [[-1, 50.5], [1.5, 50.5], [1.5, 51.7], [-1, 51.7], [-1, 50.5]],
+    ],
+}
+
+
+def _mock_conn_for_write(rowcount: int = 1):
+    from src.handlers import crisis_events as ce
+
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_cursor.rowcount = rowcount
+    mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+    mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+    return mock_conn, mock_cursor, ce
+
+
+class TestCreateCrisis:
+    @patch("src.handlers.crisis_events.get_connection")
+    def test_creates_event(self, mock_get_conn):
+        mock_conn, _, ce = _mock_conn_for_write()
+        mock_get_conn.return_value = mock_conn
+
+        result = ce.create_crisis(
+            {
+                "name": "Test Event",
+                "crisis_type": "Flood",
+                "region": _VALID_POLYGON,
+            }
+        )
+
+        assert "id" in result
+        mock_conn.commit.assert_called_once()
+
+    def test_rejects_unknown_crisis_type(self):
+        from src.handlers.crisis_events import create_crisis
+
+        with pytest.raises(ValueError, match="crisis_type"):
+            create_crisis(
+                {
+                    "name": "Test",
+                    "crisis_type": "Asteroid",
+                    "region": _VALID_POLYGON,
+                }
+            )
+
+    def test_rejects_non_polygon_region(self):
+        from src.handlers.crisis_events import create_crisis
+
+        with pytest.raises(ValueError, match="GeoJSON Polygon"):
+            create_crisis(
+                {
+                    "name": "Test",
+                    "crisis_type": "Flood",
+                    "region": {"type": "Point", "coordinates": [0, 0]},
+                }
+            )
+
+    def test_rejects_empty_name(self):
+        from src.handlers.crisis_events import create_crisis
+
+        with pytest.raises(ValidationError):
+            create_crisis(
+                {"name": "", "crisis_type": "Flood", "region": _VALID_POLYGON}
+            )
+
+
+class TestUpdateCrisis:
+    @patch("src.handlers.crisis_events.get_connection")
+    def test_updates_event(self, mock_get_conn):
+        mock_conn, _, ce = _mock_conn_for_write(rowcount=1)
+        mock_get_conn.return_value = mock_conn
+
+        result = ce.update_crisis(
+            "abc-123",
+            {
+                "name": "Renamed",
+                "crisis_type": "Flood",
+                "region": _VALID_POLYGON,
+            },
+        )
+
+        assert result == {"id": "abc-123"}
+        mock_conn.commit.assert_called_once()
+
+    @patch("src.handlers.crisis_events.get_connection")
+    def test_raises_not_found_when_no_rows(self, mock_get_conn):
+        mock_conn, _, ce = _mock_conn_for_write(rowcount=0)
+        mock_get_conn.return_value = mock_conn
+
+        with pytest.raises(FileNotFoundError):
+            ce.update_crisis(
+                "missing",
+                {
+                    "name": "Test",
+                    "crisis_type": "Flood",
+                    "region": _VALID_POLYGON,
+                },
+            )
+
+
+class TestDeleteCrisis:
+    @patch("src.handlers.crisis_events.get_connection")
+    def test_deletes_event(self, mock_get_conn):
+        mock_conn, _, ce = _mock_conn_for_write(rowcount=1)
+        mock_get_conn.return_value = mock_conn
+
+        ce.delete_crisis("abc-123")
+        mock_conn.commit.assert_called_once()
+
+    @patch("src.handlers.crisis_events.get_connection")
+    def test_raises_not_found_when_no_rows(self, mock_get_conn):
+        mock_conn, _, ce = _mock_conn_for_write(rowcount=0)
+        mock_get_conn.return_value = mock_conn
+
+        with pytest.raises(FileNotFoundError):
+            ce.delete_crisis("missing")
