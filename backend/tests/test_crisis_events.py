@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from pydantic import ValidationError
 
-from src.handlers.crisis_events import get_active_crisis
+from src.handlers.crisis_events import get_active_crisis, list_active_crises
 
 
 class TestGetActiveCrisis:
@@ -77,3 +77,72 @@ class TestGetActiveCrisis:
             sql = mock_cursor.execute.call_args[0][0]
             assert "is_active = true" in sql
             assert "ST_Contains" in sql
+
+
+class TestListActiveCrises:
+    @patch("src.handlers.crisis_events.get_connection")
+    def test_returns_events_with_parsed_bbox(self, mock_get_conn):
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchall.return_value = [
+            (
+                "id-1",
+                "Kent Floods 2026",
+                "Flood",
+                '{"type":"Polygon","coordinates":[[[-1,50.5],[1.5,50.5],[1.5,51.7],[-1,51.7],[-1,50.5]]]}',
+            ),
+        ]
+        mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_get_conn.return_value = mock_conn
+
+        result = list_active_crises()
+
+        assert result == {
+            "events": [
+                {
+                    "id": "id-1",
+                    "name": "Kent Floods 2026",
+                    "crisis_type": "Flood",
+                    "region_bbox": {
+                        "type": "Polygon",
+                        "coordinates": [
+                            [
+                                [-1, 50.5],
+                                [1.5, 50.5],
+                                [1.5, 51.7],
+                                [-1, 51.7],
+                                [-1, 50.5],
+                            ]
+                        ],
+                    },
+                }
+            ]
+        }
+
+    @patch("src.handlers.crisis_events.get_connection")
+    def test_empty_list_when_none_active(self, mock_get_conn):
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchall.return_value = []
+        mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_get_conn.return_value = mock_conn
+
+        assert list_active_crises() == {"events": []}
+
+    @patch("src.handlers.crisis_events.get_connection")
+    def test_filters_by_is_active_and_non_null_bbox(self, mock_get_conn):
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchall.return_value = []
+        mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_get_conn.return_value = mock_conn
+
+        list_active_crises()
+
+        sql = mock_cursor.execute.call_args[0][0]
+        assert "is_active = true" in sql
+        assert "region_bbox IS NOT NULL" in sql
+        assert "ST_AsGeoJSON" in sql

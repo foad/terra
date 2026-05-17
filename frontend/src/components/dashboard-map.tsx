@@ -3,7 +3,15 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Protocol } from "pmtiles";
 import type { ReportFeature } from "../pages/dashboard";
+import { api } from "../utils/api";
 import styles from "./dashboard-map.module.css";
+
+interface CrisisEvent {
+  id: string;
+  name: string;
+  crisis_type: string;
+  region_bbox: GeoJSON.Polygon;
+}
 
 const VIDA_BUILDINGS_URL =
   "https://data.source.coop/vida/google-microsoft-osm-open-buildings/pmtiles/goog_msft_osm.pmtiles";
@@ -92,6 +100,54 @@ export const DashboardMap = ({
     );
 
     map.on("load", () => {
+      map.addSource("crisis-events", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+
+      map.addLayer({
+        id: "crisis-fill",
+        type: "fill",
+        source: "crisis-events",
+        paint: {
+          "fill-color": "#2563eb",
+          "fill-opacity": 0.06,
+        },
+      });
+
+      map.addLayer({
+        id: "crisis-outline",
+        type: "line",
+        source: "crisis-events",
+        paint: {
+          "line-color": "#2563eb",
+          "line-width": 2,
+          "line-dasharray": [4, 3],
+        },
+      });
+
+      map.addLayer({
+        id: "crisis-label",
+        type: "symbol",
+        source: "crisis-events",
+        layout: {
+          "text-field": [
+            "concat",
+            ["get", "name"],
+            " — ",
+            ["get", "crisis_type"],
+          ],
+          "text-size": 12,
+          "text-font": ["Open Sans Bold"],
+          "symbol-placement": "point",
+        },
+        paint: {
+          "text-color": "#1e3a8a",
+          "text-halo-color": "#ffffff",
+          "text-halo-width": 2,
+        },
+      });
+
       map.addSource("reports", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
@@ -316,6 +372,48 @@ export const DashboardMap = ({
       };
     }
   }, [reports]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    let cancelled = false;
+
+    (async () => {
+      let events: CrisisEvent[] = [];
+      try {
+        const result = await api("/crisis-events");
+        events = result.events ?? [];
+      } catch {
+        return;
+      }
+      if (cancelled) return;
+
+      const apply = () => {
+        const source = map.getSource("crisis-events") as
+          | maplibregl.GeoJSONSource
+          | undefined;
+        if (!source) return;
+        source.setData({
+          type: "FeatureCollection",
+          features: events.map((e) => ({
+            type: "Feature",
+            geometry: e.region_bbox,
+            properties: {
+              id: e.id,
+              name: e.name,
+              crisis_type: e.crisis_type,
+            },
+          })),
+        });
+      };
+      if (map.isStyleLoaded()) apply();
+      else map.on("load", apply);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return <div ref={containerRef} className={styles.container} />;
 };
