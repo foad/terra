@@ -112,8 +112,8 @@ The export caps at **10 000 rows** in v1. Larger result sets will be truncated; 
 
 **Formats**
 
-- **CSV**: flat header row, list fields (`infrastructure_type`, `crisis_nature`, `pressing_needs`) joined with `|`, booleans as `true`/`false`. Photo and thumbnail columns hold 1-hour presigned HTTPS URLs.
-- **GeoJSON**: standard `FeatureCollection` (same feature shape as `GET /reports` minus the `total` field).
+- **CSV**: flat header row, list fields (`infrastructure_type`, `crisis_nature`, `pressing_needs`) joined with `|`, booleans as `true`/`false`. Photos are referenced by their stable `photo_key` (e.g. `uploads/<uuid>.jpg`); the thumbnail key follows the convention `thumbnails/<uuid>.jpg`. Look up photos via the dashboard for a fresh presigned URL.
+- **GeoJSON**: standard `FeatureCollection` (same feature shape as `GET /reports` but with `photo_key` in place of `photo_url`/`thumbnail_url`, and without the `total` field).
 
 GeoPackage and Shapefile are deferred — they require Fiona/GDAL in the Lambda zip; will follow up in Phase 3.
 
