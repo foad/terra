@@ -1,7 +1,7 @@
 import json
 
 from aws_lambda_powertools import Logger, Tracer
-from aws_lambda_powertools.event_handler import APIGatewayHttpResolver
+from aws_lambda_powertools.event_handler import APIGatewayHttpResolver, Response
 from aws_lambda_powertools.event_handler.exceptions import (
     BadRequestError,
     NotFoundError,
@@ -12,6 +12,7 @@ from pydantic import ValidationError
 
 from src.handlers.classify import BedrockFailedError, BedrockThrottledError, classify_photo
 from src.handlers.crisis_events import get_active_crisis
+from src.handlers.exports import export_reports
 from src.handlers.photos import get_upload_url
 from src.handlers.reports import create_report, query_reports
 
@@ -66,6 +67,22 @@ def get_reports():
         return query_reports(params)
     except ValidationError as e:
         raise BadRequestError(_first_validation_message(e)) from e
+
+
+@app.get("/reports/export")
+@tracer.capture_method
+def get_reports_export():
+    params = app.current_event.query_string_parameters or {}
+    try:
+        body, content_type, filename = export_reports(params)
+    except ValidationError as e:
+        raise BadRequestError(_first_validation_message(e)) from e
+    return Response(
+        status_code=200,
+        content_type=content_type,
+        body=body,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @app.get("/crisis-events/active")

@@ -168,48 +168,37 @@ def create_report(body: dict) -> dict:
     }
 
 
-def query_reports(params: dict) -> dict:
-    """Query reports with spatial, temporal, and attribute filters. Returns GeoJSON."""
-    q = ReportsQueryParams(**params)
-    conn = get_connection()
-
+def build_filter_clause(q: "ReportsQueryParams | object") -> tuple[str, list]:
+    """Build the WHERE clause + params for any query honouring the standard report filters."""
     conditions = ["is_latest = true"]
-    values = []
+    values: list = []
 
-    # Bounding box filter
     if all(v is not None for v in (q.west, q.south, q.east, q.north)):
-        conditions.append(
-            "ST_Intersects(location, ST_MakeEnvelope(%s, %s, %s, %s, 4326))"
-        )
+        conditions.append("ST_Intersects(location, ST_MakeEnvelope(%s, %s, %s, %s, 4326))")
         values.extend([q.west, q.south, q.east, q.north])
 
-    # H3 cell filter
     if q.h3:
         conditions.append("h3_r8 = %s")
         values.append(q.h3)
 
-    # Damage level filter
     if q.damage_level:
         levels = q.damage_level.split(",")
         placeholders = ",".join(["%s"] * len(levels))
         conditions.append(f"damage_level IN ({placeholders})")
         values.extend(levels)
 
-    # Infrastructure type filter (pipe-separated, values contain commas)
     if q.infrastructure_type:
         types = q.infrastructure_type.split("|")
         placeholders = " OR ".join(["%s = ANY(infrastructure_type)"] * len(types))
         conditions.append(f"({placeholders})")
         values.extend(types)
 
-    # Crisis nature filter (pipe-separated, values may contain commas)
     if q.crisis_nature:
         natures = q.crisis_nature.split("|")
         placeholders = " OR ".join(["%s = ANY(crisis_nature)"] * len(natures))
         conditions.append(f"({placeholders})")
         values.extend(natures)
 
-    # Date range filter
     if q.from_:
         conditions.append("submitted_at >= %s")
         values.append(q.from_)
@@ -223,7 +212,14 @@ def query_reports(params: dict) -> dict:
         conditions.append("building_id = %s")
         values.append(q.building_id)
 
-    where = " AND ".join(conditions)
+    return " AND ".join(conditions), values
+
+
+def query_reports(params: dict) -> dict:
+    """Query reports with spatial, temporal, and attribute filters. Returns GeoJSON."""
+    q = ReportsQueryParams(**params)
+    conn = get_connection()
+    where, values = build_filter_clause(q)
 
     limit = q.limit
     offset = q.offset
