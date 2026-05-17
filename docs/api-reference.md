@@ -91,6 +91,32 @@ Run AI vision classification on an uploaded photo. Returns suggested damage leve
 
 The frontend treats every error as a silent drop and lets the user proceed without AI assistance.
 
+## GET /reports/export
+
+Download the filtered report set as a file. Accepts the same filter parameters as `GET /reports` plus a required `format` selector. The response includes a `Content-Disposition: attachment` header to trigger a browser download.
+
+**Query Parameters**
+
+| Param | Type | Required | Description |
+|-------|------|----------|-------------|
+| `format` | string | yes | `csv` or `geojson` |
+| `west` / `south` / `east` / `north` | float | no | Bounding box filter (all four required together) |
+| `h3` | string | no | H3 R8 cell filter |
+| `damage_level` | string | no | Comma-separated: `minimal`, `partial`, `complete` |
+| `infrastructure_type` | string | no | Pipe-separated infrastructure types |
+| `crisis_nature` | string | no | Pipe-separated crisis types |
+| `from` / `to` | string | no | ISO datetimes |
+| `building_id` | string | no | Single-building filter — returns every version, not just the latest |
+
+The export caps at **10 000 rows** in v1. Larger result sets will be truncated; tighten filters or split by date range.
+
+**Formats**
+
+- **CSV**: flat header row, list fields (`infrastructure_type`, `crisis_nature`, `pressing_needs`) joined with `|`, booleans as `true`/`false`. Photo and thumbnail columns hold 1-hour presigned HTTPS URLs.
+- **GeoJSON**: standard `FeatureCollection` (same feature shape as `GET /reports` minus the `total` field).
+
+GeoPackage and Shapefile are deferred — they require Fiona/GDAL in the Lambda zip; will follow up in Phase 3.
+
 ## GET /crisis-events/active
 
 Return the active crisis event whose `region_bbox` contains the given point. Used by the PWA to pre-fill the survey's crisis nature field. 404 if no active event covers the point.
