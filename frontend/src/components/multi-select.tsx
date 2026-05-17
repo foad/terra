@@ -19,7 +19,10 @@ export const MultiSelect = ({
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     };
@@ -41,9 +44,7 @@ export const MultiSelect = ({
   };
 
   const buttonText =
-    selected.length === 0
-      ? label
-      : `${selected.length} selected`;
+    selected.length === 0 ? label : `${selected.length} selected`;
 
   return (
     <div
@@ -59,18 +60,22 @@ export const MultiSelect = ({
         {buttonText}
       </button>
       {open && (
-        <ul
-          className={styles.list}
-          role="listbox"
-          aria-multiselectable="true"
-        >
+        <ul className={styles.list} role="listbox" aria-multiselectable="true">
           <li className={styles.toggleAll}>
-            <button type="button" className={styles.toggleAllButton} onClick={toggleAll}>
+            <button
+              type="button"
+              className={styles.toggleAllButton}
+              onClick={toggleAll}
+            >
               {allSelected ? "Deselect all" : "Select all"}
             </button>
           </li>
           {options.map((option) => (
-            <li key={option.value} role="option" aria-selected={selected.includes(option.value)}>
+            <li
+              key={option.value}
+              role="option"
+              aria-selected={selected.includes(option.value)}
+            >
               <div className="form-check">
                 <input
                   type="checkbox"

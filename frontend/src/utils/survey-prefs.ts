@@ -1,5 +1,5 @@
 import { latLngToCell } from "h3-js";
-import type { SurveyData } from "../components/survey-form";
+import type { SurveyData } from "../components/survey-data";
 
 const STORAGE_KEY = "terra-survey-prefs";
 const H3_RESOLUTION = 8;
@@ -31,13 +31,20 @@ const writeAll = (prefs: PrefsByCell) => {
   }
 };
 
-export const loadSurveyPrefs = (lat: number, lng: number): StoredPrefs | null => {
+export const loadSurveyPrefs = (
+  lat: number,
+  lng: number,
+): StoredPrefs | null => {
   const cell = latLngToCell(lat, lng, H3_RESOLUTION);
   const all = readAll();
   return all[cell] ?? null;
 };
 
-export const saveSurveyPrefs = (lat: number, lng: number, survey: SurveyData): void => {
+export const saveSurveyPrefs = (
+  lat: number,
+  lng: number,
+  survey: SurveyData,
+): void => {
   const cell = latLngToCell(lat, lng, H3_RESOLUTION);
   const all = readAll();
   all[cell] = {
@@ -50,11 +57,16 @@ export const saveSurveyPrefs = (lat: number, lng: number, survey: SurveyData): v
   writeAll(all);
 };
 
-export const mergeEmptyFields = (survey: SurveyData, prefs: StoredPrefs): SurveyData => ({
+export const mergeEmptyFields = (
+  survey: SurveyData,
+  prefs: StoredPrefs,
+): SurveyData => ({
   ...survey,
   debrisPresent: survey.debrisPresent ?? prefs.debrisPresent ?? null,
   electricityStatus: survey.electricityStatus || prefs.electricityStatus || "",
   healthStatus: survey.healthStatus || prefs.healthStatus || "",
   pressingNeeds:
-    survey.pressingNeeds.length > 0 ? survey.pressingNeeds : (prefs.pressingNeeds ?? []),
+    survey.pressingNeeds.length > 0
+      ? survey.pressingNeeds
+      : (prefs.pressingNeeds ?? []),
 });

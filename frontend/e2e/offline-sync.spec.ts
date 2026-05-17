@@ -27,13 +27,17 @@ test("offline submit then sync on reconnect", async ({ browser }) => {
   await context.setOffline(true);
 
   // Step 1: Location
-  await page.getByTestId("input-location-fallback").fill("Offline test building");
+  await page
+    .getByTestId("input-location-fallback")
+    .fill("Offline test building");
   await page.getByTestId("btn-next").click();
 
   // Step 2: Photo
   await expect(page.getByTestId("step-photo")).toBeVisible();
   await page.locator('input[type="file"]').setInputFiles(TEST_PHOTO);
-  await expect(page.getByTestId("photo-uploaded")).toBeVisible({ timeout: 10000 });
+  await expect(page.getByTestId("photo-uploaded")).toBeVisible({
+    timeout: 10000,
+  });
   await page.getByTestId("btn-next").click();
 
   // Step 3: Damage
@@ -43,7 +47,11 @@ test("offline submit then sync on reconnect", async ({ browser }) => {
 
   // Step 4: Survey (7 sub-steps)
   await expect(page.getByTestId("survey-step-0")).toBeVisible();
-  await page.locator("#infra-Residential\\ Infrastructure\\ \\(Houses\\ and\\ apartments\\)").check();
+  await page
+    .locator(
+      "#infra-Residential\\ Infrastructure\\ \\(Houses\\ and\\ apartments\\)",
+    )
+    .check();
   await page.getByTestId("btn-next").click();
 
   await expect(page.getByTestId("survey-step-1")).toBeVisible();
@@ -66,11 +74,15 @@ test("offline submit then sync on reconnect", async ({ browser }) => {
   await page.getByTestId("btn-next").click();
 
   await expect(page.getByTestId("survey-step-6")).toBeVisible();
-  await page.locator("#need-Food\\ assistance\\ and\\ safe\\ drinking\\ water").check();
+  await page
+    .locator("#need-Food\\ assistance\\ and\\ safe\\ drinking\\ water")
+    .check();
   await page.getByTestId("btn-submit").click();
 
   // Should show queued confirmation
-  await expect(page.getByTestId("step-confirmation")).toBeVisible({ timeout: 10000 });
+  await expect(page.getByTestId("step-confirmation")).toBeVisible({
+    timeout: 10000,
+  });
   await expect(page.getByText("Report Queued")).toBeVisible();
 
   // Go back online

@@ -50,7 +50,9 @@ export const ExistingReports = ({ reports }: ExistingReportsProps) => {
               <span className={styles.itemDate}>
                 {formatDateTime(r.properties.submitted_at)}
               </span>
-              <span className={`${styles.itemDamage} ${styles[r.properties.damage_level]}`}>
+              <span
+                className={`${styles.itemDamage} ${styles[r.properties.damage_level]}`}
+              >
                 {t(`damage.${r.properties.damage_level}`)}
               </span>
               {r.properties.location_description && (

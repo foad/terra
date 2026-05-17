@@ -5,7 +5,12 @@ import { api } from "./api";
 const MAX_RETRIES = 10;
 const BASE_BACKOFF_MS = 2000;
 
-type SyncListener = (counts: { pending: number; syncing: number; synced: number; failed: number }) => void;
+type SyncListener = (counts: {
+  pending: number;
+  syncing: number;
+  synced: number;
+  failed: number;
+}) => void;
 
 let running = false;
 let listeners: SyncListener[] = [];
@@ -84,7 +89,8 @@ export const syncEngine = {
           ai_confidence: report.aiConfidence,
           photo_key: photoKey,
           infrastructure_type: report.surveyData.infrastructureType,
-          infrastructure_type_other: report.surveyData.infrastructureTypeOther || null,
+          infrastructure_type_other:
+            report.surveyData.infrastructureTypeOther || null,
           infrastructure_name: report.surveyData.infrastructureName || null,
           crisis_nature: report.surveyData.crisisNature,
           debris_present: report.surveyData.debrisPresent,
@@ -122,7 +128,10 @@ export const syncEngine = {
             error: message,
             retryCount,
           });
-          const backoff = Math.min(BASE_BACKOFF_MS * Math.pow(2, retryCount - 1), 60000);
+          const backoff = Math.min(
+            BASE_BACKOFF_MS * Math.pow(2, retryCount - 1),
+            60000,
+          );
           await new Promise((r) => setTimeout(r, backoff));
         }
       }

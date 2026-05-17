@@ -71,7 +71,12 @@ const withStore = async <T>(
 
 export const reportQueue = {
   /** Add a new report to the queue */
-  async add(report: Omit<QueuedReport, "status" | "error" | "retryCount" | "lastAttempt" | "syncedAt">): Promise<QueuedReport> {
+  async add(
+    report: Omit<
+      QueuedReport,
+      "status" | "error" | "retryCount" | "lastAttempt" | "syncedAt"
+    >,
+  ): Promise<QueuedReport> {
     const queued: QueuedReport = {
       ...report,
       status: "pending",
@@ -124,7 +129,12 @@ export const reportQueue = {
   async updateStatus(
     id: string,
     status: ReportStatus,
-    extra?: Partial<Pick<QueuedReport, "error" | "photoKey" | "retryCount" | "lastAttempt" | "syncedAt">>,
+    extra?: Partial<
+      Pick<
+        QueuedReport,
+        "error" | "photoKey" | "retryCount" | "lastAttempt" | "syncedAt"
+      >
+    >,
   ): Promise<void> {
     const report = await reportQueue.get(id);
     if (!report) return;
