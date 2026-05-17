@@ -6,8 +6,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const TEST_PHOTO = join(__dirname, "fixtures", "test-photo.jpg");
 
-const PREVIEW_URL = process.env.E2E_BASE_URL ?? "http://localhost:4173";
-
 test("offline submit then sync on reconnect", async ({ browser }) => {
   const context = await browser.newContext({
     geolocation: { latitude: 36.2, longitude: 36.16 },
@@ -17,7 +15,7 @@ test("offline submit then sync on reconnect", async ({ browser }) => {
   const page = await context.newPage();
 
   // Install and activate service worker
-  await page.goto(PREVIEW_URL);
+  await page.goto("/");
   await page.waitForTimeout(2000);
   await page.reload();
   await page.waitForSelector("canvas.maplibregl-canvas", { timeout: 15000 });
