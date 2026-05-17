@@ -7,7 +7,7 @@ from typing import Literal
 from aws_lambda_powertools import Logger
 from pydantic import BaseModel, ConfigDict, Field
 
-from src.handlers.reports import _presigned, build_filter_clause
+from src.handlers.reports import build_filter_clause
 from src.utils.db import get_connection
 
 logger = Logger()
@@ -31,11 +31,17 @@ CSV_HEADER = [
     "ai_damage_level",
     "ai_confidence",
     "location_description",
-    "photo_url",
-    "thumbnail_url",
+    "photo_key",
     "version_chain_id",
     "is_latest",
 ]
+
+
+def _s3_key(uri: str | None) -> str | None:
+    if not uri or not uri.startswith("s3://"):
+        return None
+    _, _, key = uri[5:].partition("/")
+    return key or None
 
 
 class ExportParams(BaseModel):
@@ -110,8 +116,7 @@ def _to_csv(rows: list) -> str:
             r[6] or "",
             "" if r[7] is None else r[7],
             r[4] or "",
-            _presigned(r[8]) or "",
-            _presigned(r[9]) or "",
+            _s3_key(r[8]) or "",
             str(r[17]),
             "true" if r[18] else "false",
         ])
@@ -130,8 +135,7 @@ def _to_geojson(rows: list) -> str:
                 "damage_level": r[5],
                 "ai_damage_level": r[6],
                 "ai_confidence": r[7],
-                "photo_url": _presigned(r[8]),
-                "thumbnail_url": _presigned(r[9]),
+                "photo_key": _s3_key(r[8]),
                 "infrastructure_type": r[10],
                 "infrastructure_name": r[11],
                 "crisis_nature": r[12],

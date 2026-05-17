@@ -1,6 +1,7 @@
-import { CircleCheck, TriangleAlert, CircleX, X } from "lucide-react";
+import { CircleCheck, TriangleAlert, CircleX, Download, X } from "lucide-react";
 import type { ReactNode } from "react";
 import type { Filters, ReportFeature } from "../pages/dashboard";
+import { API_BASE } from "../utils/api";
 import { MultiSelect } from "./multi-select";
 import styles from "./dashboard-sidebar.module.css";
 
@@ -62,6 +63,19 @@ export const DashboardSidebar = ({
     filters.crisisNature.length > 0 ||
     filters.from !== "" ||
     filters.to !== "";
+
+  const buildExportUrl = (format: "csv" | "geojson") => {
+    const params = new URLSearchParams({ format });
+    if (filters.damageLevel.length > 0)
+      params.set("damage_level", filters.damageLevel.join(","));
+    if (filters.infrastructureType.length > 0)
+      params.set("infrastructure_type", filters.infrastructureType.join("|"));
+    if (filters.crisisNature.length > 0)
+      params.set("crisis_nature", filters.crisisNature.join("|"));
+    if (filters.from) params.set("from", filters.from);
+    if (filters.to) params.set("to", filters.to);
+    return `${API_BASE}/reports/export?${params.toString()}`;
+  };
 
   return (
     <aside className={styles.sidebar}>
@@ -232,6 +246,28 @@ export const DashboardSidebar = ({
                   }
                 />
               </div>
+            </div>
+          </div>
+
+          <div className={styles.exportGroup}>
+            <div className={styles.filterLabel}>Export</div>
+            <div className={styles.exportButtons}>
+              <a
+                className={styles.exportButton}
+                href={buildExportUrl("csv")}
+                download
+              >
+                <Download size={14} />
+                CSV
+              </a>
+              <a
+                className={styles.exportButton}
+                href={buildExportUrl("geojson")}
+                download
+              >
+                <Download size={14} />
+                GeoJSON
+              </a>
             </div>
           </div>
         </div>
