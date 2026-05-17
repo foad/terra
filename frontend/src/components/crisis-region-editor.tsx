@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Trash2 } from "lucide-react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import {
@@ -19,11 +20,20 @@ export const CrisisRegionEditor = ({
   onChange,
 }: CrisisRegionEditorProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const drawRef = useRef<TerraDraw | null>(null);
   const onChangeRef = useRef(onChange);
+  const [hasPolygon, setHasPolygon] = useState<boolean>(initial !== null);
 
   useEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
+
+  const handleClear = () => {
+    drawRef.current?.clear();
+    drawRef.current?.setMode("polygon");
+    setHasPolygon(false);
+    onChangeRef.current(null);
+  };
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -74,6 +84,7 @@ export const CrisisRegionEditor = ({
           }),
         ],
       });
+      drawRef.current = draw;
       draw.start();
 
       if (initial) {
@@ -97,6 +108,7 @@ export const CrisisRegionEditor = ({
         if (!draw) return;
         const features = draw.getSnapshot();
         const poly = features.find((f) => f.geometry.type === "Polygon");
+        setHasPolygon(poly !== undefined);
         onChangeRef.current(poly ? (poly.geometry as GeoJSON.Polygon) : null);
       };
       draw.on("finish", emit);
@@ -106,12 +118,26 @@ export const CrisisRegionEditor = ({
     return () => {
       cancelled = true;
       draw?.stop();
+      drawRef.current = null;
       map.remove();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return <div ref={containerRef} className={styles.map} />;
+  return (
+    <div className={styles.wrapper}>
+      <div ref={containerRef} className={styles.map} />
+      {hasPolygon && (
+        <button
+          type="button"
+          className={styles.clearButton}
+          onClick={handleClear}
+        >
+          <Trash2 size={14} /> Clear
+        </button>
+      )}
+    </div>
+  );
 };
 
 const polygonCentroid = (poly: GeoJSON.Polygon): [number, number] => {
