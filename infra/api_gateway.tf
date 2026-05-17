@@ -9,7 +9,7 @@ resource "aws_apigatewayv2_api" "api" {
       "http://localhost:5173",
       "http://localhost:4173",
     ]
-    allow_methods = ["GET", "POST", "OPTIONS"]
+    allow_methods = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
     allow_headers = ["Content-Type"]
     max_age       = 3600
   }

@@ -10,7 +10,7 @@ interface CrisisEvent {
   id: string;
   name: string;
   crisis_type: string;
-  region_bbox: GeoJSON.Polygon;
+  region: GeoJSON.Polygon;
 }
 
 const VIDA_BUILDINGS_URL =
@@ -397,7 +397,7 @@ export const DashboardMap = ({
           type: "FeatureCollection",
           features: events.map((e) => ({
             type: "Feature",
-            geometry: e.region_bbox,
+            geometry: e.region,
             properties: {
               id: e.id,
               name: e.name,
