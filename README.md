@@ -18,6 +18,7 @@ Community-facing PWA for crowdsourced damage assessment in the aftermath of sudd
 | Command | Description |
 |---------|-------------|
 | `cd frontend && npm run dev` | Start frontend dev server |
+| `cd frontend && npm run test:e2e` | Run E2E tests (see [docs/testing.md](docs/testing.md)) |
 | `cd backend && uv run pytest` | Run backend tests |
 | `cd backend && ./deploy.sh` | Deploy Lambda functions |
 | `cd infra && terraform plan` | Preview infra changes |
