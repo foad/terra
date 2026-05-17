@@ -26,7 +26,12 @@ registerRoute(
     } catch {
       // Return transparent 1x1 PNG instead of failing noisily
       return new Response(
-        Uint8Array.from(atob("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQABNjN9GQAAAABJRleErkJggg=="), c => c.charCodeAt(0)),
+        Uint8Array.from(
+          atob(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQABNjN9GQAAAABJRleErkJggg==",
+          ),
+          (c) => c.charCodeAt(0),
+        ),
         { status: 200, headers: { "Content-Type": "image/png" } },
       );
     }
@@ -65,9 +70,12 @@ registerRoute(
   ({ url }) => url.hostname === "data.source.coop",
   async ({ request }) => {
     const range = request.headers.get("Range") || "";
-    const cacheKey = new Request(`${request.url}?_r=${encodeURIComponent(range)}`, {
-      method: "GET",
-    });
+    const cacheKey = new Request(
+      `${request.url}?_r=${encodeURIComponent(range)}`,
+      {
+        method: "GET",
+      },
+    );
 
     const cache = await caches.open(PMTILES_CACHE);
     const cached = await cache.match(cacheKey);
@@ -78,7 +86,8 @@ registerRoute(
         status: 206,
         statusText: "Partial Content",
         headers: {
-          "Content-Type": cached.headers.get("Content-Type") || "application/octet-stream",
+          "Content-Type":
+            cached.headers.get("Content-Type") || "application/octet-stream",
           "Content-Length": String(body.byteLength),
           "Content-Range": cached.headers.get("X-Original-Content-Range") || "",
         },
@@ -93,9 +102,11 @@ registerRoute(
 
         // Store as 200 so Cache API accepts it, preserve original headers
         const headers = new Headers({
-          "Content-Type": response.headers.get("Content-Type") || "application/octet-stream",
+          "Content-Type":
+            response.headers.get("Content-Type") || "application/octet-stream",
           "Content-Length": String(body.byteLength),
-          "X-Original-Content-Range": response.headers.get("Content-Range") || "",
+          "X-Original-Content-Range":
+            response.headers.get("Content-Range") || "",
           "X-Cached-At": new Date().toISOString(),
         });
 

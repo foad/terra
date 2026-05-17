@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { DashboardMap } from "../components/dashboard-map";
 import { DashboardSidebar } from "../components/dashboard-sidebar";
 import { ReportDetailsModal } from "../components/report-details-modal";
@@ -54,61 +54,61 @@ const DashboardPage = () => {
   const [reports, setReports] = useState<ReportFeature[]>([]);
   const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
-  const [selectedReport, setSelectedReport] = useState<ReportFeature | null>(null);
+  const [selectedReport, setSelectedReport] = useState<ReportFeature | null>(
+    null,
+  );
   const [history, setHistory] = useState<ReportFeature[]>([]);
-  const [detailsReport, setDetailsReport] = useState<ReportFeature | null>(null);
+  const [detailsReport, setDetailsReport] = useState<ReportFeature | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
 
-  const fetchReports = useCallback(async () => {
-    setLoading(true);
-    const params = new URLSearchParams();
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (filters.damageLevel.length > 0)
+        params.set("damage_level", filters.damageLevel.join(","));
+      if (filters.infrastructureType.length > 0)
+        params.set("infrastructure_type", filters.infrastructureType.join("|"));
+      if (filters.crisisNature.length > 0)
+        params.set("crisis_nature", filters.crisisNature.join("|"));
+      if (filters.from) params.set("from", filters.from);
+      if (filters.to) params.set("to", filters.to);
+      params.set("limit", "1000");
 
-    if (filters.damageLevel.length > 0) {
-      params.set("damage_level", filters.damageLevel.join(","));
-    }
-    if (filters.infrastructureType.length > 0) {
-      params.set("infrastructure_type", filters.infrastructureType.join("|"));
-    }
-    if (filters.crisisNature.length > 0) {
-      params.set("crisis_nature", filters.crisisNature.join("|"));
-    }
-    if (filters.from) params.set("from", filters.from);
-    if (filters.to) params.set("to", filters.to);
+      let allFeatures: ReportFeature[] = [];
+      let offset = 0;
+      let totalCount = 0;
+      while (true) {
+        params.set("offset", String(offset));
+        const data = await api(`/reports?${params.toString()}`);
+        allFeatures = allFeatures.concat(data.features);
+        totalCount = data.total;
+        if (allFeatures.length >= totalCount) break;
+        offset = allFeatures.length;
+      }
 
-    params.set("limit", "1000");
-
-    let allFeatures: ReportFeature[] = [];
-    let offset = 0;
-    let total = 0;
-
-    // Paginate to fetch all reports
-    while (true) {
-      params.set("offset", String(offset));
-      const qs = params.toString();
-      const data = await api(`/reports?${qs}`);
-      allFeatures = allFeatures.concat(data.features);
-      total = data.total;
-      if (allFeatures.length >= total) break;
-      offset = allFeatures.length;
-    }
-
-    setReports(allFeatures);
-    setTotal(total);
-    setLoading(false);
+      if (!cancelled) {
+        setReports(allFeatures);
+        setTotal(totalCount);
+        setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [filters]);
 
   useEffect(() => {
-    fetchReports();
-  }, [fetchReports]);
-
-  useEffect(() => {
     const buildingId = selectedReport?.properties.building_id;
-    if (!buildingId) {
-      setHistory([]);
-      return;
-    }
     let cancelled = false;
     (async () => {
+      if (!buildingId) {
+        if (!cancelled) setHistory([]);
+        return;
+      }
       try {
         const data = await api(
           `/reports?building_id=${encodeURIComponent(buildingId)}&limit=100`,
@@ -144,10 +144,7 @@ const DashboardPage = () => {
           onClearSelection={() => setSelectedReport(null)}
         />
         <div className={styles.mapArea}>
-          <DashboardMap
-            reports={reports}
-            onReportSelect={setSelectedReport}
-          />
+          <DashboardMap reports={reports} onReportSelect={setSelectedReport} />
         </div>
       </div>
       {detailsReport && (

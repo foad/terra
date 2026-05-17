@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
-const HEALTH_URL = (import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "") + "/health";
+const HEALTH_URL =
+  (import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "") + "/health";
 const VERIFY_TIMEOUT = 5000;
 const POLL_INTERVAL = 30000;
 

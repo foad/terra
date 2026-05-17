@@ -1,5 +1,5 @@
-@import '@undp/design-system-assets/css/base-minimal.min.css';
-@import '@undp/design-system-assets/css/components.min.css';
+@import "@undp/design-system-assets/css/base-minimal.min.css";
+@import "@undp/design-system-assets/css/components.min.css";
 
 [dir="rtl"] {
   text-align: right;
