@@ -7,6 +7,7 @@ import "./i18n";
 import { App } from "./app.tsx";
 
 const DashboardPage = lazy(() => import("./pages/dashboard.tsx"));
+const AdminCrisesPage = lazy(() => import("./pages/admin-crises.tsx"));
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -18,6 +19,14 @@ createRoot(document.getElementById("root")!).render(
           element={
             <Suspense>
               <DashboardPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/admin/crises"
+          element={
+            <Suspense>
+              <AdminCrisesPage />
             </Suspense>
           }
         />

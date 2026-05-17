@@ -11,7 +11,13 @@ from aws_lambda_powertools.logging import correlation_paths
 from pydantic import ValidationError
 
 from src.handlers.classify import BedrockFailedError, BedrockThrottledError, classify_photo
-from src.handlers.crisis_events import get_active_crisis, list_active_crises
+from src.handlers.crisis_events import (
+    create_crisis,
+    delete_crisis,
+    get_active_crisis,
+    list_active_crises,
+    update_crisis,
+)
 from src.handlers.exports import export_reports
 from src.handlers.photos import get_upload_url
 from src.handlers.reports import create_report, query_reports
@@ -89,6 +95,42 @@ def get_reports_export():
 @tracer.capture_method
 def get_crisis_events():
     return list_active_crises()
+
+
+@app.post("/crisis-events")
+@tracer.capture_method
+def post_crisis_event():
+    body = app.current_event.json_body if app.current_event.body else None
+    try:
+        return create_crisis(body)
+    except (ValidationError, ValueError) as e:
+        raise BadRequestError(
+            _first_validation_message(e) if isinstance(e, ValidationError) else str(e),
+        ) from e
+
+
+@app.put("/crisis-events/<event_id>")
+@tracer.capture_method
+def put_crisis_event(event_id: str):
+    body = app.current_event.json_body if app.current_event.body else None
+    try:
+        return update_crisis(event_id, body)
+    except (ValidationError, ValueError) as e:
+        raise BadRequestError(
+            _first_validation_message(e) if isinstance(e, ValidationError) else str(e),
+        ) from e
+    except FileNotFoundError as e:
+        raise NotFoundError(str(e)) from e
+
+
+@app.delete("/crisis-events/<event_id>")
+@tracer.capture_method
+def delete_crisis_event(event_id: str):
+    try:
+        delete_crisis(event_id)
+    except FileNotFoundError as e:
+        raise NotFoundError(str(e)) from e
+    return {"id": event_id, "status": "deleted"}
 
 
 @app.get("/crisis-events/active")

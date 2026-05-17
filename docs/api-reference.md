@@ -117,6 +117,53 @@ The export caps at **10 000 rows** in v1. Larger result sets will be truncated; 
 
 GeoPackage and Shapefile are deferred — they require Fiona/GDAL in the Lambda zip; will follow up in Phase 3.
 
+## GET /crisis-events
+
+List all crisis events that have a `region` polygon, active and inactive. Used by the admin dashboard and the analyst map overlay.
+
+**Response**
+
+```json
+{
+  "events": [
+    {
+      "id": "59a7cb76-...",
+      "name": "Kent Floods 2026",
+      "crisis_type": "Flood",
+      "region": { "type": "Polygon", "coordinates": [[[0, 50], ...]] },
+      "is_active": true
+    }
+  ]
+}
+```
+
+## POST /crisis-events
+
+Create a crisis event.
+
+**Request**
+
+```json
+{
+  "name": "Kent Floods 2026",
+  "crisis_type": "Flood",
+  "is_active": true,
+  "region": { "type": "Polygon", "coordinates": [[[0, 50], ...]] }
+}
+```
+
+`crisis_type` must be one of: `Earthquake`, `Flood`, `Tsunami`, `Hurricane/Cyclone`, `Wildfire`, `Explosion`, `Chemical incident`, `Conflict`, `Civil unrest`. `region` must be a GeoJSON Polygon.
+
+**Response**: `{ "id": "<uuid>" }`
+
+## PUT /crisis-events/{id}
+
+Same request shape as POST. 404 if the id is unknown.
+
+## DELETE /crisis-events/{id}
+
+Hard-delete. 404 if the id is unknown.
+
 ## GET /crisis-events/active
 
 Return the active crisis event whose `region_bbox` contains the given point. Used by the PWA to pre-fill the survey's crisis nature field. 404 if no active event covers the point.
