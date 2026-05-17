@@ -56,9 +56,7 @@ def _mock_conn(rows):
 
 class TestExportReports:
     @patch("src.handlers.exports.get_connection")
-    @patch("src.handlers.reports.s3")
-    def test_geojson_format(self, mock_s3, mock_get_conn):
-        mock_s3.generate_presigned_url.return_value = "https://signed.example/x"
+    def test_geojson_format(self, mock_get_conn):
         mock_get_conn.return_value, _ = _mock_conn([_row()])
 
         body, content_type, filename = export_reports({"format": "geojson"})
@@ -71,12 +69,12 @@ class TestExportReports:
         feat = parsed["features"][0]
         assert feat["geometry"]["coordinates"] == [0.5, 51.4]
         assert feat["properties"]["damage_level"] == "partial"
-        assert feat["properties"]["photo_url"] == "https://signed.example/x"
+        assert feat["properties"]["photo_key"] == "uploads/abc.jpg"
+        assert "photo_url" not in feat["properties"]
+        assert "thumbnail_url" not in feat["properties"]
 
     @patch("src.handlers.exports.get_connection")
-    @patch("src.handlers.reports.s3")
-    def test_csv_format_header_and_row(self, mock_s3, mock_get_conn):
-        mock_s3.generate_presigned_url.return_value = "https://signed.example/x"
+    def test_csv_format_header_and_row(self, mock_get_conn):
         mock_get_conn.return_value, _ = _mock_conn([_row()])
 
         body, content_type, filename = export_reports({"format": "csv"})
@@ -85,14 +83,14 @@ class TestExportReports:
         assert filename.startswith("terra-reports-") and filename.endswith(".csv")
         lines = body.strip().split("\r\n")
         assert lines[0].split(",") == CSV_HEADER
+        assert "photo_key" in CSV_HEADER
+        assert "photo_url" not in CSV_HEADER
+        assert "uploads/abc.jpg" in lines[1]
         assert "partial" in lines[1]
         assert "u10k7d2q" in lines[1]
-        assert "Flood" in lines[1]
 
     @patch("src.handlers.exports.get_connection")
-    @patch("src.handlers.reports.s3")
-    def test_csv_pipe_joins_list_fields(self, mock_s3, mock_get_conn):
-        mock_s3.generate_presigned_url.return_value = ""
+    def test_csv_pipe_joins_list_fields(self, mock_get_conn):
         mock_get_conn.return_value, _ = _mock_conn([
             _row(crisis_nature=["Earthquake", "Flood"]),
         ])
@@ -102,9 +100,7 @@ class TestExportReports:
         assert "Earthquake|Flood" in body
 
     @patch("src.handlers.exports.get_connection")
-    @patch("src.handlers.reports.s3")
-    def test_csv_serialises_booleans_and_nulls(self, mock_s3, mock_get_conn):
-        mock_s3.generate_presigned_url.return_value = ""
+    def test_csv_serialises_booleans_and_nulls(self, mock_get_conn):
         mock_get_conn.return_value, _ = _mock_conn([
             _row(debris_present=False, ai_confidence=None),
         ])
@@ -130,9 +126,7 @@ class TestExportReports:
         mock_get_conn.assert_not_called()
 
     @patch("src.handlers.exports.get_connection")
-    @patch("src.handlers.reports.s3")
-    def test_caps_to_export_row_cap(self, mock_s3, mock_get_conn):
-        mock_s3.generate_presigned_url.return_value = ""
+    def test_caps_to_export_row_cap(self, mock_get_conn):
         mock_conn, mock_cursor = _mock_conn([])
         mock_get_conn.return_value = mock_conn
 
