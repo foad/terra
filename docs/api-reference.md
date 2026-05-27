@@ -252,7 +252,6 @@ Submit a damage assessment report.
 | `infrastructure_type` | string[] | yes | At least one type |
 | `crisis_nature` | string[] | yes | At least one nature |
 | `building_id` | string | no | Building identifier from VIDA PMTiles |
-| `location_description` | string | no | Text description when GPS/building unavailable |
 | `photo_key` | string | no | Key returned from POST /photos/upload |
 | `ai_damage_level` | string | no | AI-suggested damage level |
 | `ai_infrastructure_type` | string[] | no | AI-suggested infrastructure type(s) |

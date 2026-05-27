@@ -61,7 +61,7 @@ export const ReportFlow = ({
   const [step, setStep] = useState<Step>("location");
   const [selectedBuilding, setSelectedBuilding] =
     useState<SelectedBuilding | null>(null);
-  const [locationFallback, setLocationFallback] = useState("");
+  const [manualPin, setManualPin] = useState<[number, number] | null>(null);
   const [photo, setPhoto] = useState<PhotoResult | null>(null);
   const [damageLevel, setDamageLevel] = useState<DamageLevel | null>(null);
   const [survey, setSurvey] = useState<SurveyData>(EMPTY_SURVEY);
@@ -144,11 +144,16 @@ export const ReportFlow = ({
   const handleBuildingSelect = useCallback(
     (building: SelectedBuilding | null) => {
       setSelectedBuilding(building);
-      if (building) setLocationFallback("");
+      if (building) setManualPin(null);
       else setExistingReports([]);
     },
     [],
   );
+
+  const handleManualPin = useCallback((coords: [number, number] | null) => {
+    setManualPin(coords);
+    if (coords) setSelectedBuilding(null);
+  }, []);
 
   useEffect(() => {
     if (crisisLookedUpRef.current) return;
@@ -192,8 +197,8 @@ export const ReportFlow = ({
   }, []);
 
   const handleAdvanceToSurvey = () => {
-    const reportLat = selectedBuilding?.center[1] ?? latitude;
-    const reportLng = selectedBuilding?.center[0] ?? longitude;
+    const reportLat = selectedBuilding?.center[1] ?? manualPin?.[1] ?? latitude;
+    const reportLng = selectedBuilding?.center[0] ?? manualPin?.[0] ?? longitude;
     const seeded: PreSeeded = {};
     setSurvey((prev) => {
       let next = prev;
@@ -229,8 +234,8 @@ export const ReportFlow = ({
   };
 
   const handleSubmit = async () => {
-    const reportLat = selectedBuilding?.center[1] ?? latitude;
-    const reportLng = selectedBuilding?.center[0] ?? longitude;
+    const reportLat = selectedBuilding?.center[1] ?? manualPin?.[1] ?? latitude;
+    const reportLng = selectedBuilding?.center[0] ?? manualPin?.[0] ?? longitude;
     if (!damageLevel || reportLat == null || reportLng == null) return;
 
     setStep("submitting");
@@ -245,7 +250,6 @@ export const ReportFlow = ({
         latitude: reportLat,
         longitude: reportLng,
         buildingId: selectedBuilding?.buildingId ?? null,
-        locationDescription: locationFallback || null,
         damageLevel,
         aiDamageLevel: aiClassification?.damageLevel ?? null,
         aiInfrastructureType: aiClassification
@@ -275,7 +279,7 @@ export const ReportFlow = ({
   const handleSubmitAnother = () => {
     setStep("location");
     setSelectedBuilding(null);
-    setLocationFallback("");
+    setManualPin(null);
     setPhoto(null);
     setDamageLevel(null);
     setSurvey(EMPTY_SURVEY);
@@ -286,8 +290,7 @@ export const ReportFlow = ({
     setPreSeeded({});
   };
 
-  const hasLocation =
-    selectedBuilding !== null || locationFallback.trim() !== "";
+  const hasLocation = selectedBuilding !== null || manualPin !== null;
 
   const isLastSurveyStep = surveyStep === SURVEY_STEP_COUNT - 1;
 
@@ -300,13 +303,10 @@ export const ReportFlow = ({
             longitude={longitude}
             accuracy={accuracy}
             onBuildingSelect={handleBuildingSelect}
+            onManualPin={handleManualPin}
           />
           <div className={styles.locationOverlay}>
-            <BuildingSelection
-              building={selectedBuilding}
-              locationFallback={locationFallback}
-              onLocationFallbackChange={setLocationFallback}
-            />
+            <BuildingSelection building={selectedBuilding} manualPin={manualPin} />
             <ExistingReports reports={existingReports} />
           </div>
         </div>

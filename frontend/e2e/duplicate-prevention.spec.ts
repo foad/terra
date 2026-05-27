@@ -29,7 +29,7 @@ test("response lost mid-flight, retry returns duplicate, no double-insert", asyn
   });
 
   await page.goto("/");
-  await completeReportFlow(page, { description: "Duplicate dedup test" });
+  await completeReportFlow(page);
 
   // First POST aborted, second returned `duplicate`. Anything more would be
   // bad — frontend should mark the queue entry synced on the duplicate

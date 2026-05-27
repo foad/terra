@@ -26,8 +26,8 @@
   },
   "location": {
     "selectBuilding": "Appuyez sur un bâtiment sur la carte pour le sélectionner",
-    "describeLocation": "Ou décrivez l'emplacement :",
-    "descriptionPlaceholder": "ex. L'école près du marché central",
+    "dropPinHint": "Pas de contour de bâtiment ? Appuyez sur la carte pour placer un repère, puis faites-le glisser pour l'ajuster.",
+    "pinPlaced": "Emplacement repéré",
     "selectedBuilding": "Bâtiment sélectionné",
     "existingReportsTitle_one": "{{count}} rapport existant",
     "existingReportsTitle_other": "{{count}} rapports existants",

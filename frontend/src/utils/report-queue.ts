@@ -13,7 +13,6 @@ export interface QueuedReport {
   latitude: number;
   longitude: number;
   buildingId: string | null;
-  locationDescription: string | null;
   damageLevel: string;
   aiDamageLevel: string | null;
   aiInfrastructureType: string[] | null;

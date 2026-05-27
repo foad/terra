@@ -37,9 +37,13 @@ test("classify failure does not block the submission flow", async ({
     timeout: 15000,
   });
 
+  await page.waitForTimeout(3000);
   await page
-    .getByTestId("input-location-fallback")
-    .fill("Classify-fail test building");
+    .locator(".maplibregl-canvas")
+    .click({ position: { x: 200, y: 250 } });
+  await expect(page.getByTestId("btn-next")).not.toHaveClass(/disabled/, {
+    timeout: 5000,
+  });
   await page.getByTestId("btn-next").click();
 
   await expect(page.getByTestId("step-photo")).toBeVisible();

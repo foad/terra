@@ -44,10 +44,14 @@ test("AI classification pre-selects damage and infrastructure with confidence ba
     timeout: 15000,
   });
 
-  // Location: text fallback (map interaction is fiddly in headless)
+  // Location: drop a pin on the map (building tap or pin both satisfy the step)
+  await page.waitForTimeout(3000);
   await page
-    .getByTestId("input-location-fallback")
-    .fill("AI test building");
+    .locator(".maplibregl-canvas")
+    .click({ position: { x: 200, y: 250 } });
+  await expect(page.getByTestId("btn-next")).not.toHaveClass(/disabled/, {
+    timeout: 5000,
+  });
   await page.getByTestId("btn-next").click();
 
   // Photo: upload, the stubbed classify fires automatically

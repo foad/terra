@@ -135,11 +135,6 @@ export const DashboardSidebar = ({
                     <div className={styles.historyDate}>
                       {new Date(r.properties.submitted_at).toLocaleString()}
                     </div>
-                    {r.properties.location_description && (
-                      <div className={styles.historyDesc}>
-                        {r.properties.location_description}
-                      </div>
-                    )}
                     <button
                       type="button"
                       className={styles.detailsButton}

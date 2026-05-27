@@ -28,7 +28,7 @@ test("POST /reports failure is retried until it succeeds", async ({
   });
 
   await page.goto("/");
-  await completeReportFlow(page, { description: "Submit retry test" });
+  await completeReportFlow(page);
 
   // Sync engine retries on transient failure with exponential backoff
   // (starting at 2 s). Poll until we've seen the second (successful) POST.

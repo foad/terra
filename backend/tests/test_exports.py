@@ -14,7 +14,6 @@ def _row(**overrides):
         "lng": 0.5,
         "lat": 51.4,
         "building_id": "u10k7d2q",
-        "location_description": None,
         "damage_level": "partial",
         "ai_damage_level": "partial",
         "ai_confidence": 0.85,
@@ -34,7 +33,7 @@ def _row(**overrides):
     base.update(overrides)
     return (
         base["id"], base["lng"], base["lat"], base["building_id"],
-        base["location_description"], base["damage_level"],
+        base["damage_level"],
         base["ai_damage_level"], base["ai_confidence"],
         base["photo_url"], base["thumbnail_url"],
         base["infrastructure_type"], base["infrastructure_description"],

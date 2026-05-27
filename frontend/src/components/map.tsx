@@ -10,6 +10,14 @@ const VIDA_BUILDINGS_URL =
 const BUILDINGS_LAYER = "building-footprints";
 const BUILDINGS_SOURCE_LAYER = "goog_msft_osm_building_footprints";
 
+// Filled teardrop pin, tip at bottom-centre (marker anchored at "bottom").
+// fill uses currentColor so .pinMarker can theme it with the UNDP palette.
+const PIN_SVG = `
+<svg width="26" height="34" viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg">
+  <path d="M12 0a12 12 0 0 0-12 12c0 7.5 9.7 18 11.1 19.5a1.2 1.2 0 0 0 1.8 0C14.3 30 24 19.5 24 12A12 12 0 0 0 12 0Z" fill="currentColor" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="12" cy="12" r="4" fill="#fff"/>
+</svg>`;
+
 export interface SelectedBuilding {
   buildingId: string;
   center: [number, number];
@@ -23,6 +31,7 @@ interface MapProps {
   longitude: number | null;
   accuracy: number | null;
   onBuildingSelect?: (building: SelectedBuilding | null) => void;
+  onManualPin?: (coords: [number, number] | null) => void;
 }
 
 export const Map = ({
@@ -30,16 +39,23 @@ export const Map = ({
   longitude,
   accuracy,
   onBuildingSelect,
+  onManualPin,
 }: MapProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markerRef = useRef<maplibregl.Marker | null>(null);
+  const pinMarkerRef = useRef<maplibregl.Marker | null>(null);
   const hasCenteredRef = useRef(false);
   const onBuildingSelectRef = useRef(onBuildingSelect);
+  const onManualPinRef = useRef(onManualPin);
 
   useEffect(() => {
     onBuildingSelectRef.current = onBuildingSelect;
   }, [onBuildingSelect]);
+
+  useEffect(() => {
+    onManualPinRef.current = onManualPin;
+  }, [onManualPin]);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -137,6 +153,9 @@ export const Map = ({
         center = [e.lngLat.lng, e.lngLat.lat];
       }
 
+      // Selecting a building supersedes any manual pin
+      clearPin();
+
       // Highlight selected building
       const source = map.getSource("selected-building") as
         | maplibregl.GeoJSONSource
@@ -155,18 +174,50 @@ export const Map = ({
       });
     });
 
-    // Deselect when clicking elsewhere
+    // Drop a manual pin when clicking off any building — covers no-GPS and
+    // buildings missing from the footprint layer. The pin is draggable for
+    // fine-tuning.
+    const clearPin = () => {
+      pinMarkerRef.current?.remove();
+      pinMarkerRef.current = null;
+    };
+
+    const placePin = (lng: number, lat: number) => {
+      if (pinMarkerRef.current) {
+        pinMarkerRef.current.setLngLat([lng, lat]);
+      } else {
+        const el = document.createElement("div");
+        el.className = styles.pinMarker;
+        el.innerHTML = PIN_SVG;
+        const marker = new maplibregl.Marker({
+          element: el,
+          draggable: true,
+          anchor: "bottom",
+        })
+          .setLngLat([lng, lat])
+          .addTo(map);
+        marker.on("dragend", () => {
+          const pos = marker.getLngLat();
+          onManualPinRef.current?.([pos.lng, pos.lat]);
+        });
+        pinMarkerRef.current = marker;
+      }
+      onManualPinRef.current?.([lng, lat]);
+    };
+
     map.on("click", (e) => {
       const features = map.queryRenderedFeatures(e.point, {
         layers: [BUILDINGS_LAYER],
       });
-      if (features.length === 0) {
-        const source = map.getSource("selected-building") as
-          | maplibregl.GeoJSONSource
-          | undefined;
-        source?.setData({ type: "FeatureCollection", features: [] });
-        onBuildingSelectRef.current?.(null);
-      }
+      if (features.length > 0) return;
+
+      // Clear any building selection, then place/move the pin.
+      const source = map.getSource("selected-building") as
+        | maplibregl.GeoJSONSource
+        | undefined;
+      source?.setData({ type: "FeatureCollection", features: [] });
+      onBuildingSelectRef.current?.(null);
+      placePin(e.lngLat.lng, e.lngLat.lat);
     });
 
     // Pointer cursor on buildings
@@ -184,6 +235,7 @@ export const Map = ({
       maplibregl.removeProtocol("pmtiles");
       mapRef.current = null;
       markerRef.current = null;
+      pinMarkerRef.current = null;
       hasCenteredRef.current = false;
     };
   }, []);

@@ -26,8 +26,8 @@
   },
   "location": {
     "selectBuilding": "Нажмите на здание на карте, чтобы выбрать его",
-    "describeLocation": "Или опишите местоположение:",
-    "descriptionPlaceholder": "напр. Школа рядом с центральным рынком",
+    "dropPinHint": "Нет контура здания? Нажмите на карту, чтобы поставить метку, затем перетащите её для уточнения.",
+    "pinPlaced": "Местоположение отмечено",
     "selectedBuilding": "Выбранное здание",
     "existingReportsTitle_one": "{{count}} существующий отчёт",
     "existingReportsTitle_few": "{{count}} существующих отчёта",

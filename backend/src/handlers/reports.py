@@ -32,7 +32,6 @@ class ReportSubmission(BaseModel):
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
     building_id: str | None = Field(None, max_length=32)
-    location_description: str | None = Field(None, max_length=500)
     damage_level: str = Field(pattern="^(minimal|partial|complete)$")
     photo_key: str | None = Field(None, pattern=r"^uploads/[a-f0-9-]+\.(jpg|png|webp)$")
     ai_damage_level: str | None = Field(None, pattern="^(minimal|partial|complete)$")
@@ -113,14 +112,14 @@ def create_report(body: dict) -> dict:
         cur.execute(
             """
             INSERT INTO reports (
-                id, location, h3_r12, h3_r8, building_id, location_description,
+                id, location, h3_r12, h3_r8, building_id,
                 damage_level, ai_damage_level, ai_infrastructure_type, ai_confidence,
                 photo_url, thumbnail_url, infrastructure_type, infrastructure_description,
                 crisis_nature, debris_present, electricity_status,
                 health_status, pressing_needs, version_chain_id,
                 device_id, offline_queue_id
             ) VALUES (
-                %s, ST_SetSRID(ST_MakePoint(%s, %s), 4326), %s, %s, %s, %s,
+                %s, ST_SetSRID(ST_MakePoint(%s, %s), 4326), %s, %s, %s,
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
             )
             """,
@@ -131,7 +130,6 @@ def create_report(body: dict) -> dict:
                 h3_r12,
                 h3_r8,
                 submission.building_id,
-                submission.location_description,
                 submission.damage_level,
                 submission.ai_damage_level,
                 submission.ai_infrastructure_type,
@@ -229,7 +227,7 @@ def query_reports(params: dict) -> dict:
             f"""
             SELECT
                 id, ST_X(location) as lng, ST_Y(location) as lat,
-                building_id, location_description, damage_level,
+                building_id, damage_level,
                 ai_damage_level, ai_infrastructure_type, ai_confidence,
                 photo_url, thumbnail_url,
                 infrastructure_type, infrastructure_description,
@@ -264,24 +262,23 @@ def query_reports(params: dict) -> dict:
             "properties": {
                 "id": str(row[0]),
                 "building_id": row[3],
-                "location_description": row[4],
-                "damage_level": row[5],
-                "ai_damage_level": row[6],
-                "ai_infrastructure_type": row[7],
-                "ai_confidence": row[8],
-                "photo_url": _presigned(row[9]),
-                "thumbnail_url": _presigned(row[10]),
-                "infrastructure_type": row[11],
-                "infrastructure_description": row[12],
-                "crisis_nature": row[13],
-                "debris_present": row[14],
-                "electricity_status": row[15],
-                "health_status": row[16],
-                "pressing_needs": row[17],
-                "version_chain_id": str(row[18]),
-                "is_latest": row[19],
-                "submitted_at": row[20].isoformat() if row[20] else None,
-                "version_count": row[21],
+                "damage_level": row[4],
+                "ai_damage_level": row[5],
+                "ai_infrastructure_type": row[6],
+                "ai_confidence": row[7],
+                "photo_url": _presigned(row[8]),
+                "thumbnail_url": _presigned(row[9]),
+                "infrastructure_type": row[10],
+                "infrastructure_description": row[11],
+                "crisis_nature": row[12],
+                "debris_present": row[13],
+                "electricity_status": row[14],
+                "health_status": row[15],
+                "pressing_needs": row[16],
+                "version_chain_id": str(row[17]),
+                "is_latest": row[18],
+                "submitted_at": row[19].isoformat() if row[19] else None,
+                "version_count": row[20],
             },
         })
 

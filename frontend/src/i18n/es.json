@@ -26,8 +26,8 @@
   },
   "location": {
     "selectBuilding": "Toque un edificio en el mapa para seleccionarlo",
-    "describeLocation": "O describa la ubicación:",
-    "descriptionPlaceholder": "ej. La escuela cerca del mercado central",
+    "dropPinHint": "¿Sin contorno del edificio? Toque el mapa para colocar un marcador y arrástrelo para ajustarlo.",
+    "pinPlaced": "Ubicación marcada",
     "selectedBuilding": "Edificio seleccionado",
     "existingReportsTitle_one": "{{count}} informe existente",
     "existingReportsTitle_other": "{{count}} informes existentes",

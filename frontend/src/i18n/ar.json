@@ -26,8 +26,8 @@
   },
   "location": {
     "selectBuilding": "انقر على مبنى على الخريطة لتحديده",
-    "describeLocation": "أو صف الموقع:",
-    "descriptionPlaceholder": "مثال: المدرسة بالقرب من السوق المركزي",
+    "dropPinHint": "لا يوجد مخطط للمبنى؟ انقر على الخريطة لوضع علامة، ثم اسحبها لضبط الموقع.",
+    "pinPlaced": "تم تحديد الموقع",
     "selectedBuilding": "المبنى المحدد",
     "existingReportsTitle_zero": "لا توجد تقارير سابقة",
     "existingReportsTitle_one": "تقرير واحد موجود",

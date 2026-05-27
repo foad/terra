@@ -73,9 +73,20 @@ test("survey pre-populates from AI, active crisis, and prior submission", async 
     timeout: 15000,
   });
 
-  await page
-    .getByTestId("input-location-fallback")
-    .fill("Pre-pop test building");
+  // Drop the pin just off the map centre (the mocked GPS point). A small
+  // offset clears the GPS location marker that sits dead-centre; at zoom 18
+  // it's still metres away, well within the same H3 r8 cell the seeded
+  // survey-prefs are keyed to.
+  await page.waitForTimeout(3000);
+  const canvas = page.locator(".maplibregl-canvas");
+  const box = await canvas.boundingBox();
+  if (!box) throw new Error("map canvas not found");
+  await canvas.click({
+    position: { x: box.width / 2 + 40, y: box.height / 2 },
+  });
+  await expect(page.getByTestId("btn-next")).not.toHaveClass(/disabled/, {
+    timeout: 5000,
+  });
   await page.getByTestId("btn-next").click();
 
   await expect(page.getByTestId("step-photo")).toBeVisible();

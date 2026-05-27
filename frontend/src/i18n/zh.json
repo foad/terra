@@ -26,8 +26,8 @@
   },
   "location": {
     "selectBuilding": "点击地图上的建筑物进行选择",
-    "describeLocation": "或描述位置：",
-    "descriptionPlaceholder": "例如：中央市场附近的学校",
+    "dropPinHint": "没有建筑轮廓？点击地图放置标记，然后拖动以调整位置。",
+    "pinPlaced": "已标记位置",
     "selectedBuilding": "已选建筑",
     "existingReportsTitle_other": "已有 {{count}} 份报告",
     "existingReportsLatest": "最新：{{damage}}（{{date}}）",
