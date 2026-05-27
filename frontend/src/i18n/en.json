@@ -72,8 +72,8 @@
       "community": "Community Infrastructure (Schools, hospitals, community halls, public toilets, etc.)",
       "publicSpaces": "Public spaces/Recreation Infrastructure (stadiums, playgrounds, religious buildings, etc.)"
     },
-    "infrastructureDetails": "Provide more details on the nature of the infrastructure, including the name of the infrastructure:",
-    "infrastructureNamePlaceholder": "e.g. Al-Noor Primary School",
+    "infrastructureDetails": "Describe the infrastructure and the damage, including its name if known:",
+    "infrastructureDescriptionPlaceholder": "e.g. Al-Noor Primary School — south wall collapsed, roof intact, ground floor flooded",
     "crisisNature": "Nature of the crisis:",
     "crisisGroups": {
       "natural": "Natural hazards",

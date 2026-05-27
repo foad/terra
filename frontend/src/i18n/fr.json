@@ -72,8 +72,8 @@
       "community": "Infrastructure communautaire (écoles, hôpitaux, salles communautaires, toilettes publiques, etc.)",
       "publicSpaces": "Espaces publics / Infrastructure de loisirs (stades, terrains de jeux, bâtiments religieux, etc.)"
     },
-    "infrastructureDetails": "Fournissez plus de détails sur la nature de l'infrastructure, y compris le nom de l'infrastructure :",
-    "infrastructureNamePlaceholder": "ex. École primaire Al-Noor",
+    "infrastructureDetails": "Décrivez l'infrastructure et les dégâts, y compris son nom si vous le connaissez :",
+    "infrastructureDescriptionPlaceholder": "ex. École primaire Al-Noor — mur sud effondré, toit intact, rez-de-chaussée inondé",
     "crisisNature": "Nature de la crise :",
     "crisisGroups": {
       "natural": "Risques naturels",

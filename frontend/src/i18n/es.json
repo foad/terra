@@ -72,8 +72,8 @@
       "community": "Infraestructura comunitaria (escuelas, hospitales, salones comunitarios, baños públicos, etc.)",
       "publicSpaces": "Espacios públicos / Infraestructura recreativa (estadios, parques infantiles, edificios religiosos, etc.)"
     },
-    "infrastructureDetails": "Proporcione más detalles sobre la naturaleza de la infraestructura, incluyendo el nombre de la infraestructura:",
-    "infrastructureNamePlaceholder": "ej. Escuela Primaria Al-Noor",
+    "infrastructureDetails": "Describa la infraestructura y los daños, incluido su nombre si lo conoce:",
+    "infrastructureDescriptionPlaceholder": "ej. Escuela Primaria Al-Noor — muro sur derrumbado, techo intacto, planta baja inundada",
     "crisisNature": "Naturaleza de la crisis:",
     "crisisGroups": {
       "natural": "Amenazas naturales",
