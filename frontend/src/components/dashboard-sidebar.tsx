@@ -96,11 +96,11 @@ export const DashboardSidebar = ({
             </button>
           </div>
           <div className={styles.detailBody}>
-            {selectedReport.properties.infrastructure_name && (
+            {selectedReport.properties.infrastructure_description && (
               <div className={styles.field}>
-                <div className={styles.fieldLabel}>Name</div>
+                <div className={styles.fieldLabel}>Description</div>
                 <div className={styles.fieldValue}>
-                  {selectedReport.properties.infrastructure_name}
+                  {selectedReport.properties.infrastructure_description}
                 </div>
               </div>
             )}

@@ -145,7 +145,7 @@ def generate(
         "",
         "INSERT INTO reports (",
         "    id, location, h3_r12, h3_r8, building_id, location_description,",
-        "    damage_level, infrastructure_type, infrastructure_name,",
+        "    damage_level, infrastructure_type, infrastructure_description,",
         "    crisis_nature, debris_present, electricity_status,",
         "    health_status, pressing_needs, version_chain_id,",
         "    is_latest, device_id, submitted_at",

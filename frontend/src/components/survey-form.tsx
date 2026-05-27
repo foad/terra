@@ -177,14 +177,15 @@ export const SurveyForm = ({
       <div className={styles.container} data-testid="survey-step-1">
         <h2 className={styles.question}>{t("survey.infrastructureDetails")}</h2>
         <div className={styles.options}>
-          <input
-            type="text"
-            id="infra-name"
-            placeholder={t("survey.infrastructureNamePlaceholder")}
-            maxLength={200}
-            value={value.infrastructureName}
+          <textarea
+            id="infra-description"
+            className={styles.descriptionInput}
+            placeholder={t("survey.infrastructureDescriptionPlaceholder")}
+            maxLength={2000}
+            rows={5}
+            value={value.infrastructureDescription}
             onChange={(e) =>
-              onChange({ ...value, infrastructureName: e.target.value })
+              onChange({ ...value, infrastructureDescription: e.target.value })
             }
           />
         </div>

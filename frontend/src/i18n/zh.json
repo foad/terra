@@ -70,8 +70,8 @@
       "community": "社区基础设施（学校、医院、社区大厅、公共厕所等）",
       "publicSpaces": "公共空间/休闲基础设施（体育场、游乐场、宗教建筑等）"
     },
-    "infrastructureDetails": "请提供有关基础设施性质的更多详细信息，包括基础设施的名称：",
-    "infrastructureNamePlaceholder": "例如：光明小学",
+    "infrastructureDetails": "请描述基础设施及其损坏情况，如知道名称请一并填写：",
+    "infrastructureDescriptionPlaceholder": "例如：光明小学——南墙倒塌，屋顶完好，一楼被淹",
     "crisisNature": "危机性质：",
     "crisisGroups": {
       "natural": "自然灾害",

@@ -21,7 +21,7 @@ export interface QueuedReport {
   surveyData: {
     infrastructureType: string[];
     infrastructureTypeOther: string;
-    infrastructureName: string;
+    infrastructureDescription: string;
     crisisNature: string[];
     debrisPresent: boolean | null;
     electricityStatus: string;

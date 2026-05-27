@@ -258,7 +258,7 @@ Submit a damage assessment report.
 | `ai_infrastructure_type` | string[] | no | AI-suggested infrastructure type(s) |
 | `ai_confidence` | float | no | AI confidence score (0-1) |
 | `infrastructure_type_other` | string | no | Free text when "Other" selected |
-| `infrastructure_name` | string | no | Name of the infrastructure |
+| `infrastructure_description` | string | no | Free-text description of the infrastructure and its damage (max 2000 chars) |
 | `debris_present` | boolean | no | Whether debris requires clearing |
 | `electricity_status` | string | no | Electricity infrastructure condition |
 | `health_status` | string | no | Health services functioning level |
