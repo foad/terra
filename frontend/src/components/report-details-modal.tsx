@@ -39,8 +39,8 @@ export const ReportDetailsModal = ({
             <Field label="Infrastructure">
               {p.infrastructure_type.join(", ")}
             </Field>
-            {p.infrastructure_name && (
-              <Field label="Name">{p.infrastructure_name}</Field>
+            {p.infrastructure_description && (
+              <Field label="Description">{p.infrastructure_description}</Field>
             )}
             <Field label="Crisis">{p.crisis_nature.join(", ")}</Field>
             {p.debris_present !== null && (

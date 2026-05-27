@@ -40,7 +40,7 @@ class ReportSubmission(BaseModel):
     ai_confidence: float | None = Field(None, ge=0, le=1)
     infrastructure_type: list[str] = Field(min_length=1, max_length=10)
     infrastructure_type_other: str | None = Field(None, max_length=200)
-    infrastructure_name: str | None = Field(None, max_length=200)
+    infrastructure_description: str | None = Field(None, max_length=2000)
     crisis_nature: list[str] = Field(min_length=1, max_length=10)
     debris_present: bool | None = None
     electricity_status: str | None = Field(None, max_length=200)
@@ -115,7 +115,7 @@ def create_report(body: dict) -> dict:
             INSERT INTO reports (
                 id, location, h3_r12, h3_r8, building_id, location_description,
                 damage_level, ai_damage_level, ai_infrastructure_type, ai_confidence,
-                photo_url, thumbnail_url, infrastructure_type, infrastructure_name,
+                photo_url, thumbnail_url, infrastructure_type, infrastructure_description,
                 crisis_nature, debris_present, electricity_status,
                 health_status, pressing_needs, version_chain_id,
                 device_id, offline_queue_id
@@ -139,7 +139,7 @@ def create_report(body: dict) -> dict:
                 photo_url,
                 thumbnail_url,
                 submission.infrastructure_type,
-                submission.infrastructure_name,
+                submission.infrastructure_description,
                 submission.crisis_nature,
                 submission.debris_present,
                 submission.electricity_status,
@@ -232,7 +232,7 @@ def query_reports(params: dict) -> dict:
                 building_id, location_description, damage_level,
                 ai_damage_level, ai_infrastructure_type, ai_confidence,
                 photo_url, thumbnail_url,
-                infrastructure_type, infrastructure_name,
+                infrastructure_type, infrastructure_description,
                 crisis_nature, debris_present, electricity_status,
                 health_status, pressing_needs, version_chain_id,
                 is_latest, submitted_at,
@@ -272,7 +272,7 @@ def query_reports(params: dict) -> dict:
                 "photo_url": _presigned(row[9]),
                 "thumbnail_url": _presigned(row[10]),
                 "infrastructure_type": row[11],
-                "infrastructure_name": row[12],
+                "infrastructure_description": row[12],
                 "crisis_nature": row[13],
                 "debris_present": row[14],
                 "electricity_status": row[15],

@@ -69,10 +69,10 @@ class TestReportSubmissionValidation:
         with pytest.raises(Exception):
             ReportSubmission(**_valid_body(location_description="a" * 501))
 
-    def test_infrastructure_name_too_long_rejected(self):
+    def test_infrastructure_description_too_long_rejected(self):
         import pytest
         with pytest.raises(Exception):
-            ReportSubmission(**_valid_body(infrastructure_name="a" * 201))
+            ReportSubmission(**_valid_body(infrastructure_description="a" * 2001))
 
     def test_invalid_photo_key_pattern_rejected(self):
         import pytest

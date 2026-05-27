@@ -91,7 +91,8 @@ export const syncEngine = {
           infrastructure_type: report.surveyData.infrastructureType,
           infrastructure_type_other:
             report.surveyData.infrastructureTypeOther || null,
-          infrastructure_name: report.surveyData.infrastructureName || null,
+          infrastructure_description:
+            report.surveyData.infrastructureDescription || null,
           crisis_nature: report.surveyData.crisisNature,
           debris_present: report.surveyData.debrisPresent,
           electricity_status: report.surveyData.electricityStatus || null,

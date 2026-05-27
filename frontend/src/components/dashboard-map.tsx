@@ -295,9 +295,6 @@ export const DashboardMap = ({
               `<div class="${styles.popup}">` +
                 `<strong>${props.damage_level}</strong>` +
                 `<br>${props.infrastructure_type[0]?.split("(")[0]?.trim() ?? ""}` +
-                (props.infrastructure_name
-                  ? `<br>${props.infrastructure_name}`
-                  : "") +
                 `<br><small>${new Date(props.submitted_at).toLocaleDateString()}</small>` +
                 `</div>`,
             )

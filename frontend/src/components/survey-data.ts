@@ -1,7 +1,7 @@
 export interface SurveyData {
   infrastructureType: string[];
   infrastructureTypeOther: string;
-  infrastructureName: string;
+  infrastructureDescription: string;
   crisisNature: string[];
   debrisPresent: boolean | null;
   electricityStatus: string;
@@ -21,7 +21,7 @@ export interface PreSeeded {
 export const EMPTY_SURVEY: SurveyData = {
   infrastructureType: [],
   infrastructureTypeOther: "",
-  infrastructureName: "",
+  infrastructureDescription: "",
   crisisNature: [],
   debrisPresent: null,
   electricityStatus: "",

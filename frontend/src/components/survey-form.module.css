@@ -26,6 +26,15 @@
   margin-top: 3px;
 }
 
+.descriptionInput {
+  width: 100%;
+  font-family: inherit;
+  font-size: 1rem;
+  padding: var(--undpds-spacing-03);
+  border: 1px solid var(--undpds-color-gray-400);
+  resize: vertical;
+}
+
 .optionGroup {
   display: flex;
   flex-direction: column;
