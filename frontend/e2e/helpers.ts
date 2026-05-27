@@ -44,14 +44,32 @@ export async function stubNonReportsApi(page: Page): Promise<void> {
 }
 
 /**
+ * Set the report location by dropping a pin on the map and advance to the
+ * photo step. The location step stays disabled until a building is tapped or a
+ * pin is placed; clicking empty map drops a draggable pin. Assumes the caller
+ * is already on (or has just navigated to) the location step.
+ */
+export async function selectLocation(page: Page): Promise<void> {
+  await expect(page.getByTestId("step-location")).toBeVisible({
+    timeout: 15000,
+  });
+  // Let the map settle after the fly-to before clicking.
+  await page.waitForTimeout(3000);
+  await page
+    .locator(".maplibregl-canvas")
+    .click({ position: { x: 200, y: 250 } });
+  await expect(page.getByTestId("btn-next")).not.toHaveClass(/disabled/, {
+    timeout: 5000,
+  });
+  await page.getByTestId("btn-next").click();
+}
+
+/**
  * Run through the full submission flow from the location step (or via the
  * "Submit Another" button if already on the confirmation step) to the
  * confirmation. Caller is responsible for navigating to / waiting for SW.
  */
-export async function completeReportFlow(
-  page: Page,
-  opts: { description?: string } = {},
-): Promise<void> {
+export async function completeReportFlow(page: Page): Promise<void> {
   // If we're on the confirmation step, bounce back to location first.
   const onConfirmation = await page
     .getByTestId("step-confirmation")
@@ -61,13 +79,7 @@ export async function completeReportFlow(
     await page.getByRole("button", { name: /submit another/i }).click();
   }
 
-  await expect(page.getByTestId("step-location")).toBeVisible({
-    timeout: 15000,
-  });
-  await page
-    .getByTestId("input-location-fallback")
-    .fill(opts.description ?? "Helper test building");
-  await page.getByTestId("btn-next").click();
+  await selectLocation(page);
 
   await expect(page.getByTestId("step-photo")).toBeVisible();
   await page.locator('input[type="file"]').setInputFiles(TEST_PHOTO);

@@ -55,11 +55,6 @@ export const ExistingReports = ({ reports }: ExistingReportsProps) => {
               >
                 {t(`damage.${r.properties.damage_level}`)}
               </span>
-              {r.properties.location_description && (
-                <span className={styles.itemDescription}>
-                  {r.properties.location_description}
-                </span>
-              )}
             </li>
           ))}
           {hiddenCount > 0 && (

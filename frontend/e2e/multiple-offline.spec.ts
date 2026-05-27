@@ -36,7 +36,7 @@ test("three offline reports all sync after reconnect", async ({ browser }) => {
   await context.setOffline(true);
 
   for (let i = 1; i <= 3; i++) {
-    await completeReportFlow(page, { description: `Offline report ${i}` });
+    await completeReportFlow(page);
     await expect(page.getByText("Report Queued")).toBeVisible();
   }
 

@@ -44,8 +44,7 @@
   font-family: monospace;
 }
 
-.fallback {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.hint {
+  font-size: 0.8125rem;
+  color: var(--undpds-color-gray-600);
 }

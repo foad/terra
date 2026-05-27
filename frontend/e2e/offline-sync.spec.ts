@@ -24,10 +24,13 @@ test("offline submit then sync on reconnect", async ({ browser }) => {
   // Go offline
   await context.setOffline(true);
 
-  // Step 1: Location
+  // Step 1: Location — drop a pin (works offline; pin placement is client-side)
   await page
-    .getByTestId("input-location-fallback")
-    .fill("Offline test building");
+    .locator(".maplibregl-canvas")
+    .click({ position: { x: 200, y: 250 } });
+  await expect(page.getByTestId("btn-next")).not.toHaveClass(/disabled/, {
+    timeout: 5000,
+  });
   await page.getByTestId("btn-next").click();
 
   // Step 2: Photo

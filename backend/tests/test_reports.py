@@ -64,11 +64,6 @@ class TestReportSubmissionValidation:
             sub = ReportSubmission(**_valid_body(damage_level=level))
             assert sub.damage_level == level
 
-    def test_location_description_too_long_rejected(self):
-        import pytest
-        with pytest.raises(Exception):
-            ReportSubmission(**_valid_body(location_description="a" * 501))
-
     def test_infrastructure_description_too_long_rejected(self):
         import pytest
         with pytest.raises(Exception):
@@ -156,7 +151,7 @@ class TestQueryReports:
         mock_cursor.fetchall.return_value = [
             (
                 "report-id-1", 36.16, 36.2,
-                "u10k7d2q", None, "partial",
+                "u10k7d2q", "partial",
                 None, None, None, None, None,
                 ["Residential Infrastructure (Houses and apartments)"], None,
                 ["Earthquake"], True, None,

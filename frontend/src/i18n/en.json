@@ -26,8 +26,8 @@
   },
   "location": {
     "selectBuilding": "Tap a building on the map to select it",
-    "describeLocation": "Or describe the location:",
-    "descriptionPlaceholder": "e.g. The school near the central market",
+    "dropPinHint": "No building outline? Tap the map to drop a pin, then drag to adjust.",
+    "pinPlaced": "Location pinned",
     "selectedBuilding": "Selected building",
     "existingReportsTitle_one": "{{count}} existing report",
     "existingReportsTitle_other": "{{count}} existing reports",

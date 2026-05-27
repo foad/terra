@@ -14,13 +14,15 @@ test("full report submission flow", async ({ page }) => {
     timeout: 15000,
   });
 
-  // Wait for map to settle after fly-to
+  // Wait for map to settle after fly-to, then drop a pin to set the location.
+  // Next stays disabled until a building is tapped or a pin is placed.
   await page.waitForTimeout(3000);
-
-  // Use text fallback since clicking PMTiles features is unreliable in headless
   await page
-    .getByTestId("input-location-fallback")
-    .fill("Test building near central market");
+    .locator(".maplibregl-canvas")
+    .click({ position: { x: 200, y: 250 } });
+  await expect(page.getByTestId("btn-next")).not.toHaveClass(/disabled/, {
+    timeout: 5000,
+  });
   await page.getByTestId("btn-next").click();
 
   // Step 2: Photo

@@ -82,7 +82,6 @@ export const syncEngine = {
           latitude: report.latitude,
           longitude: report.longitude,
           building_id: report.buildingId,
-          location_description: report.locationDescription,
           damage_level: report.damageLevel,
           ai_damage_level: report.aiDamageLevel,
           ai_infrastructure_type: report.aiInfrastructureType,

@@ -276,7 +276,6 @@ erDiagram
         float latitude
         float longitude
         string building_id
-        string location_description
         string damage_level
         json survey_data "all survey fields"
         string error "error message if failed"

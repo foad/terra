@@ -57,9 +57,6 @@ export const ReportDetailsModal = ({
                 {p.pressing_needs.join(", ")}
               </Field>
             )}
-            {p.location_description && (
-              <Field label="Location">{p.location_description}</Field>
-            )}
           </div>
         </div>
       </div>
