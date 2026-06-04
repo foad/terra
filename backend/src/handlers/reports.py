@@ -1,6 +1,6 @@
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import boto3
 import h3
@@ -13,6 +13,10 @@ logger = Logger()
 s3 = boto3.client("s3")
 
 PHOTO_URL_EXPIRY_SECONDS = 3600
+
+# Duplicate detection thresholds
+DUPLICATE_TIME_WINDOW_SECONDS = 120  # 2 minutes
+DUPLICATE_DISTANCE_METERS = 15  # 15m radius
 
 
 def _presigned(uri: str | None) -> str | None:
@@ -70,6 +74,67 @@ class ReportsQueryParams(BaseModel):
     offset: int = Field(0, ge=0)
 
 
+def _check_for_duplicates(conn, submission: ReportSubmission, h3_r12: str) -> dict:
+    """
+    Check for duplicate or reassessment reports.
+    
+    Returns dict with keys:
+    - duplicate_status: None | 'possible_duplicate' | 'reassessment'
+    - related_report_id: UUID of related report (if any)
+    
+    Logic:
+    1. If same building_id → reassessment (intentional re-assessment)
+    2. Else if same location + recent → possible_duplicate (accidental double-submit)
+    3. Else → no flag
+    
+    Note: reassessment takes precedence over duplicate (building_id is explicit intent).
+    """
+    with conn.cursor() as cur:
+        # Check 1: Same building → reassessment
+        if submission.building_id:
+            cur.execute(
+                """
+                SELECT id FROM reports
+                WHERE building_id = %s
+                ORDER BY submitted_at DESC
+                LIMIT 1
+                """,
+                (submission.building_id,),
+            )
+            result = cur.fetchone()
+            if result:
+                return {
+                    "duplicate_status": "reassessment",
+                    "related_report_id": str(result[0]),
+                }
+        
+        # Check 2: Same location + recent (within 2 minutes, 15m radius)
+        # This catches accidental double-submits
+        time_threshold = datetime.now(datetime.timezone.utc) - timedelta(seconds=DUPLICATE_TIME_WINDOW_SECONDS)
+        cur.execute(
+            f"""
+            SELECT id FROM reports
+            WHERE ST_DWithin(
+                location,
+                ST_SetSRID(ST_MakePoint(%s, %s), 4326),
+                {DUPLICATE_DISTANCE_METERS}
+            )
+            AND submitted_at > %s
+            ORDER BY submitted_at DESC
+            LIMIT 1
+            """,
+            (submission.longitude, submission.latitude, time_threshold),
+        )
+        result = cur.fetchone()
+        if result:
+            return {
+                "duplicate_status": "possible_duplicate",
+                "related_report_id": str(result[0]),
+            }
+    
+    return {"duplicate_status": None, "related_report_id": None}
+
+
 def create_report(body: dict) -> dict:
     submission = ReportSubmission(**body)
 
@@ -105,9 +170,12 @@ def create_report(body: dict) -> dict:
         stem = submission.photo_key[len("uploads/"):].rsplit(".", 1)[0]
         thumbnail_url = f"s3://{photos_bucket}/thumbnails/{stem}.jpg"
 
+    # Check for duplicates/reassessments
+    conn = get_connection()
+    duplicate_check = _check_for_duplicates(conn, submission, h3_r12)
+
     # Insert report
     report_id = str(uuid.uuid4())
-    conn = get_connection()
     with conn.cursor() as cur:
         cur.execute(
             """
@@ -117,10 +185,10 @@ def create_report(body: dict) -> dict:
                 photo_url, thumbnail_url, infrastructure_type, infrastructure_description,
                 crisis_nature, debris_present, electricity_status,
                 health_status, pressing_needs, version_chain_id,
-                device_id, offline_queue_id
+                device_id, offline_queue_id, duplicate_status, related_report_id
             ) VALUES (
                 %s, ST_SetSRID(ST_MakePoint(%s, %s), 4326), %s, %s, %s,
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
             )
             """,
             (
@@ -146,6 +214,8 @@ def create_report(body: dict) -> dict:
                 str(version_chain_id),
                 submission.device_id,
                 submission.offline_queue_id,
+                duplicate_check["duplicate_status"],
+                duplicate_check["related_report_id"],
             ),
         )
 
@@ -163,6 +233,8 @@ def create_report(body: dict) -> dict:
         "status": "created",
         "area_report_count": area_count,
         "version_chain_id": str(version_chain_id),
+        "duplicate_status": duplicate_check["duplicate_status"],
+        "related_report_id": duplicate_check["related_report_id"],
     }
 
 
@@ -234,6 +306,7 @@ def query_reports(params: dict) -> dict:
                 crisis_nature, debris_present, electricity_status,
                 health_status, pressing_needs, version_chain_id,
                 is_latest, submitted_at,
+                duplicate_status, related_report_id,
                 (SELECT COUNT(*) FROM reports r2
                  WHERE r2.version_chain_id = reports.version_chain_id) as version_count
             FROM reports
@@ -278,7 +351,9 @@ def query_reports(params: dict) -> dict:
                 "version_chain_id": str(row[17]),
                 "is_latest": row[18],
                 "submitted_at": row[19].isoformat() if row[19] else None,
-                "version_count": row[20],
+                "duplicate_status": row[20],
+                "related_report_id": row[21],
+                "version_count": row[22],
             },
         })
 
