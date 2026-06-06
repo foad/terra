@@ -4,6 +4,8 @@ This file is for Claude Code. Read it at the start of every conversation before 
 
 At the start of every session, check which branch is currently active with `git branch` and confirm it with Paul before doing any work. Default working branch is `main` unless Paul specifies otherwise.
 
+**Submission notes, demo tips, known gaps, and proposal angles are tracked in [`SUBMISSION_NOTES.md`](SUBMISSION_NOTES.md).** Update it whenever a ticket surfaces something worth remembering for the demo or proposal.
+
 ---
 
 ## What TERRA Is
