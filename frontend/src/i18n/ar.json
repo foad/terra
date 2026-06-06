@@ -139,12 +139,12 @@
     "followUpHeading": "سؤال سريع بينما أنت هنا:",
     "followUpHeading_plural": "{{count}} أسئلة سريعة بينما أنت هنا:",
     "otherSpecify": "أخرى — يرجى التحديد:",
-    "criticalInfraTitle": "Critical infrastructure flagged",
-    "criticalInfraMessage": "This building will be highlighted for UNDP response teams.",
-    "areaCount": "{{count}} reports submitted in your area",
-    "areaMilestone": "Your area is actively monitored — {{count}} community reports and counting",
-    "plusCodeLabel": "Location code",
-    "copyPlusCode": "Copy location code"
+    "criticalInfraTitle": "تم تحديد بنية تحتية حيوية",
+    "criticalInfraMessage": "سيتم إبراز هذا المبنى لفرق الاستجابة التابعة للبرنامج الإنمائي للأمم المتحدة.",
+    "areaCount": "{{count}} تقرير مُقدَّم في منطقتك",
+    "areaMilestone": "منطقتك تحت المراقبة النشطة — {{count}} تقرير مجتمعي ويتزايد",
+    "plusCodeLabel": "رمز الموقع",
+    "copyPlusCode": "نسخ رمز الموقع"
   },
   "dashboard": {
     "title": "لوحة المعلومات",

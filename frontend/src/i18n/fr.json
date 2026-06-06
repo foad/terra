@@ -131,12 +131,12 @@
     "followUpHeading": "Une question rapide pendant que vous êtes là :",
     "followUpHeading_plural": "{{count}} questions rapides pendant que vous êtes là :",
     "otherSpecify": "Autre — veuillez préciser :",
-    "criticalInfraTitle": "Critical infrastructure flagged",
-    "criticalInfraMessage": "This building will be highlighted for UNDP response teams.",
-    "areaCount": "{{count}} reports submitted in your area",
-    "areaMilestone": "Your area is actively monitored — {{count}} community reports and counting",
-    "plusCodeLabel": "Location code",
-    "copyPlusCode": "Copy location code"
+    "criticalInfraTitle": "Infrastructure critique signalée",
+    "criticalInfraMessage": "Ce bâtiment sera mis en évidence pour les équipes d'intervention du PNUD.",
+    "areaCount": "{{count}} rapports soumis dans votre zone",
+    "areaMilestone": "Votre zone est activement surveillée — {{count}} rapports communautaires et en hausse",
+    "plusCodeLabel": "Code de localisation",
+    "copyPlusCode": "Copier le code de localisation"
   },
   "dashboard": {
     "title": "Tableau de bord",
