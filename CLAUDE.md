@@ -2,7 +2,13 @@
 
 This file is for Claude Code. Read it at the start of every conversation before doing anything else.
 
-At the start of every session, check which branch is currently active with `git branch` and confirm it with Paul before doing any work. Default working branch is `main` unless Paul specifies otherwise.
+**At the start of every session:**
+1. Check the active branch with `git branch` and confirm with Paul. Default working branch is `main`.
+2. Fetch current GitHub state so you have accurate, live context — don't rely on stale notes:
+   - Open PRs: `GET https://api.github.com/repos/foad/terra/pulls?state=open` (auth via `$env:GITHUB_TOKEN`)
+   - Project board priorities/statuses: GraphQL query on project `PVT_kwHOAIZSqs4BUyxf` — fetch items with `Status` and `Priority` field values
+   
+   Use these as the source of truth for what's in progress, what's awaiting Dan's review, and what to work on next.
 
 **Submission notes, demo tips, known gaps, and proposal angles are tracked in [`SUBMISSION_NOTES.md`](SUBMISSION_NOTES.md).** Update it whenever a ticket surfaces something worth remembering for the demo or proposal.
 
@@ -67,24 +73,15 @@ Every code and ticket decision should be made through the lens of: *does this ma
 
 ---
 
-## Priority Stack (as of June 2026)
+## Priority Guidance
 
-### Tier 1 — Blocks the submission (Dan's territory — flag urgently)
-- **#77** Demo environment — evaluators need a live URL
-- **#155** Dashboard + admin authentication
+**Check the project board at session start** (see instructions above) — it has live Priority (P0/P1/P2) and Status fields. Use that, not any static list here.
 
-### Tier 2 — Scored gaps (build now)
-- **#164** Share with neighbours CTA (confirmation screen) — must-have #3, engagement
-- **#163** Community Activation Kit (analyst dashboard) — 48-hour deployment story
-- **#161** Analyst-configured follow-up questions per crisis — Appendix 1 modular forms
-- **#157** Dashboard heatmap + summary stats — makes demo visually compelling
-
-### Tier 3 — Polishes the demo
-- **#117** Failed report retry UI
-- **#154** Plus Codes on confirmation
-
-### Not building before deadline
-- #155, #63, #56, #58, #57 and most enhancement tickets — post-shortlist
+Strategic context that won't change:
+- **#77 and #155 are Dan's blockers** — flag urgently, don't touch
+- **P1 tickets** are scored gaps that directly affect the demo or proposal evaluation
+- **P2 tickets** polish the demo or add proposal depth
+- Every decision should be framed as: *does this make the demo more compelling or close a scored gap?*
 
 ---
 
@@ -113,6 +110,7 @@ Every code and ticket decision should be made through the lens of: *does this ma
 - 6 UN languages
 - Admin crisis event CRUD with polygon region editor
 - Analyst dashboard with spatial filters and report detail modal
+- Dashboard heatmap layer (severity-weighted, blue→red), summary stats bar, map legend, and Markers/Heatmap/Both toggle — PR #179
 - Photo privacy pipeline (EXIF extract → thumbnail → strip)
 - 9 E2E Playwright tests
 
@@ -122,16 +120,7 @@ Every code and ticket decision should be made through the lens of: *does this ma
 
 Latest migration: `009_add_follow_up_questions.sql`. Next migration should be `010_`.
 
----
-
-## Open PRs Awaiting Dan
-
-| PR | Ticket | What Dan needs to do |
-|---|---|---|
-| [#162](https://github.com/foad/terra/pull/162) | #54 Duplicate detection | Review + merge (no DB migration needed) |
-| [#165](https://github.com/foad/terra/pull/165) | #161 Follow-up questions | Review + merge + **run `db/009_add_follow_up_questions.sql` against Supabase** |
-
-Flag to Dan: migration 009 must run before PR #165 goes live or the backend will error on crisis saves.
+**Important:** PR #165 (follow-up questions) requires migration 009 to be run against Supabase before it goes live — the backend will error on crisis saves without it. Flag this to Dan.
 
 ---
 
