@@ -135,12 +135,12 @@
     "followUpHeading": "Один быстрый вопрос, пока вы здесь:",
     "followUpHeading_plural": "{{count}} быстрых вопроса, пока вы здесь:",
     "otherSpecify": "Другое — пожалуйста, уточните:",
-    "criticalInfraTitle": "Critical infrastructure flagged",
-    "criticalInfraMessage": "This building will be highlighted for UNDP response teams.",
-    "areaCount": "{{count}} reports submitted in your area",
-    "areaMilestone": "Your area is actively monitored — {{count}} community reports and counting",
-    "plusCodeLabel": "Location code",
-    "copyPlusCode": "Copy location code"
+    "criticalInfraTitle": "Объект критической инфраструктуры выявлен",
+    "criticalInfraMessage": "Это здание будет выделено для команд реагирования ПРООН.",
+    "areaCount": "{{count}} отчётов отправлено в вашем районе",
+    "areaMilestone": "Ваш район активно отслеживается — {{count}} общественных отчётов и их число растёт",
+    "plusCodeLabel": "Код местоположения",
+    "copyPlusCode": "Скопировать код местоположения"
   },
   "dashboard": {
     "title": "Панель управления",

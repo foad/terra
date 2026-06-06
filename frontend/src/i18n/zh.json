@@ -129,12 +129,12 @@
     "followUpHeading": "您在这里时有一个快速问题：",
     "followUpHeading_plural": "您在这里时有 {{count}} 个快速问题：",
     "otherSpecify": "其他——请说明：",
-    "criticalInfraTitle": "Critical infrastructure flagged",
-    "criticalInfraMessage": "This building will be highlighted for UNDP response teams.",
-    "areaCount": "{{count}} reports submitted in your area",
-    "areaMilestone": "Your area is actively monitored — {{count}} community reports and counting",
-    "plusCodeLabel": "Location code",
-    "copyPlusCode": "Copy location code"
+    "criticalInfraTitle": "已标记关键基础设施",
+    "criticalInfraMessage": "此建筑物将被重点标注，供联合国开发计划署响应团队参考。",
+    "areaCount": "您所在地区已提交 {{count}} 份报告",
+    "areaMilestone": "您的地区正在被积极监测 — 已有 {{count}} 份社区报告，且仍在增加",
+    "plusCodeLabel": "位置代码",
+    "copyPlusCode": "复制位置代码"
   },
   "dashboard": {
     "title": "仪表板",
