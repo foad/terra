@@ -62,18 +62,19 @@ const DashboardPage = () => {
     null,
   );
   const [loading, setLoading] = useState(true);
+  const [mountTime] = useState(() => Date.now());
 
   const stats = useMemo(() => {
     const counts = { minimal: 0, partial: 0, complete: 0 };
     let last24h = 0;
-    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+    const cutoff = mountTime - 24 * 60 * 60 * 1000;
     for (const r of reports) {
       const level = r.properties.damage_level as keyof typeof counts;
       if (level in counts) counts[level]++;
       if (new Date(r.properties.submitted_at).getTime() > cutoff) last24h++;
     }
     return { ...counts, last24h };
-  }, [reports]);
+  }, [reports, mountTime]);
 
   useEffect(() => {
     let cancelled = false;
