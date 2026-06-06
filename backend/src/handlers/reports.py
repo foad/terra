@@ -1,6 +1,6 @@
 import os
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import boto3
 import h3
@@ -110,7 +110,7 @@ def _check_for_duplicates(conn, submission: ReportSubmission, h3_r12: str) -> di
         
         # Check 2: Same location + recent (within 2 minutes, 15m radius)
         # This catches accidental double-submits
-        time_threshold = datetime.now(datetime.timezone.utc) - timedelta(seconds=DUPLICATE_TIME_WINDOW_SECONDS)
+        time_threshold = datetime.now(timezone.utc) - timedelta(seconds=DUPLICATE_TIME_WINDOW_SECONDS)
         cur.execute(
             f"""
             SELECT id FROM reports
