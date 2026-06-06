@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CircleCheck, CloudOff, Copy, Check, Shield } from "lucide-react";
+import { CircleCheck, CloudOff, Copy, Check, Shield, Share2 } from "lucide-react";
 import { latLngToCell } from "h3-js";
 import { OpenLocationCode } from "open-location-code";
 import { useTranslation } from "react-i18next";
@@ -101,6 +101,27 @@ export const SubmissionConfirmation = ({
     if (hasEmptyOther) return;
     const finalResponses = Object.keys(responses).length > 0 ? responses : null;
     onComplete(finalResponses);
+  };
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    const shareData = {
+      title: t("confirmation.shareTitle"),
+      text: t("confirmation.shareText"),
+      url,
+    };
+    if (navigator.share && navigator.canShare?.(shareData)) {
+      try {
+        await navigator.share(shareData);
+      } catch {
+        // user dismissed the share sheet
+      }
+    } else {
+      const encoded = encodeURIComponent(
+        `${t("confirmation.shareText")}\n${url}`
+      );
+      window.open(`https://wa.me/?text=${encoded}`, "_blank", "noopener");
+    }
   };
 
   const hasQuestions = followUpQuestions.length > 0;
@@ -218,6 +239,14 @@ export const SubmissionConfirmation = ({
       )}
 
       <div className={styles.buttonRow}>
+        <button
+          type="button"
+          className={`button button-secondary button-without-arrow ${styles.shareButton}`}
+          onClick={handleShare}
+        >
+          <Share2 size={16} />
+          {t("confirmation.shareButton")}
+        </button>
         <a
           role="button"
           className="button button-primary button-without-arrow"
