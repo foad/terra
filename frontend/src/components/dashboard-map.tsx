@@ -1,10 +1,12 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Protocol } from "pmtiles";
 import type { ReportFeature } from "../pages/dashboard";
 import { api } from "../utils/api";
 import styles from "./dashboard-map.module.css";
+
+type MapMode = "clusters" | "heatmap" | "both";
 
 interface CrisisEvent {
   id: string;
@@ -36,6 +38,8 @@ export const DashboardMap = ({
   const onReportSelectRef = useRef(onReportSelect);
   const reportsDataRef = useRef(reports);
   const hasFittedRef = useRef(false);
+  const mapLoadedRef = useRef(false);
+  const [mapMode, setMapMode] = useState<MapMode>("clusters");
 
   useEffect(() => {
     onReportSelectRef.current = onReportSelect;
@@ -145,6 +149,54 @@ export const DashboardMap = ({
           "text-color": "#1e3a8a",
           "text-halo-color": "#ffffff",
           "text-halo-width": 2,
+        },
+      });
+
+      // Non-clustered source for heatmap (heatmap layers need individual points)
+      map.addSource("reports-heatmap", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+
+      map.addLayer({
+        id: "report-heatmap",
+        type: "heatmap",
+        source: "reports-heatmap",
+        maxzoom: 15,
+        layout: { visibility: "none" },
+        paint: {
+          "heatmap-weight": [
+            "match",
+            ["get", "damage_level"],
+            "minimal", 0.33,
+            "partial", 0.66,
+            "complete", 1.0,
+            0.33,
+          ],
+          "heatmap-intensity": [
+            "interpolate", ["linear"], ["zoom"],
+            0, 1,
+            15, 3,
+          ],
+          "heatmap-color": [
+            "interpolate", ["linear"], ["heatmap-density"],
+            0,   "rgba(33,102,172,0)",
+            0.2, "rgb(103,169,207)",
+            0.4, "rgb(253,219,199)",
+            0.6, "rgb(239,138,98)",
+            0.8, "rgb(178,24,43)",
+            1,   "rgb(120,0,0)",
+          ],
+          "heatmap-radius": [
+            "interpolate", ["linear"], ["zoom"],
+            0, 20,
+            15, 40,
+          ],
+          "heatmap-opacity": [
+            "interpolate", ["linear"], ["zoom"],
+            13, 0.9,
+            15, 0,
+          ],
         },
       });
 
@@ -315,6 +367,8 @@ export const DashboardMap = ({
       map.on("mouseleave", "report-markers", () => {
         map.getCanvas().style.cursor = "";
       });
+
+      mapLoadedRef.current = true;
     });
 
     // Collapse attribution
@@ -345,10 +399,9 @@ export const DashboardMap = ({
         | undefined;
       if (!source) return;
 
-      source.setData({
-        type: "FeatureCollection",
-        features: reports,
-      });
+      const fc = { type: "FeatureCollection" as const, features: reports };
+      source.setData(fc);
+      (map.getSource("reports-heatmap") as maplibregl.GeoJSONSource | undefined)?.setData(fc);
 
       if (reports.length > 0 && !hasFittedRef.current) {
         const bounds = new maplibregl.LngLatBounds();
@@ -412,5 +465,67 @@ export const DashboardMap = ({
     };
   }, []);
 
-  return <div ref={containerRef} className={styles.container} />;
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapLoadedRef.current) return;
+    const showClusters = mapMode !== "heatmap";
+    const showHeatmap = mapMode !== "clusters";
+    for (const id of ["clusters", "cluster-count", "report-markers"]) {
+      map.setLayoutProperty(id, "visibility", showClusters ? "visible" : "none");
+    }
+    map.setLayoutProperty("report-heatmap", "visibility", showHeatmap ? "visible" : "none");
+  }, [mapMode]);
+
+  const TOGGLE_LABELS: Record<MapMode, string> = {
+    clusters: "Markers",
+    heatmap: "Heatmap",
+    both: "Both",
+  };
+
+  return (
+    <div className={styles.wrapper}>
+      <div ref={containerRef} className={styles.container} />
+
+      <div className={styles.toggle}>
+        {(["clusters", "heatmap", "both"] as const).map((mode) => (
+          <button
+            key={mode}
+            type="button"
+            className={`${styles.toggleBtn} ${mapMode === mode ? styles.toggleBtnActive : ""}`}
+            onClick={() => setMapMode(mode)}
+          >
+            {TOGGLE_LABELS[mode]}
+          </button>
+        ))}
+      </div>
+
+      <div className={styles.legend}>
+        {(mapMode === "clusters" || mapMode === "both") && (
+          <div className={styles.legendSection}>
+            <div className={styles.legendTitle}>Damage level</div>
+            {[
+              { color: DAMAGE_COLORS.complete, label: "Complete" },
+              { color: DAMAGE_COLORS.partial,  label: "Partial" },
+              { color: DAMAGE_COLORS.minimal,  label: "Minimal" },
+            ].map(({ color, label }) => (
+              <div key={label} className={styles.legendItem}>
+                <span className={styles.legendDot} style={{ background: color }} />
+                <span>{label}</span>
+              </div>
+            ))}
+          </div>
+        )}
+        {(mapMode === "heatmap" || mapMode === "both") && (
+          <div className={styles.legendSection}>
+            <div className={styles.legendTitle}>Severity intensity</div>
+            <div className={styles.heatGradient} />
+            <div className={styles.heatLabels}>
+              <span>Low</span>
+              <span>High</span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
