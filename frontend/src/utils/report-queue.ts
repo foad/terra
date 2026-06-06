@@ -81,7 +81,7 @@ export const reportQueue = {
   async add(
     report: Omit<
       QueuedReport,
-      "status" | "error" | "retryCount" | "lastAttempt" | "syncedAt"
+      "status" | "error" | "retryCount" | "lastAttempt" | "syncedAt" | "followUpResponses"
     >,
   ): Promise<QueuedReport> {
     const queued: QueuedReport = {

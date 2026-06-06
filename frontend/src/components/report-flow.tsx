@@ -246,7 +246,7 @@ export const ReportFlow = ({
     setSubmitError(null);
 
     try {
-      await reportQueue.add({
+      const queued = await reportQueue.add({
         id: crypto.randomUUID(),
         photo: photo?.blob ? await photo.blob.arrayBuffer() : null,
         photoContentType: photo?.blob?.type ?? null,
