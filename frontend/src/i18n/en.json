@@ -127,7 +127,15 @@
     "queued": "Report Queued",
     "submittedMessage": "Thank you for your report. Your submission is helping response teams prioritise recovery efforts in your area.",
     "queuedMessage": "Your report has been saved and will be submitted automatically when connectivity returns.",
-    "submitAnother": "Submit Another Report"
+    "submitAnother": "Submit Another Report",
+    "shareHeading": "Spread the word",
+    "shareBody": "Know someone nearby who should report damage? Share TERRA with your neighbours.",
+    "shareButton": "Share with neighbours",
+    "copyLink": "Copy link",
+    "linkCopied": "Copied!",
+    "shareWhatsApp": "Share via WhatsApp",
+    "shareMessageWithCrisis": "I just reported damage in the {{crisisName}} crisis using TERRA. If you've seen damage nearby, your report helps emergency teams respond: {{url}}",
+    "shareMessageGeneric": "I just reported damage in my area using TERRA. If you've seen damage nearby, your report helps emergency teams respond: {{url}}"
   },
   "dashboard": {
     "title": "Dashboard",

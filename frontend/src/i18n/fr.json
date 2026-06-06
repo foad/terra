@@ -127,7 +127,15 @@
     "queued": "Rapport en file d'attente",
     "submittedMessage": "Merci pour votre rapport. Votre contribution aide les équipes d'intervention à prioriser les efforts de rétablissement dans votre région.",
     "queuedMessage": "Votre rapport a été enregistré et sera soumis automatiquement lorsque la connectivité sera rétablie.",
-    "submitAnother": "Soumettre un autre rapport"
+    "submitAnother": "Soumettre un autre rapport",
+    "shareHeading": "Faites passer le message",
+    "shareBody": "Vous connaissez quelqu'un à proximité qui devrait signaler des dégâts ? Partagez TERRA avec vos voisins.",
+    "shareButton": "Partager avec les voisins",
+    "copyLink": "Copier le lien",
+    "linkCopied": "Copié !",
+    "shareWhatsApp": "Partager via WhatsApp",
+    "shareMessageWithCrisis": "Je viens de signaler des dégâts dans la crise {{crisisName}} via TERRA. Si vous avez observé des dégâts à proximité, votre signalement aide les équipes d'urgence : {{url}}",
+    "shareMessageGeneric": "Je viens de signaler des dégâts dans ma zone via TERRA. Si vous avez observé des dégâts à proximité, votre signalement aide les équipes d'urgence : {{url}}"
   },
   "dashboard": {
     "title": "Tableau de bord",

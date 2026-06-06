@@ -127,7 +127,15 @@
     "queued": "Informe en cola",
     "submittedMessage": "Gracias por su informe. Su contribución está ayudando a los equipos de respuesta a priorizar los esfuerzos de recuperación en su área.",
     "queuedMessage": "Su informe ha sido guardado y se enviará automáticamente cuando se restablezca la conectividad.",
-    "submitAnother": "Enviar otro informe"
+    "submitAnother": "Enviar otro informe",
+    "shareHeading": "Corre la voz",
+    "shareBody": "¿Conoces a alguien cercano que deba reportar daños? Comparte TERRA con tus vecinos.",
+    "shareButton": "Compartir con vecinos",
+    "copyLink": "Copiar enlace",
+    "linkCopied": "¡Copiado!",
+    "shareWhatsApp": "Compartir por WhatsApp",
+    "shareMessageWithCrisis": "Acabo de reportar daños en la crisis de {{crisisName}} usando TERRA. Si has visto daños cerca, tu reporte ayuda a los equipos de emergencia: {{url}}",
+    "shareMessageGeneric": "Acabo de reportar daños en mi área usando TERRA. Si has visto daños cerca, tu reporte ayuda a los equipos de emergencia: {{url}}"
   },
   "dashboard": {
     "title": "Panel de control",

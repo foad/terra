@@ -125,7 +125,15 @@
     "queued": "报告已排队",
     "submittedMessage": "感谢您的报告。您的提交正在帮助响应团队确定您所在地区的恢复工作优先级。",
     "queuedMessage": "您的报告已保存，将在恢复连接后自动提交。",
-    "submitAnother": "提交另一份报告"
+    "submitAnother": "提交另一份报告",
+    "shareHeading": "传递消息",
+    "shareBody": "您认识附近需要报告损坏情况的人吗？将 TERRA 分享给您的邻居。",
+    "shareButton": "与邻居分享",
+    "copyLink": "复制链接",
+    "linkCopied": "已复制！",
+    "shareWhatsApp": "通过 WhatsApp 分享",
+    "shareMessageWithCrisis": "我刚刚使用 TERRA 报告了{{crisisName}}危机中的损坏情况。如果您在附近看到了损坏，您的报告将帮助紧急救援团队：{{url}}",
+    "shareMessageGeneric": "我刚刚使用 TERRA 报告了我所在地区的损坏情况。如果您在附近看到了损坏，您的报告将帮助紧急救援团队：{{url}}"
   },
   "dashboard": {
     "title": "仪表板",

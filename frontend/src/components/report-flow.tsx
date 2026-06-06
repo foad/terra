@@ -71,6 +71,7 @@ export const ReportFlow = ({
     useState<AiClassification | null>(null);
   const classifiedKeyRef = useRef<string | null>(null);
   const [activeCrisisType, setActiveCrisisType] = useState<string | null>(null);
+  const [activeCrisisName, setActiveCrisisName] = useState<string | null>(null);
   const crisisLookedUpRef = useRef(false);
   const [existingReports, setExistingReports] = useState<ReportFeature[]>([]);
   const [preSeeded, setPreSeeded] = useState<PreSeeded>({});
@@ -165,6 +166,7 @@ export const ReportFlow = ({
           `/crisis-events/active?lat=${latitude}&lng=${longitude}`,
         );
         if (result?.crisis_type) setActiveCrisisType(result.crisis_type);
+        if (result?.name) setActiveCrisisName(result.name);
       } catch {
         // No active crisis at this location, or network error — silent drop.
       }
@@ -463,6 +465,7 @@ export const ReportFlow = ({
         <SubmissionConfirmation
           isOnline={navigator.onLine}
           onSubmitAnother={handleSubmitAnother}
+          crisisName={activeCrisisName ?? undefined}
         />
       </div>
     );
