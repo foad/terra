@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Pencil, Plus, Trash2, X } from "lucide-react";
+import { Pencil, Plus, Trash2, X, QrCode } from "lucide-react";
 import { CrisisRegionEditor } from "../components/crisis-region-editor";
+import { ActivationKitModal } from "../components/activation-kit-modal";
 import { api } from "../utils/api";
 import type { FollowUpQuestion } from "../utils/report-queue";
 import styles from "./admin-crises.module.css";
@@ -61,6 +62,7 @@ function getSuggestions(crisisType: string): Omit<FollowUpQuestion, "id">[] {
 const AdminCrisesPage = () => {
   const [crises, setCrises] = useState<CrisisEvent[]>([]);
   const [editing, setEditing] = useState<CrisisEvent | "new" | null>(null);
+  const [kitCrisis, setKitCrisis] = useState<CrisisEvent | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refresh = async () => {
@@ -97,6 +99,7 @@ const AdminCrisesPage = () => {
   }
 
   return (
+    <>
     <div className={styles.container}>
       <header className={styles.header}>
         <h1 className={styles.title}>Crisis events</h1>
@@ -139,6 +142,15 @@ const AdminCrisesPage = () => {
                   <button
                     type="button"
                     className={styles.iconButton}
+                    onClick={() => setKitCrisis(c)}
+                    aria-label="Activation Kit"
+                    title="Community Activation Kit"
+                  >
+                    <QrCode size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.iconButton}
                     onClick={() => setEditing(c)}
                     aria-label="Edit"
                   >
@@ -159,6 +171,14 @@ const AdminCrisesPage = () => {
         </table>
       )}
     </div>
+
+    {kitCrisis && (
+      <ActivationKitModal
+        crisis={kitCrisis}
+        onClose={() => setKitCrisis(null)}
+      />
+    )}
+    </>
   );
 };
 
