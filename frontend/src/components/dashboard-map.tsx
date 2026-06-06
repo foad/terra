@@ -35,6 +35,7 @@ export const DashboardMap = ({
 }: DashboardMapProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
   const onReportSelectRef = useRef(onReportSelect);
   const reportsDataRef = useRef(reports);
   const hasFittedRef = useRef(false);
@@ -354,18 +355,47 @@ export const DashboardMap = ({
         }
       });
 
-      // Pointer cursors
-      map.on("mouseenter", "clusters", () => {
+      // Pointer cursors + hover tooltips
+      map.on("mouseenter", "clusters", (e) => {
         map.getCanvas().style.cursor = "pointer";
+        const feature = e.features?.[0];
+        const tip = tooltipRef.current;
+        if (!feature || !tip) return;
+        const p = feature.properties as Record<string, number>;
+        const total = p.point_count ?? 0;
+        tip.innerHTML =
+          `<strong>${total} report${total !== 1 ? "s" : ""}</strong><br>` +
+          `${p.count_complete ?? 0} complete · ${p.count_partial ?? 0} partial · ${p.count_minimal ?? 0} minimal`;
+        tip.style.display = "block";
+        tip.style.left = `${e.point.x + 14}px`;
+        tip.style.top = `${e.point.y - 10}px`;
       });
       map.on("mouseleave", "clusters", () => {
         map.getCanvas().style.cursor = "";
+        if (tooltipRef.current) tooltipRef.current.style.display = "none";
       });
-      map.on("mouseenter", "report-markers", () => {
+      map.on("mouseenter", "report-markers", (e) => {
         map.getCanvas().style.cursor = "pointer";
+        const feature = e.features?.[0];
+        const tip = tooltipRef.current;
+        if (!feature || !tip) return;
+        const report = reportsDataRef.current.find(
+          (r) => r.properties.id === feature.properties?.id,
+        );
+        if (!report) return;
+        const props = report.properties;
+        const infra = props.infrastructure_type?.[0]?.split("(")?.[0]?.trim();
+        tip.innerHTML =
+          `<strong>${props.damage_level}</strong>` +
+          (infra ? `<br>${infra}` : "") +
+          `<br><small>${new Date(props.submitted_at).toLocaleDateString()}</small>`;
+        tip.style.display = "block";
+        tip.style.left = `${e.point.x + 14}px`;
+        tip.style.top = `${e.point.y - 10}px`;
       });
       map.on("mouseleave", "report-markers", () => {
         map.getCanvas().style.cursor = "";
+        if (tooltipRef.current) tooltipRef.current.style.display = "none";
       });
 
       mapLoadedRef.current = true;
@@ -526,6 +556,8 @@ export const DashboardMap = ({
           </div>
         )}
       </div>
+
+      <div ref={tooltipRef} className={styles.tooltip} style={{ display: "none" }} />
     </div>
   );
 };

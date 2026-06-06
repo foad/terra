@@ -144,3 +144,18 @@
   background-image: none;
   padding-right: 0;
 }
+
+.tooltip {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 4px;
+  padding: 7px 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  pointer-events: none;
+  z-index: 10;
+  max-width: 220px;
+  color: #374151;
+  white-space: nowrap;
+}
