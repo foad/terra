@@ -48,10 +48,33 @@ Deadline: **23 June 2026**
 
 ---
 
+## Engagement Incentivization — The Coverage Loop
+
+Three features being built as a connected system (must-have criterion #3):
+
+### PR A — Confirmation screen enhancements (#48 + #180, bundle together)
+- **Zone coverage % + milestone (#48):** Confirmation shows "Zone 3 is now 67% assessed." When zone tips past threshold: "Zone fully assessed — added to UNDP priority review." Every submission gets a feedback moment tied to collective progress.
+- **Critical infrastructure flag (#180):** If the reported building is a school, hospital, utility, or community infrastructure (from AI classification), confirmation shows a distinct callout: "You've flagged a critical infrastructure point — prioritized for UNDP review." Strong demo moment — reporter sees it flagged, analyst sees the priority pin appear on the dashboard.
+
+### PR B — Community coverage map layer (#47, own PR)
+- Reported buildings visible on the community PWA map, colour-coded by damage severity (green/amber/red)
+- Unassessed VIDA footprints as faint outlines — the map itself becomes the incentive
+- Fixes the "app feels lifeless" problem; seeing gray outlines nearby directs reporters to unassessed buildings
+- Anti-gaming: the map directs to gaps, not repeat submissions
+
+### Later — Analyst zone flagging (#46)
+- Analyst flags a priority zone → appears as highlighted area in the community coverage map
+- Makes the loop bidirectional: analyst dispatch → community response
+
+### Demo sequence these enable
+Community submits → confirmation shows zone % + critical infra flag → cut to analyst dashboard → report appears as priority pin → heatmap zone ticks toward completion. A 20-second arc that's hard to forget.
+
+---
+
 ## Proposal Angles Worth Noting
 
-- **Non-monetary engagement incentive:** The share CTA (#164) is the direct answer to this scored criterion. Frame it as a viral loop: each submitter can recruit neighbours, multiplying data density without any incentive spend.
-- **48-hour deployment story:** Crisis zone creation + Community Activation Kit (#163, not yet built) is the hook. Analyst creates a crisis, generates a QR code and WhatsApp template, distributes it — community is reporting within hours.
+- **Non-monetary engagement incentive:** The coverage loop (share CTA + coverage map + zone milestone + critical infra flag) is the answer to scored criterion #3. Frame as: every submission has visible community impact — reporters see coverage grow, zones complete, and critical buildings get flagged. Not gamification — direct feedback that their report matters.
+- **48-hour deployment story:** Crisis zone creation + Community Activation Kit (#163, PR #172) is the hook. Analyst creates a crisis, generates a QR code and WhatsApp template, distributes it — community is reporting within hours.
 - **Privacy by design:** EXIF stripped server-side, anonymous by default, no account required. Strong point for a UNDP audience.
 - **Offline-first:** Reports queue to IndexedDB, sync on reconnect. Differentiator for low-connectivity crisis environments.
 

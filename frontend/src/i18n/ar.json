@@ -138,7 +138,13 @@
     "submitAnother": "إرسال تقرير آخر",
     "followUpHeading": "سؤال سريع بينما أنت هنا:",
     "followUpHeading_plural": "{{count}} أسئلة سريعة بينما أنت هنا:",
-    "otherSpecify": "أخرى — يرجى التحديد:"
+    "otherSpecify": "أخرى — يرجى التحديد:",
+    "criticalInfraTitle": "Critical infrastructure flagged",
+    "criticalInfraMessage": "This building will be highlighted for UNDP response teams.",
+    "areaCount": "{{count}} reports submitted in your area",
+    "areaMilestone": "Your area is actively monitored — {{count}} community reports and counting",
+    "plusCodeLabel": "Location code",
+    "copyPlusCode": "Copy location code"
   },
   "dashboard": {
     "title": "لوحة المعلومات",
