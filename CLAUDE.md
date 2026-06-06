@@ -78,7 +78,8 @@ Every code and ticket decision should be made through the lens of: *does this ma
 **Check the project board at session start** (see instructions above) — it has live Priority (P0/P1/P2) and Status fields. Use that, not any static list here.
 
 Strategic context that won't change:
-- **#77 and #155 are Dan's blockers** — flag urgently, don't touch
+- **#77 and #155 are Dan's blockers** — don't touch; mention once if directly relevant but don't re-flag every session
+- **Proposal sections (#64–#76)** are Paul's domain — he manages these on his own schedule. Do not flag them as blockers or raise deadline urgency at session start.
 - **P1 tickets** are scored gaps that directly affect the demo or proposal evaluation
 - **P2 tickets** polish the demo or add proposal depth
 - Every decision should be framed as: *does this make the demo more compelling or close a scored gap?*

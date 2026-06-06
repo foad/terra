@@ -106,3 +106,94 @@
   text-decoration: underline;
   padding: 0;
 }
+
+.criticalBadge {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--undpds-spacing-03, 0.75rem);
+  background: #fff8ed;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  padding: var(--undpds-spacing-04, 1rem);
+  text-align: left;
+  max-width: 320px;
+  width: 100%;
+}
+
+.criticalIcon {
+  color: #f59e0b;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.criticalTitle {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #92400e;
+}
+
+.criticalMessage {
+  font-size: 0.8125rem;
+  color: #92400e;
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.areaCount {
+  font-size: 0.875rem;
+  color: var(--undpds-color-gray-600);
+  margin: 0;
+}
+
+.milestone {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--undpds-color-green);
+  margin: 0;
+}
+
+.plusCode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.plusCodeLabel {
+  font-size: 0.75rem;
+  color: var(--undpds-color-gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.plusCodeRow {
+  display: flex;
+  align-items: center;
+  gap: var(--undpds-spacing-02, 0.5rem);
+}
+
+.plusCodeValue {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--undpds-color-gray-700, #374151);
+}
+
+.copyButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--undpds-color-gray-500, #6b7280);
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+}
+
+.copyButton:hover {
+  color: var(--undpds-color-gray-700, #374151);
+}
+
+.copyIconDone {
+  color: var(--undpds-color-green);
+}

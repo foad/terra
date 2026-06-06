@@ -75,6 +75,10 @@ export const ReportFlow = ({
   const [activeCrisisFollowUpQuestions, setActiveCrisisFollowUpQuestions] = useState<FollowUpQuestion[]>([]);
   const [queuedReportId, setQueuedReportId] = useState<string | null>(null);
   const crisisLookedUpRef = useRef(false);
+  const [reportLocation, setReportLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
   const [existingReports, setExistingReports] = useState<ReportFeature[]>([]);
   const [preSeeded, setPreSeeded] = useState<PreSeeded>({});
 
@@ -270,6 +274,7 @@ export const ReportFlow = ({
 
       saveSurveyPrefs(reportLat, reportLng, survey);
       setQueuedReportId(queued.id);
+      setReportLocation({ lat: reportLat, lng: reportLng });
       // When follow-up questions are present the report is queued as
       // "awaiting-follow-up" so the sync engine won't drain it before the user
       // has had a chance to answer. handleFollowUpComplete flips it to "pending".
@@ -300,6 +305,7 @@ export const ReportFlow = ({
     setSurveyStep(0);
     setSubmitError(null);
     setAiClassification(null);
+    setReportLocation(null);
     classifiedKeyRef.current = null;
     setPreSeeded({});
     setQueuedReportId(null);
@@ -473,12 +479,18 @@ export const ReportFlow = ({
   }
 
   if (step === "confirmation") {
+    const infraKeys = survey.infrastructureType
+      .map((v) => INFRASTRUCTURE_TYPES.find((t) => t.value === v)?.key)
+      .filter((k): k is string => k !== undefined);
     return (
       <div className={styles.step} data-testid="step-confirmation">
         <SubmissionConfirmation
           isOnline={navigator.onLine}
           followUpQuestions={activeCrisisFollowUpQuestions}
           onComplete={handleFollowUpComplete}
+          infrastructureKeys={infraKeys}
+          reportLat={reportLocation?.lat ?? null}
+          reportLng={reportLocation?.lng ?? null}
         />
       </div>
     );

@@ -130,7 +130,13 @@
     "submitAnother": "Enviar otro informe",
     "followUpHeading": "Una pregunta rápida mientras está aquí:",
     "followUpHeading_plural": "{{count}} preguntas rápidas mientras está aquí:",
-    "otherSpecify": "Otro — por favor especifique:"
+    "otherSpecify": "Otro — por favor especifique:",
+    "criticalInfraTitle": "Critical infrastructure flagged",
+    "criticalInfraMessage": "This building will be highlighted for UNDP response teams.",
+    "areaCount": "{{count}} reports submitted in your area",
+    "areaMilestone": "Your area is actively monitored — {{count}} community reports and counting",
+    "plusCodeLabel": "Location code",
+    "copyPlusCode": "Copy location code"
   },
   "dashboard": {
     "title": "Panel de control",
