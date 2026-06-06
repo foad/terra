@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2, X } from "lucide-react";
 import { CrisisRegionEditor } from "../components/crisis-region-editor";
 import { api } from "../utils/api";
+import type { FollowUpQuestion } from "../utils/report-queue";
 import styles from "./admin-crises.module.css";
 
 interface CrisisEvent {
@@ -10,6 +11,7 @@ interface CrisisEvent {
   crisis_type: string;
   region: GeoJSON.Polygon;
   is_active: boolean;
+  follow_up_questions: FollowUpQuestion[];
 }
 
 const CRISIS_TYPES = [
@@ -23,6 +25,38 @@ const CRISIS_TYPES = [
   "Conflict",
   "Civil unrest",
 ];
+
+const MAX_QUESTIONS = 3;
+
+const SUGGESTED_QUESTIONS: Record<string, Omit<FollowUpQuestion, "id">[]> = {
+  Earthquake: [
+    { question: "Are roads and access routes passable in this area?", options: ["Fully passable", "Partially blocked", "Fully blocked", "Unknown"], allow_other: false },
+    { question: "Is clean water currently available?", options: ["Yes, fully available", "Limited availability", "Not available", "Unknown"], allow_other: false },
+    { question: "What is the current market activity in this area?", options: ["Fully open", "Partially open", "Mostly closed", "Closed", "Unknown"], allow_other: false },
+  ],
+  Flood: [
+    { question: "What is the current flood water level at this location?", options: ["Receding", "Stable", "Rising", "Area already dry", "Unknown"], allow_other: false },
+    { question: "Are people able to return to their homes?", options: ["Yes", "Partially", "No — unsafe", "Unknown"], allow_other: false },
+    { question: "What is the current market activity in this area?", options: ["Fully open", "Partially open", "Mostly closed", "Closed", "Unknown"], allow_other: false },
+  ],
+  Wildfire: [
+    { question: "Is this area accessible for emergency services?", options: ["Fully accessible", "Partially accessible", "Not accessible", "Unknown"], allow_other: false },
+    { question: "What is the current air quality?", options: ["Good", "Moderate", "Poor", "Hazardous", "Unknown"], allow_other: false },
+  ],
+  Conflict: [
+    { question: "Is movement in this area currently safe?", options: ["Yes, safe", "Use caution", "Not safe", "Unknown"], allow_other: false },
+    { question: "Are markets and essential services operating?", options: ["Fully operating", "Partially operating", "Closed", "Unknown"], allow_other: false },
+  ],
+  _default: [
+    { question: "What is the current market activity in this area?", options: ["Fully open", "Partially open", "Mostly closed", "Closed", "Unknown"], allow_other: false },
+    { question: "What does the community most urgently need?", options: ["Food and water", "Medical assistance", "Shelter", "Electricity restoration", "Transportation"], allow_other: true },
+    { question: "Are community services functioning?", options: ["Fully functioning", "Partially functioning", "Not functioning", "Unknown"], allow_other: false },
+  ],
+};
+
+function getSuggestions(crisisType: string): Omit<FollowUpQuestion, "id">[] {
+  return SUGGESTED_QUESTIONS[crisisType] ?? SUGGESTED_QUESTIONS["_default"];
+}
 
 const AdminCrisesPage = () => {
   const [crises, setCrises] = useState<CrisisEvent[]>([]);
@@ -143,10 +177,70 @@ const CrisisForm = ({ initial, onCancel, onSaved }: CrisisFormProps) => {
   const [region, setRegion] = useState<GeoJSON.Polygon | null>(
     initial?.region ?? null,
   );
+  const [questions, setQuestions] = useState<FollowUpQuestion[]>(
+    initial?.follow_up_questions ?? [],
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const canSave = name.trim().length > 0 && region !== null && !saving;
+  const suggestions = getSuggestions(crisisType);
+  const addedIds = new Set(questions.map((q) => q.question));
+
+  const addSuggestion = (suggestion: Omit<FollowUpQuestion, "id">) => {
+    if (questions.length >= MAX_QUESTIONS) return;
+    setQuestions((prev) => [
+      ...prev,
+      { ...suggestion, id: crypto.randomUUID() },
+    ]);
+  };
+
+  const addBlankQuestion = () => {
+    if (questions.length >= MAX_QUESTIONS) return;
+    setQuestions((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), question: "", options: ["", ""], allow_other: false },
+    ]);
+  };
+
+  const removeQuestion = (id: string) => {
+    setQuestions((prev) => prev.filter((q) => q.id !== id));
+  };
+
+  const updateQuestion = (id: string, patch: Partial<FollowUpQuestion>) => {
+    setQuestions((prev) =>
+      prev.map((q) => (q.id === id ? { ...q, ...patch } : q)),
+    );
+  };
+
+  const addOption = (qId: string) => {
+    setQuestions((prev) =>
+      prev.map((q) =>
+        q.id === qId ? { ...q, options: [...q.options, ""] } : q,
+      ),
+    );
+  };
+
+  const updateOption = (qId: string, index: number, value: string) => {
+    setQuestions((prev) =>
+      prev.map((q) => {
+        if (q.id !== qId) return q;
+        const options = [...q.options];
+        options[index] = value;
+        return { ...q, options };
+      }),
+    );
+  };
+
+  const removeOption = (qId: string, index: number) => {
+    setQuestions((prev) =>
+      prev.map((q) => {
+        if (q.id !== qId) return q;
+        const options = q.options.filter((_, i) => i !== index);
+        return { ...q, options };
+      }),
+    );
+  };
 
   const handleSave = async () => {
     if (!canSave || !region) return;
@@ -158,6 +252,10 @@ const CrisisForm = ({ initial, onCancel, onSaved }: CrisisFormProps) => {
         crisis_type: crisisType,
         is_active: isActive,
         region,
+        follow_up_questions: questions.map((q) => ({
+          ...q,
+          options: q.options.filter((o) => o.trim()),
+        })).filter((q) => q.question.trim() && q.options.length >= 2),
       };
       if (initial) {
         await api(`/crisis-events/${initial.id}`, {
@@ -227,6 +325,117 @@ const CrisisForm = ({ initial, onCancel, onSaved }: CrisisFormProps) => {
           />
           Active
         </label>
+      </div>
+
+      <div className={styles.followUpSection}>
+        <h2 className={styles.followUpTitle}>
+          Follow-up questions
+          <span className={styles.followUpCount}>
+            {questions.length}/{MAX_QUESTIONS}
+          </span>
+        </h2>
+        <p className={styles.followUpHelp}>
+          Optional questions shown to users after they submit a report. Max {MAX_QUESTIONS}.
+        </p>
+
+        {suggestions.length > 0 && (
+          <div className={styles.suggestions}>
+            <p className={styles.suggestionsLabel}>Suggested for {crisisType}:</p>
+            <div className={styles.suggestionChips}>
+              {suggestions.map((s) => {
+                const alreadyAdded = addedIds.has(s.question);
+                return (
+                  <button
+                    key={s.question}
+                    type="button"
+                    className={`${styles.suggestionChip} ${alreadyAdded || questions.length >= MAX_QUESTIONS ? styles.chipDisabled : ""}`}
+                    onClick={() => !alreadyAdded && addSuggestion(s)}
+                    disabled={alreadyAdded || questions.length >= MAX_QUESTIONS}
+                  >
+                    <Plus size={12} /> {s.question}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {questions.map((q, qi) => (
+          <div key={q.id} className={styles.questionCard}>
+            <div className={styles.questionHeader}>
+              <span className={styles.questionNumber}>Q{qi + 1}</span>
+              <button
+                type="button"
+                className={styles.removeQuestion}
+                onClick={() => removeQuestion(q.id)}
+                aria-label="Remove question"
+              >
+                <X size={14} />
+              </button>
+            </div>
+            <div className={styles.field}>
+              <label>Question</label>
+              <input
+                type="text"
+                value={q.question}
+                maxLength={500}
+                placeholder="e.g. Are roads passable in this area?"
+                onChange={(e) => updateQuestion(q.id, { question: e.target.value })}
+              />
+            </div>
+            <div className={styles.field}>
+              <label>Answer options</label>
+              {q.options.map((opt, oi) => (
+                <div key={oi} className={styles.optionRow}>
+                  <input
+                    type="text"
+                    value={opt}
+                    maxLength={200}
+                    placeholder={`Option ${oi + 1}`}
+                    onChange={(e) => updateOption(q.id, oi, e.target.value)}
+                  />
+                  {q.options.length > 2 && (
+                    <button
+                      type="button"
+                      className={styles.removeOption}
+                      onClick={() => removeOption(q.id, oi)}
+                      aria-label="Remove option"
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
+              ))}
+              {q.options.length < 8 && (
+                <button
+                  type="button"
+                  className={styles.addOption}
+                  onClick={() => addOption(q.id)}
+                >
+                  <Plus size={12} /> Add option
+                </button>
+              )}
+            </div>
+            <label className={styles.checkboxRow}>
+              <input
+                type="checkbox"
+                checked={q.allow_other}
+                onChange={(e) => updateQuestion(q.id, { allow_other: e.target.checked })}
+              />
+              Include "Other — please specify" option
+            </label>
+          </div>
+        ))}
+
+        {questions.length < MAX_QUESTIONS && (
+          <button
+            type="button"
+            className={styles.addQuestion}
+            onClick={addBlankQuestion}
+          >
+            <Plus size={14} /> Write custom question
+          </button>
+        )}
       </div>
 
       {error && <div className={styles.error}>{error}</div>}

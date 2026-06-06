@@ -26,6 +26,7 @@ import {
   saveSurveyPrefs,
 } from "../utils/survey-prefs";
 import type { ReportFeature } from "../pages/dashboard";
+import type { FollowUpQuestion } from "../utils/report-queue";
 import styles from "./report-flow.module.css";
 
 const AI_CONFIDENCE_THRESHOLD = 0.6;
@@ -71,6 +72,8 @@ export const ReportFlow = ({
     useState<AiClassification | null>(null);
   const classifiedKeyRef = useRef<string | null>(null);
   const [activeCrisisType, setActiveCrisisType] = useState<string | null>(null);
+  const [activeCrisisFollowUpQuestions, setActiveCrisisFollowUpQuestions] = useState<FollowUpQuestion[]>([]);
+  const [queuedReportId, setQueuedReportId] = useState<string | null>(null);
   const crisisLookedUpRef = useRef(false);
   const [existingReports, setExistingReports] = useState<ReportFeature[]>([]);
   const [preSeeded, setPreSeeded] = useState<PreSeeded>({});
@@ -165,6 +168,7 @@ export const ReportFlow = ({
           `/crisis-events/active?lat=${latitude}&lng=${longitude}`,
         );
         if (result?.crisis_type) setActiveCrisisType(result.crisis_type);
+        if (result?.follow_up_questions) setActiveCrisisFollowUpQuestions(result.follow_up_questions);
       } catch {
         // No active crisis at this location, or network error — silent drop.
       }
@@ -265,7 +269,9 @@ export const ReportFlow = ({
       });
 
       saveSurveyPrefs(reportLat, reportLng, survey);
-      syncEngine.processQueue();
+      setQueuedReportId(queued.id);
+      // Sync is intentionally deferred until handleFollowUpComplete so that
+      // follow-up responses can be written into the queue entry before it syncs.
       setStep("confirmation");
     } catch (err) {
       setSubmitError(
@@ -276,7 +282,11 @@ export const ReportFlow = ({
     }
   };
 
-  const handleSubmitAnother = () => {
+  const handleFollowUpComplete = async (responses: Record<string, string> | null) => {
+    if (queuedReportId && responses && Object.keys(responses).length > 0) {
+      await reportQueue.updateFollowUpResponses(queuedReportId, responses);
+    }
+    syncEngine.processQueue();
     setStep("location");
     setSelectedBuilding(null);
     setManualPin(null);
@@ -288,6 +298,7 @@ export const ReportFlow = ({
     setAiClassification(null);
     classifiedKeyRef.current = null;
     setPreSeeded({});
+    setQueuedReportId(null);
   };
 
   const hasLocation = selectedBuilding !== null || manualPin !== null;
@@ -462,7 +473,8 @@ export const ReportFlow = ({
       <div className={styles.step} data-testid="step-confirmation">
         <SubmissionConfirmation
           isOnline={navigator.onLine}
-          onSubmitAnother={handleSubmitAnother}
+          followUpQuestions={activeCrisisFollowUpQuestions}
+          onComplete={handleFollowUpComplete}
         />
       </div>
     );

@@ -32,11 +32,23 @@ class CrisisEventInput(BaseModel):
     crisis_type: str
     is_active: bool = True
     region: dict
+    follow_up_questions: list[dict] = Field(default=[], max_length=3)
 
 
 def _validate_crisis_type(value: str) -> None:
     if value not in CRISIS_TYPES:
         raise ValueError(f"crisis_type must be one of {CRISIS_TYPES}")
+
+
+def _validate_follow_up_questions(questions: list[dict]) -> None:
+    for q in questions:
+        if not isinstance(q.get("id"), str) or not q["id"].strip():
+            raise ValueError("Each follow-up question must have a non-empty id")
+        if not isinstance(q.get("question"), str) or not q["question"].strip():
+            raise ValueError("Each follow-up question must have a non-empty question")
+        options = q.get("options", [])
+        if not isinstance(options, list) or len(options) < 2:
+            raise ValueError("Each follow-up question must have at least 2 options")
 
 
 def _validate_polygon(geom: dict) -> None:
@@ -53,7 +65,7 @@ def get_active_crisis(params: dict) -> dict | None:
     with conn.cursor() as cur:
         cur.execute(
             """
-            SELECT id, name, crisis_type
+            SELECT id, name, crisis_type, follow_up_questions
             FROM crisis_events
             WHERE is_active = true
               AND region IS NOT NULL
@@ -70,6 +82,7 @@ def get_active_crisis(params: dict) -> dict | None:
         "id": str(row[0]),
         "name": row[1],
         "crisis_type": row[2],
+        "follow_up_questions": row[3] or [],
     }
 
 
@@ -78,7 +91,7 @@ def list_active_crises() -> dict:
     with conn.cursor() as cur:
         cur.execute(
             """
-            SELECT id, name, crisis_type, ST_AsGeoJSON(region), is_active
+            SELECT id, name, crisis_type, ST_AsGeoJSON(region), is_active, follow_up_questions
             FROM crisis_events
             WHERE region IS NOT NULL
             ORDER BY name
@@ -93,6 +106,7 @@ def list_active_crises() -> dict:
                 "crisis_type": row[2],
                 "region": json.loads(row[3]),
                 "is_active": row[4],
+                "follow_up_questions": row[5] or [],
             }
             for row in rows
         ],
@@ -103,14 +117,15 @@ def create_crisis(body: dict) -> dict:
     payload = CrisisEventInput(**(body or {}))
     _validate_crisis_type(payload.crisis_type)
     _validate_polygon(payload.region)
+    _validate_follow_up_questions(payload.follow_up_questions)
 
     event_id = str(uuid.uuid4())
     conn = get_connection()
     with conn.cursor() as cur:
         cur.execute(
             """
-            INSERT INTO crisis_events (id, name, crisis_type, region, is_active)
-            VALUES (%s, %s, %s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326), %s)
+            INSERT INTO crisis_events (id, name, crisis_type, region, is_active, follow_up_questions)
+            VALUES (%s, %s, %s, ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326), %s, %s)
             """,
             (
                 event_id,
@@ -118,6 +133,7 @@ def create_crisis(body: dict) -> dict:
                 payload.crisis_type,
                 json.dumps(payload.region),
                 payload.is_active,
+                json.dumps(payload.follow_up_questions),
             ),
         )
     conn.commit()
@@ -128,6 +144,7 @@ def update_crisis(event_id: str, body: dict) -> dict:
     payload = CrisisEventInput(**(body or {}))
     _validate_crisis_type(payload.crisis_type)
     _validate_polygon(payload.region)
+    _validate_follow_up_questions(payload.follow_up_questions)
 
     conn = get_connection()
     with conn.cursor() as cur:
@@ -137,7 +154,8 @@ def update_crisis(event_id: str, body: dict) -> dict:
             SET name = %s,
                 crisis_type = %s,
                 region = ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326),
-                is_active = %s
+                is_active = %s,
+                follow_up_questions = %s
             WHERE id = %s
             """,
             (
@@ -145,6 +163,7 @@ def update_crisis(event_id: str, body: dict) -> dict:
                 payload.crisis_type,
                 json.dumps(payload.region),
                 payload.is_active,
+                json.dumps(payload.follow_up_questions),
                 event_id,
             ),
         )

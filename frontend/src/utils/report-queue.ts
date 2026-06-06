@@ -2,6 +2,13 @@ const DB_NAME = "terra";
 const DB_VERSION = 1;
 const STORE_NAME = "pending_reports";
 
+export interface FollowUpQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  allow_other: boolean;
+}
+
 export type ReportStatus = "pending" | "syncing" | "synced" | "failed";
 
 export interface QueuedReport {
@@ -28,6 +35,7 @@ export interface QueuedReport {
     pressingNeeds: string[];
     pressingNeedsOther: string;
   };
+  followUpResponses: Record<string, string> | null;
   error: string | null;
   retryCount: number;
   createdAt: string;
@@ -79,6 +87,7 @@ export const reportQueue = {
     const queued: QueuedReport = {
       ...report,
       status: "pending",
+      followUpResponses: null,
       error: null,
       retryCount: 0,
       lastAttempt: null,
@@ -145,6 +154,18 @@ export const reportQueue = {
     };
 
     await withStore("readwrite", (store) => store.put(updated));
+  },
+
+  /** Write follow-up responses into a queued report before it syncs */
+  async updateFollowUpResponses(
+    id: string,
+    responses: Record<string, string>,
+  ): Promise<void> {
+    const report = await reportQueue.get(id);
+    if (!report) return;
+    await withStore("readwrite", (store) =>
+      store.put({ ...report, followUpResponses: responses }),
+    );
   },
 
   /** Remove a synced or discarded report */
