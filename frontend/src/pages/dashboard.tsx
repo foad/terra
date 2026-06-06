@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { DashboardMap } from "../components/dashboard-map";
 import { DashboardSidebar } from "../components/dashboard-sidebar";
 import { ReportDetailsModal } from "../components/report-details-modal";
@@ -62,6 +62,18 @@ const DashboardPage = () => {
     null,
   );
   const [loading, setLoading] = useState(true);
+
+  const stats = useMemo(() => {
+    const counts = { minimal: 0, partial: 0, complete: 0 };
+    let last24h = 0;
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+    for (const r of reports) {
+      const level = r.properties.damage_level as keyof typeof counts;
+      if (level in counts) counts[level]++;
+      if (new Date(r.properties.submitted_at).getTime() > cutoff) last24h++;
+    }
+    return { ...counts, last24h };
+  }, [reports]);
 
   useEffect(() => {
     let cancelled = false;
@@ -134,6 +146,30 @@ const DashboardPage = () => {
           </span>
         </div>
       </header>
+      {!loading && reports.length > 0 && (
+        <div className={styles.statsBar}>
+          <div className={styles.statItem}>
+            <span className={styles.statDot} style={{ background: "#dc2626" }} />
+            <span className={styles.statValue}>{stats.complete}</span>
+            <span className={styles.statLabel}>Complete</span>
+          </div>
+          <div className={styles.statItem}>
+            <span className={styles.statDot} style={{ background: "#d97706" }} />
+            <span className={styles.statValue}>{stats.partial}</span>
+            <span className={styles.statLabel}>Partial</span>
+          </div>
+          <div className={styles.statItem}>
+            <span className={styles.statDot} style={{ background: "#16a34a" }} />
+            <span className={styles.statValue}>{stats.minimal}</span>
+            <span className={styles.statLabel}>Minimal</span>
+          </div>
+          <div className={styles.statDivider} />
+          <div className={styles.statItem}>
+            <span className={styles.statValue}>{stats.last24h}</span>
+            <span className={styles.statLabel}>in last 24h</span>
+          </div>
+        </div>
+      )}
       <div className={styles.body}>
         <DashboardSidebar
           filters={filters}
