@@ -35,11 +35,11 @@ class TestDuplicateDetection:
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
         
-        # First query (for building_id check) returns None
-        # Second query (for location/time check) returns Report A
-        # Third query (for area count) returns 1
-        mock_cursor.fetchone.side_effect = [None, ("report-a-id",), (1,)]
-        
+        # building_id is None so the building check is skipped entirely
+        # First query (location/time check) returns Report A
+        # Second query (area count) returns 1
+        mock_cursor.fetchone.side_effect = [("report-a-id",), (1,)]
+
         mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
         mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
         mock_get_conn.return_value = mock_conn
@@ -111,11 +111,11 @@ class TestDuplicateDetection:
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
         
-        # First query (for building_id check) returns None
-        # Second query (for location/time check) returns None
-        # Third query (for area count) returns 1
-        mock_cursor.fetchone.side_effect = [None, None, (1,)]
-        
+        # building_id is None so the building check is skipped entirely
+        # First query (location/time check) returns None — far enough away
+        # Second query (area count) returns 1
+        mock_cursor.fetchone.side_effect = [None, (1,)]
+
         mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
         mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
         mock_get_conn.return_value = mock_conn
@@ -136,11 +136,11 @@ class TestDuplicateDetection:
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
         
-        # First query (for building_id check) returns None
-        # Second query (for location/time check) returns None (time window excluded it)
-        # Third query (for area count) returns 1
-        mock_cursor.fetchone.side_effect = [None, None, (1,)]
-        
+        # building_id is None so the building check is skipped entirely
+        # First query (location/time check) returns None — outside time window
+        # Second query (area count) returns 1
+        mock_cursor.fetchone.side_effect = [None, (1,)]
+
         mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
         mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
         mock_get_conn.return_value = mock_conn
@@ -161,10 +161,10 @@ class TestDuplicateDetection:
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
         
-        # First query (for building_id check) returns None
-        # Second query (for location/time check) returns None (distance excludes it)
-        # Third query (for area count) returns 1
-        mock_cursor.fetchone.side_effect = [None, None, (1,)]
+        # building_id is None so the building check is skipped entirely
+        # First query (location/time check) returns None — outside distance threshold
+        # Second query (area count) returns 1
+        mock_cursor.fetchone.side_effect = [None, (1,)]
         
         mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
         mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
@@ -188,10 +188,10 @@ class TestDuplicateDetection:
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
         
-        # First query (for building_id check, building_id is None) returns None
-        # Second query (for location/time check) returns Report A
-        # Third query (for area count) returns 1
-        mock_cursor.fetchone.side_effect = [None, ("report-a-id",), (1,)]
+        # building_id is None so the building check is skipped entirely
+        # First query (location/time check) returns Report A
+        # Second query (area count) returns 1
+        mock_cursor.fetchone.side_effect = [("report-a-id",), (1,)]
         
         mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
         mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
