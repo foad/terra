@@ -46,12 +46,24 @@ const POSTER_INSTRUCTIONS: Record<Lang, string> = {
   ZH: "扫描以报告您所在地区的损坏情况",
 };
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   const handle = async () => {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard unavailable (HTTP context or permissions denied)
+    }
   };
   return (
     <button type="button" className={styles.copyButton} onClick={handle}>
@@ -79,7 +91,7 @@ export function ActivationKitModal({ crisis, onClose }: Props) {
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>TERRA — ${crisis.name}</title>
+<title>TERRA — ${escapeHtml(crisis.name)}</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -163,8 +175,8 @@ export function ActivationKitModal({ crisis, onClose }: Props) {
     <span class="terra-name">TERRA</span>
     <span class="undp-label">Crisis Damage Assessment · UNDP RAPIDA</span>
   </div>
-  <div class="crisis-name">${crisis.name}</div>
-  <div class="crisis-type">${crisis.crisis_type}</div>
+  <div class="crisis-name">${escapeHtml(crisis.name)}</div>
+  <div class="crisis-type">${escapeHtml(crisis.crisis_type)}</div>
   <div class="qr-section">
     ${svgString}
     <div class="instructions">${instructions}</div>
