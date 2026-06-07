@@ -110,20 +110,21 @@ def _check_for_duplicates(conn, submission: ReportSubmission, h3_r12: str) -> di
 
         # Check 2: Same location + recent (within 2 minutes, 15m radius)
         # This catches accidental double-submits
+        # Cast to geography so ST_DWithin uses meters, not degrees.
         time_threshold = datetime.now(timezone.utc) - timedelta(seconds=DUPLICATE_TIME_WINDOW_SECONDS)
         cur.execute(
-            f"""
+            """
             SELECT id FROM reports
             WHERE ST_DWithin(
-                location,
-                ST_SetSRID(ST_MakePoint(%s, %s), 4326),
-                {DUPLICATE_DISTANCE_METERS}
+                location::geography,
+                ST_SetSRID(ST_MakePoint(%s, %s), 4326)::geography,
+                %s
             )
             AND submitted_at > %s
             ORDER BY submitted_at DESC
             LIMIT 1
             """,
-            (submission.longitude, submission.latitude, time_threshold),
+            (submission.longitude, submission.latitude, DUPLICATE_DISTANCE_METERS, time_threshold),
         )
         result = cur.fetchone()
         if result:
