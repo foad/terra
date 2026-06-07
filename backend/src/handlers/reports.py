@@ -74,7 +74,7 @@ class ReportsQueryParams(BaseModel):
     offset: int = Field(0, ge=0)
 
 
-def _check_for_duplicates(conn, submission: ReportSubmission, h3_r12: str) -> dict:
+def _check_for_duplicates(conn, submission: ReportSubmission) -> dict:
     """
     Check for duplicate or reassessment reports.
 
