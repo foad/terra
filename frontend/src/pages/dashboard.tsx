@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { DashboardMap } from "../components/dashboard-map";
 import { DashboardSidebar } from "../components/dashboard-sidebar";
@@ -43,6 +43,8 @@ export interface Filters {
   to: string;
 }
 
+const DASHBOARD_LOAD_TIME = Date.now();
+
 const EMPTY_FILTERS: Filters = {
   damageLevel: [],
   infrastructureType: [],
@@ -64,12 +66,11 @@ const DashboardPage = () => {
     null,
   );
   const [loading, setLoading] = useState(true);
-  const mountTimeRef = useRef(Date.now());
 
   const stats = useMemo(() => {
     const counts = { minimal: 0, partial: 0, complete: 0 };
     let last24h = 0;
-    const cutoff = mountTimeRef.current - 24 * 60 * 60 * 1000;
+    const cutoff = DASHBOARD_LOAD_TIME - 24 * 60 * 60 * 1000;
     for (const r of reports) {
       const level = r.properties.damage_level as keyof typeof counts;
       if (level in counts) counts[level]++;
