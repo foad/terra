@@ -6,3 +6,5 @@ ALTER TABLE reports ADD COLUMN related_report_id UUID REFERENCES reports(id);
 CREATE INDEX idx_reports_duplicate_status ON reports(duplicate_status);
 CREATE INDEX idx_reports_related_report ON reports(related_report_id);
 
+ALTER TABLE reports ADD CONSTRAINT duplicate_status_valid
+  CHECK (duplicate_status IS NULL OR duplicate_status IN ('possible_duplicate', 'reassessment'));
