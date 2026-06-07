@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { DashboardMap } from "../components/dashboard-map";
 import { DashboardSidebar } from "../components/dashboard-sidebar";
@@ -64,11 +64,12 @@ const DashboardPage = () => {
     null,
   );
   const [loading, setLoading] = useState(true);
+  const mountTimeRef = useRef(Date.now());
 
   const stats = useMemo(() => {
     const counts = { minimal: 0, partial: 0, complete: 0 };
     let last24h = 0;
-    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+    const cutoff = mountTimeRef.current - 24 * 60 * 60 * 1000;
     for (const r of reports) {
       const level = r.properties.damage_level as keyof typeof counts;
       if (level in counts) counts[level]++;
