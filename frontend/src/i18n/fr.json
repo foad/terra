@@ -171,5 +171,9 @@
     "legendLow": "Faible",
     "legendHigh": "Élevé",
     "last24h": "dans les 24 dernières h"
+  },
+  "coverage": {
+    "unassessed": "{{count}} bâtiments proches non encore évalués",
+    "unassessed_1": "1 bâtiment proche non encore évalué"
   }
 }
