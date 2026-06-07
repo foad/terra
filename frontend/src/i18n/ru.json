@@ -155,6 +155,17 @@
     "crisis": "Кризис",
     "submitted": "Отправлено",
     "versions": "{{count}} отчёт(ов) для этого местоположения",
-    "locationLabel": "Местоположение"
+    "locationLabel": "Местоположение",
+    "mapModeMarkers": "Метки",
+    "mapModeHeatmap": "Тепловая карта",
+    "mapModeBoth": "Оба",
+    "legendDamage": "Уровень ущерба",
+    "levelMinimal": "Минимальный",
+    "levelPartial": "Частичный",
+    "levelComplete": "Полный",
+    "legendSeverity": "Интенсивность тяжести",
+    "legendLow": "Низкая",
+    "legendHigh": "Высокая",
+    "last24h": "за последние 24ч"
   }
 }

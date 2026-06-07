@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { DashboardMap } from "../components/dashboard-map";
 import { DashboardSidebar } from "../components/dashboard-sidebar";
 import { ReportDetailsModal } from "../components/report-details-modal";
@@ -51,6 +52,7 @@ const EMPTY_FILTERS: Filters = {
 };
 
 const DashboardPage = () => {
+  const { t } = useTranslation();
   const [reports, setReports] = useState<ReportFeature[]>([]);
   const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
@@ -62,19 +64,18 @@ const DashboardPage = () => {
     null,
   );
   const [loading, setLoading] = useState(true);
-  const [mountTime] = useState(() => Date.now());
 
   const stats = useMemo(() => {
     const counts = { minimal: 0, partial: 0, complete: 0 };
     let last24h = 0;
-    const cutoff = mountTime - 24 * 60 * 60 * 1000;
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
     for (const r of reports) {
       const level = r.properties.damage_level as keyof typeof counts;
       if (level in counts) counts[level]++;
       if (new Date(r.properties.submitted_at).getTime() > cutoff) last24h++;
     }
     return { ...counts, last24h };
-  }, [reports, mountTime]);
+  }, [reports]);
 
   useEffect(() => {
     let cancelled = false;
@@ -152,22 +153,22 @@ const DashboardPage = () => {
           <div className={styles.statItem}>
             <span className={styles.statDot} style={{ background: "#dc2626" }} />
             <span className={styles.statValue}>{stats.complete}</span>
-            <span className={styles.statLabel}>Complete</span>
+            <span className={styles.statLabel}>{t("dashboard.levelComplete")}</span>
           </div>
           <div className={styles.statItem}>
             <span className={styles.statDot} style={{ background: "#d97706" }} />
             <span className={styles.statValue}>{stats.partial}</span>
-            <span className={styles.statLabel}>Partial</span>
+            <span className={styles.statLabel}>{t("dashboard.levelPartial")}</span>
           </div>
           <div className={styles.statItem}>
             <span className={styles.statDot} style={{ background: "#16a34a" }} />
             <span className={styles.statValue}>{stats.minimal}</span>
-            <span className={styles.statLabel}>Minimal</span>
+            <span className={styles.statLabel}>{t("dashboard.levelMinimal")}</span>
           </div>
           <div className={styles.statDivider} />
           <div className={styles.statItem}>
             <span className={styles.statValue}>{stats.last24h}</span>
-            <span className={styles.statLabel}>in last 24h</span>
+            <span className={styles.statLabel}>{t("dashboard.last24h")}</span>
           </div>
         </div>
       )}

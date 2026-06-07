@@ -1,10 +1,19 @@
 import { useRef, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Protocol } from "pmtiles";
 import type { ReportFeature } from "../pages/dashboard";
 import { api } from "../utils/api";
 import styles from "./dashboard-map.module.css";
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
 
 type MapMode = "clusters" | "heatmap" | "both";
 
@@ -33,6 +42,7 @@ export const DashboardMap = ({
   reports,
   onReportSelect,
 }: DashboardMapProps) => {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -342,12 +352,13 @@ export const DashboardMap = ({
         ];
         const props = report?.properties;
         if (props) {
+          const infra = props.infrastructure_type[0]?.split("(")[0]?.trim() ?? "";
           new maplibregl.Popup({ offset: 12, closeButton: false })
             .setLngLat(coords)
             .setHTML(
               `<div class="${styles.popup}">` +
-                `<strong>${props.damage_level}</strong>` +
-                `<br>${props.infrastructure_type[0]?.split("(")[0]?.trim() ?? ""}` +
+                `<strong>${escapeHtml(props.damage_level)}</strong>` +
+                `<br>${escapeHtml(infra)}` +
                 `<br><small>${new Date(props.submitted_at).toLocaleDateString()}</small>` +
                 `</div>`,
             )
@@ -386,8 +397,8 @@ export const DashboardMap = ({
         const props = report.properties;
         const infra = props.infrastructure_type?.[0]?.split("(")?.[0]?.trim();
         tip.innerHTML =
-          `<strong>${props.damage_level}</strong>` +
-          (infra ? `<br>${infra}` : "") +
+          `<strong>${escapeHtml(props.damage_level)}</strong>` +
+          (infra ? `<br>${escapeHtml(infra)}` : "") +
           `<br><small>${new Date(props.submitted_at).toLocaleDateString()}</small>`;
         tip.style.display = "block";
         tip.style.left = `${e.point.x + 14}px`;
@@ -506,12 +517,6 @@ export const DashboardMap = ({
     map.setLayoutProperty("report-heatmap", "visibility", showHeatmap ? "visible" : "none");
   }, [mapMode]);
 
-  const TOGGLE_LABELS: Record<MapMode, string> = {
-    clusters: "Markers",
-    heatmap: "Heatmap",
-    both: "Both",
-  };
-
   return (
     <div className={styles.wrapper}>
       <div ref={containerRef} className={styles.container} />
@@ -524,7 +529,7 @@ export const DashboardMap = ({
             className={`${styles.toggleBtn} ${mapMode === mode ? styles.toggleBtnActive : ""}`}
             onClick={() => setMapMode(mode)}
           >
-            {TOGGLE_LABELS[mode]}
+            {t(`dashboard.mapMode${mode.charAt(0).toUpperCase() + mode.slice(1)}`)}
           </button>
         ))}
       </div>
@@ -532,26 +537,26 @@ export const DashboardMap = ({
       <div className={styles.legend}>
         {(mapMode === "clusters" || mapMode === "both") && (
           <div className={styles.legendSection}>
-            <div className={styles.legendTitle}>Damage level</div>
-            {[
-              { color: DAMAGE_COLORS.complete, label: "Complete" },
-              { color: DAMAGE_COLORS.partial,  label: "Partial" },
-              { color: DAMAGE_COLORS.minimal,  label: "Minimal" },
-            ].map(({ color, label }) => (
-              <div key={label} className={styles.legendItem}>
+            <div className={styles.legendTitle}>{t("dashboard.legendDamage")}</div>
+            {([
+              { color: DAMAGE_COLORS.complete, key: "levelComplete" },
+              { color: DAMAGE_COLORS.partial,  key: "levelPartial" },
+              { color: DAMAGE_COLORS.minimal,  key: "levelMinimal" },
+            ] as const).map(({ color, key }) => (
+              <div key={key} className={styles.legendItem}>
                 <span className={styles.legendDot} style={{ background: color }} />
-                <span>{label}</span>
+                <span>{t(`dashboard.${key}`)}</span>
               </div>
             ))}
           </div>
         )}
         {(mapMode === "heatmap" || mapMode === "both") && (
           <div className={styles.legendSection}>
-            <div className={styles.legendTitle}>Severity intensity</div>
+            <div className={styles.legendTitle}>{t("dashboard.legendSeverity")}</div>
             <div className={styles.heatGradient} />
             <div className={styles.heatLabels}>
-              <span>Low</span>
-              <span>High</span>
+              <span>{t("dashboard.legendLow")}</span>
+              <span>{t("dashboard.legendHigh")}</span>
             </div>
           </div>
         )}

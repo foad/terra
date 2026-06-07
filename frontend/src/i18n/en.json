@@ -151,6 +151,17 @@
     "crisis": "Crisis",
     "submitted": "Submitted",
     "versions": "{{count}} report(s) for this location",
-    "locationLabel": "Location"
+    "locationLabel": "Location",
+    "mapModeMarkers": "Markers",
+    "mapModeHeatmap": "Heatmap",
+    "mapModeBoth": "Both",
+    "legendDamage": "Damage level",
+    "levelMinimal": "Minimal",
+    "levelPartial": "Partial",
+    "levelComplete": "Complete",
+    "legendSeverity": "Severity intensity",
+    "legendLow": "Low",
+    "legendHigh": "High",
+    "last24h": "in last 24h"
   }
 }
