@@ -173,7 +173,7 @@
     "last24h": "dans les 24 dernières h"
   },
   "coverage": {
-    "unassessed": "{{count}} bâtiments proches non encore évalués",
-    "unassessed_1": "1 bâtiment proche non encore évalué"
+    "unassessed": "1 bâtiment proche non encore évalué",
+    "unassessed_plural": "{{count}} bâtiments proches non encore évalués"
   }
 }

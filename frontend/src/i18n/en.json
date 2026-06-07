@@ -173,7 +173,7 @@
     "last24h": "in last 24h"
   },
   "coverage": {
-    "unassessed": "{{count}} buildings nearby not yet assessed",
-    "unassessed_1": "1 building nearby not yet assessed"
+    "unassessed": "1 building nearby not yet assessed",
+    "unassessed_plural": "{{count}} buildings nearby not yet assessed"
   }
 }
