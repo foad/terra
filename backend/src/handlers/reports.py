@@ -353,7 +353,7 @@ def query_reports(params: dict) -> dict:
                 "is_latest": row[18],
                 "submitted_at": row[19].isoformat() if row[19] else None,
                 "duplicate_status": row[20],
-                "related_report_id": row[21],
+                "related_report_id": str(row[21]) if row[21] else None,
                 "version_count": row[22],
             },
         })
