@@ -77,16 +77,16 @@ class ReportsQueryParams(BaseModel):
 def _check_for_duplicates(conn, submission: ReportSubmission, h3_r12: str) -> dict:
     """
     Check for duplicate or reassessment reports.
-    
+
     Returns dict with keys:
     - duplicate_status: None | 'possible_duplicate' | 'reassessment'
     - related_report_id: UUID of related report (if any)
-    
+
     Logic:
     1. If same building_id → reassessment (intentional re-assessment)
     2. Else if same location + recent → possible_duplicate (accidental double-submit)
     3. Else → no flag
-    
+
     Note: reassessment takes precedence over duplicate (building_id is explicit intent).
     """
     with conn.cursor() as cur:
@@ -107,7 +107,7 @@ def _check_for_duplicates(conn, submission: ReportSubmission, h3_r12: str) -> di
                     "duplicate_status": "reassessment",
                     "related_report_id": str(result[0]),
                 }
-        
+
         # Check 2: Same location + recent (within 2 minutes, 15m radius)
         # This catches accidental double-submits
         time_threshold = datetime.now(timezone.utc) - timedelta(seconds=DUPLICATE_TIME_WINDOW_SECONDS)
@@ -131,7 +131,7 @@ def _check_for_duplicates(conn, submission: ReportSubmission, h3_r12: str) -> di
                 "duplicate_status": "possible_duplicate",
                 "related_report_id": str(result[0]),
             }
-    
+
     return {"duplicate_status": None, "related_report_id": None}
 
 
