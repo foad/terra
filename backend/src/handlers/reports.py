@@ -173,7 +173,7 @@ def create_report(body: dict) -> dict:
 
     # Check for duplicates/reassessments
     conn = get_connection()
-    duplicate_check = _check_for_duplicates(conn, submission, h3_r12)
+    duplicate_check = _check_for_duplicates(conn, submission)
 
     # Insert report
     report_id = str(uuid.uuid4())
