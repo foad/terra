@@ -169,7 +169,7 @@
     "last24h": "最近24小时"
   },
   "coverage": {
-    "unassessed": "附近 {{count}} 栋建筑尚未评估",
-    "unassessed_1": "附近 1 栋建筑尚未评估"
+    "unassessed": "附近 1 栋建筑尚未评估",
+    "unassessed_plural": "附近 {{count}} 栋建筑尚未评估"
   }
 }
