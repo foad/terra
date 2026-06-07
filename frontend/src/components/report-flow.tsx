@@ -74,6 +74,7 @@ export const ReportFlow = ({
   const [activeCrisisType, setActiveCrisisType] = useState<string | null>(null);
   const [activeCrisisFollowUpQuestions, setActiveCrisisFollowUpQuestions] = useState<FollowUpQuestion[]>([]);
   const [queuedReportId, setQueuedReportId] = useState<string | null>(null);
+  const [activeCrisisName, setActiveCrisisName] = useState<string | null>(null);
   const crisisLookedUpRef = useRef(false);
   const [reportLocation, setReportLocation] = useState<{
     lat: number;
@@ -173,6 +174,7 @@ export const ReportFlow = ({
         );
         if (result?.crisis_type) setActiveCrisisType(result.crisis_type);
         if (result?.follow_up_questions) setActiveCrisisFollowUpQuestions(result.follow_up_questions);
+        if (result?.name) setActiveCrisisName(result.name);
       } catch {
         // No active crisis at this location, or network error — silent drop.
       }
@@ -491,6 +493,7 @@ export const ReportFlow = ({
           infrastructureKeys={infraKeys}
           reportLat={reportLocation?.lat ?? null}
           reportLng={reportLocation?.lng ?? null}
+          crisisName={activeCrisisName ?? undefined}
         />
       </div>
     );
