@@ -149,6 +149,17 @@
     "crisis": "危机",
     "submitted": "提交时间",
     "versions": "此位置有 {{count}} 份报告",
-    "locationLabel": "位置"
+    "locationLabel": "位置",
+    "mapModeMarkers": "标记",
+    "mapModeHeatmap": "热力图",
+    "mapModeBoth": "两者",
+    "legendDamage": "损毁等级",
+    "levelMinimal": "轻微",
+    "levelPartial": "部分",
+    "levelComplete": "完全",
+    "legendSeverity": "严重程度强度",
+    "legendLow": "低",
+    "legendHigh": "高",
+    "last24h": "最近24小时"
   }
 }

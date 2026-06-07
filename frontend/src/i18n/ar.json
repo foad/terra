@@ -159,6 +159,17 @@
     "crisis": "الأزمة",
     "submitted": "تاريخ الإرسال",
     "versions": "{{count}} تقرير(تقارير) لهذا الموقع",
-    "locationLabel": "الموقع"
+    "locationLabel": "الموقع",
+    "mapModeMarkers": "العلامات",
+    "mapModeHeatmap": "خريطة الكثافة",
+    "mapModeBoth": "كلاهما",
+    "legendDamage": "مستوى الضرر",
+    "levelMinimal": "طفيف",
+    "levelPartial": "جزئي",
+    "levelComplete": "كامل",
+    "legendSeverity": "شدة الضرر",
+    "legendLow": "منخفض",
+    "legendHigh": "مرتفع",
+    "last24h": "خلال آخر 24 ساعة"
   }
 }
