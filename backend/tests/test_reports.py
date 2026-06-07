@@ -95,7 +95,11 @@ class TestCreateReport:
     def test_creates_report(self, mock_get_conn):
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
-        mock_cursor.fetchone.side_effect = [None, (1,)]
+        # _find_version_chain (building lookup) → None (new chain)
+        # duplicate building check → None (no reassessment)
+        # duplicate location check → None (no duplicate)
+        # area count → 1
+        mock_cursor.fetchone.side_effect = [None, None, None, (1,)]
         mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
         mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
         mock_get_conn.return_value = mock_conn
@@ -127,7 +131,11 @@ class TestCreateReport:
     def test_includes_photo_url_when_key_provided(self, mock_get_conn):
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
-        mock_cursor.fetchone.side_effect = [None, (1,)]
+        # _find_version_chain (building lookup) → None (new chain)
+        # duplicate building check → None (no reassessment)
+        # duplicate location check → None (no duplicate)
+        # area count → 1
+        mock_cursor.fetchone.side_effect = [None, None, None, (1,)]
         mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
         mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
         mock_get_conn.return_value = mock_conn
@@ -158,6 +166,7 @@ class TestQueryReports:
                 None, ["Food assistance and safe drinking water"],
                 "chain-id-1", True,
                 datetime(2026, 4, 17, tzinfo=timezone.utc),
+                None, None,  # duplicate_status, related_report_id
                 1,
             )
         ]
