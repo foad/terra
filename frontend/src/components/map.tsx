@@ -1,7 +1,9 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Protocol } from "pmtiles";
+import { api } from "../utils/api";
 import styles from "./map.module.css";
 
 const VIDA_BUILDINGS_URL =
@@ -41,6 +43,7 @@ export const Map = ({
   onBuildingSelect,
   onManualPin,
 }: MapProps) => {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markerRef = useRef<maplibregl.Marker | null>(null);
@@ -48,6 +51,10 @@ export const Map = ({
   const hasCenteredRef = useRef(false);
   const onBuildingSelectRef = useRef(onBuildingSelect);
   const onManualPinRef = useRef(onManualPin);
+  const [coverageCount, setCoverageCount] = useState<{
+    assessed: number;
+    total: number;
+  } | null>(null);
 
   useEffect(() => {
     onBuildingSelectRef.current = onBuildingSelect;
@@ -78,6 +85,7 @@ export const Map = ({
           buildings: {
             type: "vector",
             url: `pmtiles://${VIDA_BUILDINGS_URL}`,
+            promoteId: { [BUILDINGS_SOURCE_LAYER]: "geohash" },
             attribution:
               '© <a href="https://source.coop/vida/google-microsoft-osm-open-buildings">VIDA</a>',
           },
@@ -95,9 +103,9 @@ export const Map = ({
             "source-layer": BUILDINGS_SOURCE_LAYER,
             minzoom: 14,
             paint: {
-              "fill-color": "#4a90d9",
-              "fill-opacity": 0.4,
-              "fill-outline-color": "#2563eb",
+              "fill-color": "#e5e7eb",
+              "fill-opacity": 0.35,
+              "fill-outline-color": "#9ca3af",
             },
           },
         ],
@@ -113,8 +121,34 @@ export const Map = ({
       "top-left",
     );
 
-    // Selection highlight layer (GeoJSON source, populated on click)
     map.on("load", () => {
+      // Damage-level fill driven by feature-state set from /reports bbox fetch.
+      // minzoom 16: buildings are too small to read fills at lower zoom.
+      // Outline is left at default for now — reserved for analyst priority flag (#46).
+      map.addLayer(
+        {
+          id: "building-damage",
+          type: "fill",
+          source: "buildings",
+          "source-layer": BUILDINGS_SOURCE_LAYER,
+          minzoom: 16,
+          paint: {
+            "fill-color": [
+              "case",
+              ["==", ["feature-state", "damage_level"], "minimal"],
+              "#16a34a",
+              ["==", ["feature-state", "damage_level"], "partial"],
+              "#d97706",
+              ["==", ["feature-state", "damage_level"], "complete"],
+              "#dc2626",
+              "transparent",
+            ],
+            "fill-opacity": 0.65,
+          },
+        },
+      );
+
+      // Selection highlight layer (GeoJSON source, populated on click)
       map.addSource("selected-building", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
@@ -228,6 +262,53 @@ export const Map = ({
       map.getCanvas().style.cursor = "";
     });
 
+    // Fetch reported buildings in the current viewport and apply feature-state
+    // so the damage-level fill layer colours the correct polygons.
+    const fetchNearbyReports = async () => {
+      if (map.getZoom() < 14) return;
+      const b = map.getBounds();
+      try {
+        const result = await api(
+          `/reports?west=${b.getWest()}&south=${b.getSouth()}&east=${b.getEast()}&north=${b.getNorth()}&limit=500`,
+        );
+        const features: { properties: { building_id?: string; damage_level?: string } }[] =
+          result?.features ?? [];
+        const seen = new Set<string>();
+        for (const f of features) {
+          const bid = f.properties?.building_id;
+          const dl = f.properties?.damage_level;
+          if (!bid || !dl || seen.has(bid)) continue;
+          seen.add(bid);
+          map.setFeatureState(
+            { source: "buildings", sourceLayer: BUILDINGS_SOURCE_LAYER, id: bid },
+            { damage_level: dl },
+          );
+        }
+        setCoverageCount((prev) => ({ total: prev?.total ?? 0, assessed: seen.size }));
+      } catch {
+        // Silent — coverage layer is best-effort
+      }
+    };
+
+    map.on("moveend", fetchNearbyReports);
+
+    // After tiles settle, count visible VIDA building features to derive unassessed total.
+    map.on("idle", () => {
+      if (map.getZoom() < 16) {
+        setCoverageCount(null);
+        return;
+      }
+      const rendered = map.queryRenderedFeatures(undefined, {
+        layers: [BUILDINGS_LAYER],
+      });
+      const unique = new Set(
+        rendered.map((f) => f.properties?.geohash as string | undefined).filter(Boolean),
+      );
+      setCoverageCount((prev) =>
+        prev ? { ...prev, total: unique.size } : null,
+      );
+    });
+
     mapRef.current = map;
 
     return () => {
@@ -285,7 +366,21 @@ export const Map = ({
     }
   }, [latitude, longitude, accuracy]);
 
-  return <div ref={containerRef} className={styles.container} />;
+  const unassessed =
+    coverageCount && coverageCount.total > 0
+      ? Math.max(0, coverageCount.total - coverageCount.assessed)
+      : null;
+
+  return (
+    <div className={styles.wrapper}>
+      <div ref={containerRef} className={styles.container} />
+      {unassessed !== null && (
+        <div className={styles.coverageBadge}>
+          {t("coverage.unassessed", { count: unassessed })}
+        </div>
+      )}
+    </div>
+  );
 };
 
 const createAccuracyCircle = (

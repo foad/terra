@@ -171,5 +171,9 @@
     "legendLow": "Bajo",
     "legendHigh": "Alto",
     "last24h": "en las últimas 24h"
+  },
+  "coverage": {
+    "unassessed": "{{count}} edificios cercanos sin evaluar",
+    "unassessed_1": "1 edificio cercano sin evaluar"
   }
 }
