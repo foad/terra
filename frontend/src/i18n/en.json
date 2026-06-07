@@ -130,6 +130,7 @@
     "shareButton": "Share with your neighbours",
     "shareTitle": "Help assess the damage in your area",
     "shareText": "I just submitted a damage report. Please help by submitting yours — it takes less than 2 minutes.",
+    "shareTextWithCrisis": "I just submitted a damage report for {{crisisName}}. Please help by submitting yours — it takes less than 2 minutes.",
     "submitAnother": "Submit Another Report",
     "followUpHeading": "One quick question while you're here:",
     "followUpHeading_plural": "{{count}} quick questions while you're here:",

@@ -19,6 +19,7 @@ interface SubmissionConfirmationProps {
   infrastructureKeys: string[];
   reportLat: number | null;
   reportLng: number | null;
+  crisisName?: string;
 }
 
 export const SubmissionConfirmation = ({
@@ -28,6 +29,7 @@ export const SubmissionConfirmation = ({
   infrastructureKeys,
   reportLat,
   reportLng,
+  crisisName,
 }: SubmissionConfirmationProps) => {
   const { t } = useTranslation();
   const [responses, setResponses] = useState<Record<string, string>>({});
@@ -105,9 +107,12 @@ export const SubmissionConfirmation = ({
 
   const handleShare = async () => {
     const url = window.location.href;
+    const shareText = crisisName
+      ? t("confirmation.shareTextWithCrisis", { crisisName })
+      : t("confirmation.shareText");
     const shareData = {
       title: t("confirmation.shareTitle"),
-      text: t("confirmation.shareText"),
+      text: shareText,
       url,
     };
     if (navigator.share && navigator.canShare?.(shareData)) {
@@ -117,9 +122,7 @@ export const SubmissionConfirmation = ({
         // user dismissed the share sheet
       }
     } else {
-      const encoded = encodeURIComponent(
-        `${t("confirmation.shareText")}\n${url}`
-      );
+      const encoded = encodeURIComponent(`${shareText}\n${url}`);
       window.open(`https://wa.me/?text=${encoded}`, "_blank", "noopener");
     }
   };

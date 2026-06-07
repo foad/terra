@@ -128,6 +128,7 @@
     "shareButton": "与邻居分享",
     "shareTitle": "帮助评估您所在地区的损失",
     "shareText": "我刚刚提交了一份损失报告。请通过提交您的报告来提供帮助——只需不到2分钟。",
+    "shareTextWithCrisis": "我刚刚为{{crisisName}}提交了一份损失报告。请通过提交您的报告来提供帮助——只需不到2分钟。",
     "submitAnother": "提交另一份报告",
     "followUpHeading": "您在这里时有一个快速问题：",
     "followUpHeading_plural": "您在这里时有 {{count}} 个快速问题：",
