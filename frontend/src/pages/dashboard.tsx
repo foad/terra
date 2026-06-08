@@ -157,30 +157,28 @@ const DashboardPage = () => {
           </span>
         </div>
       </header>
-      {!loading && reports.length > 0 && (
-        <div className={styles.statsBar}>
-          <div className={styles.statItem}>
-            <span className={styles.statDot} style={{ background: DAMAGE_COLORS.complete }} />
-            <span className={styles.statValue}>{stats.complete}</span>
-            <span className={styles.statLabel}>{t("dashboard.levelComplete")}</span>
-          </div>
-          <div className={styles.statItem}>
-            <span className={styles.statDot} style={{ background: DAMAGE_COLORS.partial }} />
-            <span className={styles.statValue}>{stats.partial}</span>
-            <span className={styles.statLabel}>{t("dashboard.levelPartial")}</span>
-          </div>
-          <div className={styles.statItem}>
-            <span className={styles.statDot} style={{ background: DAMAGE_COLORS.minimal }} />
-            <span className={styles.statValue}>{stats.minimal}</span>
-            <span className={styles.statLabel}>{t("dashboard.levelMinimal")}</span>
-          </div>
-          <div className={styles.statDivider} />
-          <div className={styles.statItem}>
-            <span className={styles.statValue}>{stats.last24h}</span>
-            <span className={styles.statLabel}>{t("dashboard.last24h")}</span>
-          </div>
+      <div className={styles.statsBar}>
+        <div className={styles.statItem}>
+          <span className={styles.statDot} style={{ background: DAMAGE_COLORS.complete }} />
+          <span className={styles.statValue}>{loading ? "—" : stats.complete}</span>
+          <span className={styles.statLabel}>{t("dashboard.levelComplete")}</span>
         </div>
-      )}
+        <div className={styles.statItem}>
+          <span className={styles.statDot} style={{ background: DAMAGE_COLORS.partial }} />
+          <span className={styles.statValue}>{loading ? "—" : stats.partial}</span>
+          <span className={styles.statLabel}>{t("dashboard.levelPartial")}</span>
+        </div>
+        <div className={styles.statItem}>
+          <span className={styles.statDot} style={{ background: DAMAGE_COLORS.minimal }} />
+          <span className={styles.statValue}>{loading ? "—" : stats.minimal}</span>
+          <span className={styles.statLabel}>{t("dashboard.levelMinimal")}</span>
+        </div>
+        <div className={styles.statDivider} />
+        <div className={styles.statItem}>
+          <span className={styles.statValue}>{loading ? "—" : stats.last24h}</span>
+          <span className={styles.statLabel}>{t("dashboard.last24h")}</span>
+        </div>
+      </div>
       <div className={styles.body}>
         <DashboardSidebar
           filters={filters}
