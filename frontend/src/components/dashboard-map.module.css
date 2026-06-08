@@ -117,6 +117,53 @@
   margin-top: 2px;
 }
 
+/* Sits below the layer toggle (top: 10px), which occupies the same corner */
+.drawControls {
+  position: absolute;
+  top: 50px;
+  left: 10px;
+  z-index: 1;
+}
+
+.drawButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  color: #374151;
+}
+
+.drawButton:hover {
+  background: #f3f4f6;
+}
+
+.drawButtonDrawing {
+  color: #dc2626;
+  border-color: #fca5a5;
+  background: #fff1f2;
+}
+
+.drawButtonDrawing:hover {
+  background: #fee2e2;
+}
+
+.drawButtonActive {
+  color: #92400e;
+  border-color: #fcd34d;
+  background: #fffbeb;
+}
+
+.drawButtonActive:hover {
+  background: #fef3c7;
+}
+
 .container :global(.maplibregl-ctrl-attrib) a {
   text-decoration: none;
   background-image: none;

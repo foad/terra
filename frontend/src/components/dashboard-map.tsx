@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Protocol } from "pmtiles";
+import { TerraDraw, TerraDrawPolygonMode } from "terra-draw";
+import { TerraDrawMapLibreGLAdapter } from "terra-draw-maplibre-gl-adapter";
 import type { ReportFeature } from "../pages/dashboard";
 import { api } from "../utils/api";
 import { DAMAGE_COLORS } from "./damage-colors";
@@ -32,11 +34,13 @@ const VIDA_BUILDINGS_URL =
 interface DashboardMapProps {
   reports: ReportFeature[];
   onReportSelect: (report: ReportFeature) => void;
+  onPolygonFilter?: (polygon: GeoJSON.Polygon | null) => void;
 }
 
 export const DashboardMap = ({
   reports,
   onReportSelect,
+  onPolygonFilter,
 }: DashboardMapProps) => {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -47,10 +51,17 @@ export const DashboardMap = ({
   const hasFittedRef = useRef(false);
   const mapLoadedRef = useRef(false);
   const [mapMode, setMapMode] = useState<MapMode>("clusters");
+  const onPolygonFilterRef = useRef(onPolygonFilter);
+  const drawRef = useRef<TerraDraw | null>(null);
+  const [drawMode, setDrawMode] = useState<"idle" | "drawing" | "active">("idle");
 
   useEffect(() => {
     onReportSelectRef.current = onReportSelect;
   }, [onReportSelect]);
+
+  useEffect(() => {
+    onPolygonFilterRef.current = onPolygonFilter;
+  }, [onPolygonFilter]);
 
   useEffect(() => {
     reportsByIdRef.current = new Map(reports.map((r) => [r.properties.id, r]));
@@ -163,6 +174,18 @@ export const DashboardMap = ({
       map.addSource("reports-heatmap", {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
+      });
+
+      map.addSource("polygon-filter", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+
+      map.addLayer({
+        id: "polygon-filter-fill",
+        type: "fill",
+        source: "polygon-filter",
+        paint: { "fill-color": "#f59e0b", "fill-opacity": 0.12 },
       });
 
       map.addLayer({
@@ -310,6 +333,17 @@ export const DashboardMap = ({
           ],
           "circle-stroke-width": 2,
           "circle-stroke-color": "#ffffff",
+        },
+      });
+
+      map.addLayer({
+        id: "polygon-filter-outline",
+        type: "line",
+        source: "polygon-filter",
+        paint: {
+          "line-color": "#f59e0b",
+          "line-width": 2,
+          "line-dasharray": [4, 3],
         },
       });
 
@@ -509,6 +543,57 @@ export const DashboardMap = ({
     map.setLayoutProperty("report-heatmap", "visibility", showHeatmap ? "visible" : "none");
   }, [mapMode]);
 
+  const handleStartDraw = () => {
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded()) return;
+
+    const draw = new TerraDraw({
+      adapter: new TerraDrawMapLibreGLAdapter({ map }),
+      modes: [new TerraDrawPolygonMode()],
+    });
+    drawRef.current = draw;
+    draw.start();
+    draw.setMode("polygon");
+    setDrawMode("drawing");
+
+    const onFinish = () => {
+      const features = draw.getSnapshot();
+      const poly = features.find((f) => f.geometry.type === "Polygon");
+      if (!poly) return;
+
+      const polygon = poly.geometry as GeoJSON.Polygon;
+      draw.stop();
+      drawRef.current = null;
+
+      const source = map.getSource(
+        "polygon-filter",
+      ) as maplibregl.GeoJSONSource | undefined;
+      source?.setData({
+        type: "FeatureCollection",
+        features: [{ type: "Feature", geometry: polygon, properties: {} }],
+      });
+
+      onPolygonFilterRef.current?.(polygon);
+      setDrawMode("active");
+    };
+
+    draw.on("finish", onFinish);
+  };
+
+  const handleClearPolygon = () => {
+    drawRef.current?.stop();
+    drawRef.current = null;
+
+    const map = mapRef.current;
+    const source = map?.getSource(
+      "polygon-filter",
+    ) as maplibregl.GeoJSONSource | undefined;
+    source?.setData({ type: "FeatureCollection", features: [] });
+
+    onPolygonFilterRef.current?.(null);
+    setDrawMode("idle");
+  };
+
   return (
     <div className={styles.wrapper}>
       <div ref={containerRef} className={styles.container} />
@@ -555,6 +640,38 @@ export const DashboardMap = ({
       </div>
 
       <div ref={tooltipRef} className={styles.tooltip} style={{ display: "none" }} />
+
+      {onPolygonFilter && (
+        <div className={styles.drawControls}>
+          {drawMode === "idle" && (
+            <button
+              type="button"
+              className={styles.drawButton}
+              onClick={handleStartDraw}
+            >
+              Draw area
+            </button>
+          )}
+          {drawMode === "drawing" && (
+            <button
+              type="button"
+              className={`${styles.drawButton} ${styles.drawButtonDrawing}`}
+              onClick={handleClearPolygon}
+            >
+              Cancel
+            </button>
+          )}
+          {drawMode === "active" && (
+            <button
+              type="button"
+              className={`${styles.drawButton} ${styles.drawButtonActive}`}
+              onClick={handleClearPolygon}
+            >
+              Clear area
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };
