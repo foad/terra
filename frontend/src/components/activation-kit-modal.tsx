@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { X, Copy, Check, Printer } from "lucide-react";
+import { ICON_SCAN, ICON_CAMERA, ICON_SUBMIT, getCrisisIcon } from "../assets/poster-icons";
 import styles from "./activation-kit-modal.module.css";
 
 interface CrisisEvent {
@@ -82,9 +83,10 @@ export function ActivationKitModal({ crisis, onClose }: Props) {
   const handlePrint = () => {
     const svgEl = qrRef.current?.querySelector("svg");
     const svgString = svgEl ? svgEl.outerHTML : "";
+    const crisisIconSvg = getCrisisIcon(crisis.crisis_type);
 
     const instructions = Object.entries(POSTER_INSTRUCTIONS)
-      .map(([, text]) => `<p>${text}</p>`)
+      .map(([, text]) => `<p class="instruction">${text}</p>`)
       .join("");
 
     const html = `<!DOCTYPE html>
@@ -93,96 +95,96 @@ export function ActivationKitModal({ crisis, onClose }: Props) {
 <meta charset="UTF-8" />
 <title>TERRA — ${escapeHtml(crisis.name)}</title>
 <style>
+  @page { size: A4 portrait; margin: 0; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    background: #fff;
-    color: #111;
-    padding: 48px 56px;
-  }
-  .top-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 3px solid #0468b1;
-    padding-bottom: 16px;
-    margin-bottom: 28px;
-  }
-  .terra-name {
-    font-size: 2rem;
-    font-weight: 900;
-    letter-spacing: 0.08em;
-    color: #0468b1;
-  }
-  .undp-label {
-    font-size: 0.75rem;
-    color: #666;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-  .crisis-name {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 4px;
-  }
-  .crisis-type {
-    font-size: 0.9rem;
-    color: #555;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 36px;
-  }
-  .qr-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 0 auto 32px;
-    width: fit-content;
-  }
-  .qr-section svg {
-    display: block;
-    width: 200px !important;
-    height: 200px !important;
-  }
-  .instructions {
-    margin-top: 16px;
-    text-align: center;
-    font-size: 0.8rem;
-    color: #444;
-    line-height: 1.6;
-  }
-  .url-box {
-    margin-top: 24px;
-    border: 1px solid #ccc;
-    padding: 10px 16px;
-    font-size: 0.85rem;
-    color: #333;
-    text-align: center;
-    word-break: break-all;
-  }
-  .footer {
-    margin-top: 48px;
-    border-top: 1px solid #ddd;
-    padding-top: 14px;
-    font-size: 0.7rem;
-    color: #999;
-    text-align: center;
-  }
+  body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; background: #fff; color: #111827; }
+
+  .header { background: #0468b1; padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; }
+  .terra-logo { font-size: 26px; font-weight: 900; letter-spacing: 0.1em; color: #fff; }
+  .terra-sub { font-size: 9px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 3px; }
+
+  .crisis-section { padding: 22px 40px 18px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 14px; }
+  .crisis-icon { width: 32px; height: 32px; color: #0468b1; flex-shrink: 0; }
+  .crisis-icon svg { width: 100%; height: 100%; display: block; }
+  .crisis-name { font-size: 26px; font-weight: 700; color: #111827; letter-spacing: -0.01em; line-height: 1.2; }
+  .crisis-type-label { font-size: 11px; font-weight: 600; color: #0468b1; text-transform: uppercase; letter-spacing: 0.07em; margin-top: 3px; }
+
+  .steps-section { padding: 20px 40px; border-bottom: 1px solid #e5e7eb; }
+  .steps-heading { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: #9ca3af; margin-bottom: 16px; }
+  .steps-row { display: flex; align-items: center; }
+  .step { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 7px; }
+  .step-icon { width: 44px; height: 44px; color: #0468b1; }
+  .step-icon svg { width: 100%; height: 100%; display: block; }
+  .step-num { width: 20px; height: 20px; background: #0468b1; border-radius: 50%; color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .step-label { font-size: 10px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.06em; }
+  .step-arrow { color: #d1d5db; font-size: 22px; font-weight: 200; padding: 0 4px; padding-bottom: 24px; }
+
+  .qr-section { padding: 28px 40px 24px; display: flex; flex-direction: column; align-items: center; gap: 16px; border-bottom: 1px solid #e5e7eb; }
+  .qr-frame { padding: 12px; border: 1.5px solid #e5e7eb; display: inline-block; }
+  .qr-frame svg { display: block; width: 180px !important; height: 180px !important; }
+  .instructions { text-align: center; }
+  .instruction { font-size: 11px; color: #6b7280; line-height: 1.6; }
+
+  .url-section { padding: 16px 40px 20px; }
+  .url-box { background: #f9fafb; border: 1px solid #e5e7eb; padding: 9px 16px; text-align: center; font-family: "Courier New", monospace; font-size: 12px; color: #374151; letter-spacing: 0.02em; word-break: break-all; }
+
+  .footer { padding: 12px 40px; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+  .footer-text { font-size: 8px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.07em; }
 </style>
 </head>
 <body>
-  <div class="top-bar">
-    <span class="terra-name">TERRA</span>
-    <span class="undp-label">Crisis Damage Assessment · UNDP RAPIDA</span>
+  <div class="header">
+    <div>
+      <div class="terra-logo">TERRA</div>
+      <div class="terra-sub">RAPIDA · Crisis Damage Assessment</div>
+    </div>
   </div>
-  <div class="crisis-name">${escapeHtml(crisis.name)}</div>
-  <div class="crisis-type">${escapeHtml(crisis.crisis_type)}</div>
+
+  <div class="crisis-section">
+    <div class="crisis-icon">${crisisIconSvg}</div>
+    <div>
+      <div class="crisis-name">${escapeHtml(crisis.name)}</div>
+      <div class="crisis-type-label">${escapeHtml(crisis.crisis_type)}</div>
+    </div>
+  </div>
+
+  <div class="steps-section">
+    <div class="steps-heading">How to submit a report</div>
+    <div class="steps-row">
+      <div class="step">
+        <div class="step-icon">${ICON_SCAN}</div>
+        <div class="step-num">1</div>
+        <div class="step-label">Scan</div>
+      </div>
+      <div class="step-arrow">&#8594;</div>
+      <div class="step">
+        <div class="step-icon">${ICON_CAMERA}</div>
+        <div class="step-num">2</div>
+        <div class="step-label">Photograph</div>
+      </div>
+      <div class="step-arrow">&#8594;</div>
+      <div class="step">
+        <div class="step-icon">${ICON_SUBMIT}</div>
+        <div class="step-num">3</div>
+        <div class="step-label">Submit</div>
+      </div>
+    </div>
+  </div>
+
   <div class="qr-section">
-    ${svgString}
+    <div class="qr-frame">${svgString}</div>
     <div class="instructions">${instructions}</div>
   </div>
-  <div class="url-box">${url}</div>
-  <div class="footer">Generated by TERRA · Tool for Early Reporting and Rapid Assessment</div>
+
+  <div class="url-section">
+    <div class="url-box">${url}</div>
+  </div>
+
+  <div class="footer">
+    <span class="footer-text">TERRA · Tool for Early Reporting and Rapid Assessment</span>
+    <span class="footer-text">Field deployment material · UNDP RAPIDA</span>
+  </div>
+
   <script>window.addEventListener('load', function() { window.print(); });</script>
 </body>
 </html>`;
