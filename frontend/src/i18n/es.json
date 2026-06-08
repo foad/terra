@@ -130,7 +130,15 @@
     "submitAnother": "Enviar otro informe",
     "followUpHeading": "Una pregunta rápida mientras está aquí:",
     "followUpHeading_plural": "{{count}} preguntas rápidas mientras está aquí:",
-    "otherSpecify": "Otro — por favor especifique:"
+    "otherSpecify": "Otro — por favor especifique:",
+    "criticalInfraTitle": "Infraestructura crítica identificada",
+    "criticalInfraMessage": "Este edificio será destacado para los equipos de respuesta del PNUD.",
+    "areaCount_one": "{{count}} informe enviado en su área",
+    "areaCount_other": "{{count}} informes enviados en su área",
+    "areaMilestone_one": "Su área está siendo monitoreada activamente — {{count}} informe comunitario y contando",
+    "areaMilestone_other": "Su área está siendo monitoreada activamente — {{count}} informes comunitarios y contando",
+    "plusCodeLabel": "Código de ubicación",
+    "copyPlusCode": "Copiar código de ubicación"
   },
   "dashboard": {
     "title": "Panel de control",

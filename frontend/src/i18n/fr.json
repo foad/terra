@@ -130,7 +130,15 @@
     "submitAnother": "Soumettre un autre rapport",
     "followUpHeading": "Une question rapide pendant que vous êtes là :",
     "followUpHeading_plural": "{{count}} questions rapides pendant que vous êtes là :",
-    "otherSpecify": "Autre — veuillez préciser :"
+    "otherSpecify": "Autre — veuillez préciser :",
+    "criticalInfraTitle": "Infrastructure critique signalée",
+    "criticalInfraMessage": "Ce bâtiment sera mis en évidence pour les équipes d'intervention du PNUD.",
+    "areaCount_one": "{{count}} rapport soumis dans votre zone",
+    "areaCount_other": "{{count}} rapports soumis dans votre zone",
+    "areaMilestone_one": "Votre zone est activement surveillée — {{count}} rapport communautaire et en hausse",
+    "areaMilestone_other": "Votre zone est activement surveillée — {{count}} rapports communautaires et en hausse",
+    "plusCodeLabel": "Code de localisation",
+    "copyPlusCode": "Copier le code de localisation"
   },
   "dashboard": {
     "title": "Tableau de bord",
