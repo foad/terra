@@ -11,7 +11,7 @@ class TestGetActiveCrisis:
     def test_returns_match(self, mock_get_conn):
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
-        mock_cursor.fetchone.return_value = ("crisis-id-1", "Kent Floods 2026", "Flood")
+        mock_cursor.fetchone.return_value = ("crisis-id-1", "Kent Floods 2026", "Flood", [])
         mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
         mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
         mock_get_conn.return_value = mock_conn
@@ -22,6 +22,7 @@ class TestGetActiveCrisis:
             "id": "crisis-id-1",
             "name": "Kent Floods 2026",
             "crisis_type": "Flood",
+            "follow_up_questions": [],
         }
 
     @patch("src.handlers.crisis_events.get_connection")
@@ -91,6 +92,7 @@ class TestListActiveCrises:
                 "Flood",
                 '{"type":"Polygon","coordinates":[[[-1,50.5],[1.5,50.5],[1.5,51.7],[-1,51.7],[-1,50.5]]]}',
                 True,
+                [],
             ),
         ]
         mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
@@ -118,6 +120,7 @@ class TestListActiveCrises:
                         ],
                     },
                     "is_active": True,
+                    "follow_up_questions": [],
                 }
             ]
         }

@@ -127,7 +127,10 @@
     "queued": "Report Queued",
     "submittedMessage": "Thank you for your report. Your submission is helping response teams prioritise recovery efforts in your area.",
     "queuedMessage": "Your report has been saved and will be submitted automatically when connectivity returns.",
-    "submitAnother": "Submit Another Report"
+    "submitAnother": "Submit Another Report",
+    "followUpHeading": "One quick question while you're here:",
+    "followUpHeading_plural": "{{count}} quick questions while you're here:",
+    "otherSpecify": "Other — please specify:"
   },
   "dashboard": {
     "title": "Dashboard",

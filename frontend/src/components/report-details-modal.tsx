@@ -57,6 +57,15 @@ export const ReportDetailsModal = ({
                 {p.pressing_needs.join(", ")}
               </Field>
             )}
+            {p.follow_up_responses && Object.keys(p.follow_up_responses).length > 0 && (
+              <Field label="Follow-up responses">
+                <ul className={styles.followUpList}>
+                  {Object.entries(p.follow_up_responses).map(([key, value]) => (
+                    <li key={key}>{value}</li>
+                  ))}
+                </ul>
+              </Field>
+            )}
           </div>
         </div>
       </div>

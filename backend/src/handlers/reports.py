@@ -1,3 +1,4 @@
+import json
 import os
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -52,6 +53,7 @@ class ReportSubmission(BaseModel):
     pressing_needs_other: str | None = Field(None, max_length=500)
     device_id: str | None = Field(None, max_length=128)
     offline_queue_id: str | None = Field(None, max_length=64, pattern=r"^[a-zA-Z0-9-]+$")
+    follow_up_responses: dict | None = None
 
 
 class ReportsQueryParams(BaseModel):
@@ -175,8 +177,40 @@ def create_report(body: dict) -> dict:
     conn = get_connection()
     duplicate_check = _check_for_duplicates(conn, submission)
 
-    # Insert report
+    # Insert report. Named placeholders keep column/value mapping explicit so
+    # adding a column doesn't require recounting %s positions.
     report_id = str(uuid.uuid4())
+    insert_data = {
+        "id": report_id,
+        "lng": submission.longitude,
+        "lat": submission.latitude,
+        "h3_r12": h3_r12,
+        "h3_r8": h3_r8,
+        "building_id": submission.building_id,
+        "damage_level": submission.damage_level,
+        "ai_damage_level": submission.ai_damage_level,
+        "ai_infrastructure_type": submission.ai_infrastructure_type,
+        "ai_confidence": submission.ai_confidence,
+        "photo_url": photo_url,
+        "thumbnail_url": thumbnail_url,
+        "infrastructure_type": submission.infrastructure_type,
+        "infrastructure_description": submission.infrastructure_description,
+        "crisis_nature": submission.crisis_nature,
+        "debris_present": submission.debris_present,
+        "electricity_status": submission.electricity_status,
+        "health_status": submission.health_status,
+        "pressing_needs": submission.pressing_needs,
+        "version_chain_id": str(version_chain_id),
+        "device_id": submission.device_id,
+        "offline_queue_id": submission.offline_queue_id,
+        "duplicate_status": duplicate_check["duplicate_status"],
+        "related_report_id": duplicate_check["related_report_id"],
+        "follow_up_responses": (
+            json.dumps(submission.follow_up_responses)
+            if submission.follow_up_responses
+            else None
+        ),
+    }
     with conn.cursor() as cur:
         cur.execute(
             """
@@ -186,38 +220,21 @@ def create_report(body: dict) -> dict:
                 photo_url, thumbnail_url, infrastructure_type, infrastructure_description,
                 crisis_nature, debris_present, electricity_status,
                 health_status, pressing_needs, version_chain_id,
-                device_id, offline_queue_id, duplicate_status, related_report_id
+                device_id, offline_queue_id, duplicate_status, related_report_id,
+                follow_up_responses
             ) VALUES (
-                %s, ST_SetSRID(ST_MakePoint(%s, %s), 4326), %s, %s, %s,
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                %(id)s,
+                ST_SetSRID(ST_MakePoint(%(lng)s, %(lat)s), 4326),
+                %(h3_r12)s, %(h3_r8)s, %(building_id)s,
+                %(damage_level)s, %(ai_damage_level)s, %(ai_infrastructure_type)s, %(ai_confidence)s,
+                %(photo_url)s, %(thumbnail_url)s, %(infrastructure_type)s, %(infrastructure_description)s,
+                %(crisis_nature)s, %(debris_present)s, %(electricity_status)s,
+                %(health_status)s, %(pressing_needs)s, %(version_chain_id)s,
+                %(device_id)s, %(offline_queue_id)s, %(duplicate_status)s, %(related_report_id)s,
+                %(follow_up_responses)s
             )
             """,
-            (
-                report_id,
-                submission.longitude,
-                submission.latitude,
-                h3_r12,
-                h3_r8,
-                submission.building_id,
-                submission.damage_level,
-                submission.ai_damage_level,
-                submission.ai_infrastructure_type,
-                submission.ai_confidence,
-                photo_url,
-                thumbnail_url,
-                submission.infrastructure_type,
-                submission.infrastructure_description,
-                submission.crisis_nature,
-                submission.debris_present,
-                submission.electricity_status,
-                submission.health_status,
-                submission.pressing_needs,
-                str(version_chain_id),
-                submission.device_id,
-                submission.offline_queue_id,
-                duplicate_check["duplicate_status"],
-                duplicate_check["related_report_id"],
-            ),
+            insert_data,
         )
 
         # Get area report count
@@ -309,7 +326,8 @@ def query_reports(params: dict) -> dict:
                 is_latest, submitted_at,
                 duplicate_status, related_report_id,
                 (SELECT COUNT(*) FROM reports r2
-                 WHERE r2.version_chain_id = reports.version_chain_id) as version_count
+                 WHERE r2.version_chain_id = reports.version_chain_id) as version_count,
+                follow_up_responses
             FROM reports
             WHERE {where}
             ORDER BY submitted_at DESC
@@ -355,6 +373,7 @@ def query_reports(params: dict) -> dict:
                 "duplicate_status": row[20],
                 "related_report_id": str(row[21]) if row[21] else None,
                 "version_count": row[22],
+                "follow_up_responses": row[23],
             },
         })
 

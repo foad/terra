@@ -99,6 +99,7 @@ export const syncEngine = {
           pressing_needs: report.surveyData.pressingNeeds,
           pressing_needs_other: report.surveyData.pressingNeedsOther || null,
           offline_queue_id: report.id,
+          follow_up_responses: report.followUpResponses ?? null,
         }),
       });
 

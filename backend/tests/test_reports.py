@@ -144,10 +144,11 @@ class TestCreateReport:
         result = create_report(_valid_body(photo_key=photo_key))
 
         assert result["status"] == "created"
-        # Verify the INSERT was called with photo_url containing the key
+        # Verify the INSERT was called with photo_url containing the key.
+        # Named placeholders mean params is now a dict, not a tuple.
         insert_call = mock_cursor.execute.call_args_list[-2]
         params = insert_call[0][1]
-        assert any(photo_key in str(p) for p in params if p)
+        assert photo_key in params["photo_url"]
 
 
 class TestQueryReports:
@@ -168,6 +169,7 @@ class TestQueryReports:
                 datetime(2026, 4, 17, tzinfo=timezone.utc),
                 None, None,  # duplicate_status, related_report_id
                 1,
+                None,  # follow_up_responses
             )
         ]
         mock_cursor.fetchone.return_value = (1,)

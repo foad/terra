@@ -127,7 +127,10 @@
     "queued": "Informe en cola",
     "submittedMessage": "Gracias por su informe. Su contribución está ayudando a los equipos de respuesta a priorizar los esfuerzos de recuperación en su área.",
     "queuedMessage": "Su informe ha sido guardado y se enviará automáticamente cuando se restablezca la conectividad.",
-    "submitAnother": "Enviar otro informe"
+    "submitAnother": "Enviar otro informe",
+    "followUpHeading": "Una pregunta rápida mientras está aquí:",
+    "followUpHeading_plural": "{{count}} preguntas rápidas mientras está aquí:",
+    "otherSpecify": "Otro — por favor especifique:"
   },
   "dashboard": {
     "title": "Panel de control",
