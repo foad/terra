@@ -152,7 +152,7 @@
     "submitted": "Soumis le",
     "versions": "{{count}} rapport(s) pour cet emplacement",
     "locationLabel": "Emplacement",
-    "mapModeMarkers": "Marqueurs",
+    "mapModeClusters": "Marqueurs",
     "mapModeHeatmap": "Carte de chaleur",
     "mapModeBoth": "Les deux",
     "legendDamage": "Niveau de dégâts",

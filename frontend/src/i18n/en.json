@@ -152,7 +152,7 @@
     "submitted": "Submitted",
     "versions": "{{count}} report(s) for this location",
     "locationLabel": "Location",
-    "mapModeMarkers": "Markers",
+    "mapModeClusters": "Markers",
     "mapModeHeatmap": "Heatmap",
     "mapModeBoth": "Both",
     "legendDamage": "Damage level",
