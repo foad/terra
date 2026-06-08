@@ -1,4 +1,5 @@
 import psycopg2
+from psycopg2.extensions import TRANSACTION_STATUS_INERROR
 from aws_lambda_powertools.utilities import parameters
 
 _connection = None
@@ -12,4 +13,14 @@ def get_connection():
     global _connection
     if _connection is None or _connection.closed:
         _connection = psycopg2.connect(get_database_url())
+        return _connection
+    if _connection.info.transaction_status == TRANSACTION_STATUS_INERROR:
+        try:
+            _connection.rollback()
+        except psycopg2.Error:
+            try:
+                _connection.close()
+            except psycopg2.Error:
+                pass
+            _connection = psycopg2.connect(get_database_url())
     return _connection
