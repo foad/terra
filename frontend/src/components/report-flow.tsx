@@ -266,12 +266,13 @@ export const ReportFlow = ({
         aiConfidence: aiClassification?.damageConfidence ?? null,
         surveyData: { ...survey },
         createdAt: new Date().toISOString(),
-      });
+      }, activeCrisisFollowUpQuestions.length > 0 ? "awaiting-follow-up" : "pending");
 
       saveSurveyPrefs(reportLat, reportLng, survey);
       setQueuedReportId(queued.id);
-      // Sync is intentionally deferred until handleFollowUpComplete so that
-      // follow-up responses can be written into the queue entry before it syncs.
+      // When follow-up questions are present the report is queued as
+      // "awaiting-follow-up" so the sync engine won't drain it before the user
+      // has had a chance to answer. handleFollowUpComplete flips it to "pending".
       setStep("confirmation");
     } catch (err) {
       setSubmitError(
@@ -283,8 +284,11 @@ export const ReportFlow = ({
   };
 
   const handleFollowUpComplete = async (responses: Record<string, string> | null) => {
-    if (queuedReportId && responses && Object.keys(responses).length > 0) {
-      await reportQueue.updateFollowUpResponses(queuedReportId, responses);
+    if (queuedReportId) {
+      if (responses && Object.keys(responses).length > 0) {
+        await reportQueue.updateFollowUpResponses(queuedReportId, responses);
+      }
+      await reportQueue.updateStatus(queuedReportId, "pending");
     }
     syncEngine.processQueue();
     setStep("location");

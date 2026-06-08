@@ -18,9 +18,17 @@ export const SubmissionConfirmation = ({
   const { t } = useTranslation();
   const [responses, setResponses] = useState<Record<string, string>>({});
   const [otherValues, setOtherValues] = useState<Record<string, string>>({});
+  const [otherSelected, setOtherSelected] = useState<Record<string, boolean>>({});
 
   const setResponse = (questionId: string, value: string) => {
     setResponses((prev) => ({ ...prev, [questionId]: value }));
+    setOtherSelected((prev) => ({ ...prev, [questionId]: false }));
+  };
+
+  const selectOther = (questionId: string) => {
+    setOtherSelected((prev) => ({ ...prev, [questionId]: true }));
+    const currentText = otherValues[questionId] ?? "";
+    setResponses((prev) => ({ ...prev, [questionId]: `Other: ${currentText}` }));
   };
 
   const setOther = (questionId: string, value: string) => {
@@ -29,6 +37,10 @@ export const SubmissionConfirmation = ({
   };
 
   const handleComplete = () => {
+    const hasEmptyOther = followUpQuestions.some(
+      (q) => q.allow_other && (otherSelected[q.id] ?? false) && !otherValues[q.id]?.trim(),
+    );
+    if (hasEmptyOther) return;
     const finalResponses = Object.keys(responses).length > 0 ? responses : null;
     onComplete(finalResponses);
   };
@@ -54,13 +66,10 @@ export const SubmissionConfirmation = ({
       {hasQuestions && (
         <div className={styles.followUp}>
           <p className={styles.followUpHeading}>
-            {followUpQuestions.length === 1
-              ? "One quick question while you're here:"
-              : `${followUpQuestions.length} quick questions while you're here:`}
+            {t("confirmation.followUpHeading", { count: followUpQuestions.length })}
           </p>
           {followUpQuestions.map((q) => {
-            const selected = responses[q.id];
-            const isOtherSelected = selected?.startsWith("Other:");
+            const isOtherActive = otherSelected[q.id] ?? false;
             return (
               <div key={q.id} className={styles.question}>
                 <p className={styles.questionText}>{q.question}</p>
@@ -71,7 +80,7 @@ export const SubmissionConfirmation = ({
                         type="radio"
                         name={q.id}
                         value={opt}
-                        checked={selected === opt}
+                        checked={!isOtherActive && responses[q.id] === opt}
                         onChange={() => setResponse(q.id, opt)}
                       />
                       {opt}
@@ -82,12 +91,12 @@ export const SubmissionConfirmation = ({
                       <input
                         type="radio"
                         name={q.id}
-                        value="other"
-                        checked={isOtherSelected ?? false}
-                        onChange={() => setOther(q.id, otherValues[q.id] ?? "")}
+                        value="__other__"
+                        checked={isOtherActive}
+                        onChange={() => selectOther(q.id)}
                       />
-                      Other — please specify:
-                      {isOtherSelected && (
+                      {t("confirmation.otherSpecify")}
+                      {isOtherActive && (
                         <input
                           type="text"
                           className={styles.otherInput}

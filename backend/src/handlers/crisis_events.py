@@ -44,11 +44,25 @@ def _validate_follow_up_questions(questions: list[dict]) -> None:
     for q in questions:
         if not isinstance(q.get("id"), str) or not q["id"].strip():
             raise ValueError("Each follow-up question must have a non-empty id")
+        if len(q["id"]) > 100:
+            raise ValueError("Follow-up question id must be 100 characters or fewer")
         if not isinstance(q.get("question"), str) or not q["question"].strip():
             raise ValueError("Each follow-up question must have a non-empty question")
+        if len(q["question"]) > 300:
+            raise ValueError("Follow-up question text must be 300 characters or fewer")
         options = q.get("options", [])
         if not isinstance(options, list) or len(options) < 2:
             raise ValueError("Each follow-up question must have at least 2 options")
+        if len(options) > 10:
+            raise ValueError("Follow-up question must have 10 options or fewer")
+        for opt in options:
+            if not isinstance(opt, str) or not opt.strip():
+                raise ValueError("Each option must be a non-empty string")
+            if len(opt) > 200:
+                raise ValueError("Each option must be 200 characters or fewer")
+        allow_other = q.get("allow_other", False)
+        if not isinstance(allow_other, bool):
+            raise ValueError("allow_other must be a boolean")
 
 
 def _validate_polygon(geom: dict) -> None:

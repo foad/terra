@@ -9,7 +9,7 @@ export interface FollowUpQuestion {
   allow_other: boolean;
 }
 
-export type ReportStatus = "pending" | "syncing" | "synced" | "failed";
+export type ReportStatus = "pending" | "awaiting-follow-up" | "syncing" | "synced" | "failed";
 
 export interface QueuedReport {
   id: string; // offline_queue_id
@@ -83,10 +83,11 @@ export const reportQueue = {
       QueuedReport,
       "status" | "error" | "retryCount" | "lastAttempt" | "syncedAt" | "followUpResponses"
     >,
+    initialStatus: ReportStatus = "pending",
   ): Promise<QueuedReport> {
     const queued: QueuedReport = {
       ...report,
-      status: "pending",
+      status: initialStatus,
       followUpResponses: null,
       error: null,
       retryCount: 0,
