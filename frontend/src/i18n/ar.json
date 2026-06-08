@@ -160,7 +160,7 @@
     "submitted": "تاريخ الإرسال",
     "versions": "{{count}} تقرير(تقارير) لهذا الموقع",
     "locationLabel": "الموقع",
-    "mapModeMarkers": "العلامات",
+    "mapModeClusters": "العلامات",
     "mapModeHeatmap": "خريطة الكثافة",
     "mapModeBoth": "كلاهما",
     "legendDamage": "مستوى الضرر",

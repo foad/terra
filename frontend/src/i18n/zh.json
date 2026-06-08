@@ -150,7 +150,7 @@
     "submitted": "提交时间",
     "versions": "此位置有 {{count}} 份报告",
     "locationLabel": "位置",
-    "mapModeMarkers": "标记",
+    "mapModeClusters": "标记",
     "mapModeHeatmap": "热力图",
     "mapModeBoth": "两者",
     "legendDamage": "损毁等级",
