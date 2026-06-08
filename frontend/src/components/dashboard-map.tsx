@@ -1,10 +1,22 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Protocol } from "pmtiles";
 import type { ReportFeature } from "../pages/dashboard";
 import { api } from "../utils/api";
+import { DAMAGE_COLORS } from "./damage-colors";
 import styles from "./dashboard-map.module.css";
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+type MapMode = "clusters" | "heatmap" | "both";
 
 interface CrisisEvent {
   id: string;
@@ -16,11 +28,6 @@ interface CrisisEvent {
 const VIDA_BUILDINGS_URL =
   "https://data.source.coop/vida/google-microsoft-osm-open-buildings/pmtiles/goog_msft_osm.pmtiles";
 
-const DAMAGE_COLORS: Record<string, string> = {
-  minimal: "#16a34a",
-  partial: "#d97706",
-  complete: "#dc2626",
-};
 
 interface DashboardMapProps {
   reports: ReportFeature[];
@@ -31,18 +38,22 @@ export const DashboardMap = ({
   reports,
   onReportSelect,
 }: DashboardMapProps) => {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
   const onReportSelectRef = useRef(onReportSelect);
-  const reportsDataRef = useRef(reports);
+  const reportsByIdRef = useRef<Map<string, ReportFeature>>(new Map());
   const hasFittedRef = useRef(false);
+  const mapLoadedRef = useRef(false);
+  const [mapMode, setMapMode] = useState<MapMode>("clusters");
 
   useEffect(() => {
     onReportSelectRef.current = onReportSelect;
   }, [onReportSelect]);
 
   useEffect(() => {
-    reportsDataRef.current = reports;
+    reportsByIdRef.current = new Map(reports.map((r) => [r.properties.id, r]));
   }, [reports]);
 
   useEffect(() => {
@@ -145,6 +156,54 @@ export const DashboardMap = ({
           "text-color": "#1e3a8a",
           "text-halo-color": "#ffffff",
           "text-halo-width": 2,
+        },
+      });
+
+      // Non-clustered source for heatmap (heatmap layers need individual points)
+      map.addSource("reports-heatmap", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+
+      map.addLayer({
+        id: "report-heatmap",
+        type: "heatmap",
+        source: "reports-heatmap",
+        maxzoom: 15,
+        layout: { visibility: "none" },
+        paint: {
+          "heatmap-weight": [
+            "match",
+            ["get", "damage_level"],
+            "minimal", 0.33,
+            "partial", 0.66,
+            "complete", 1.0,
+            0.33,
+          ],
+          "heatmap-intensity": [
+            "interpolate", ["linear"], ["zoom"],
+            0, 1,
+            15, 3,
+          ],
+          "heatmap-color": [
+            "interpolate", ["linear"], ["heatmap-density"],
+            0,   "rgba(33,102,172,0)",
+            0.2, "rgb(103,169,207)",
+            0.4, "rgb(253,219,199)",
+            0.6, "rgb(239,138,98)",
+            0.8, "rgb(178,24,43)",
+            1,   "rgb(120,0,0)",
+          ],
+          "heatmap-radius": [
+            "interpolate", ["linear"], ["zoom"],
+            0, 20,
+            15, 40,
+          ],
+          "heatmap-opacity": [
+            "interpolate", ["linear"], ["zoom"],
+            13, 0.9,
+            15, 0,
+          ],
         },
       });
 
@@ -277,9 +336,7 @@ export const DashboardMap = ({
       map.on("click", "report-markers", (e) => {
         const feature = e.features?.[0];
         if (!feature?.properties?.id) return;
-        const report = reportsDataRef.current.find(
-          (r) => r.properties.id === feature.properties!.id,
-        );
+        const report = reportsByIdRef.current.get(feature.properties.id);
         if (report) onReportSelectRef.current?.(report);
 
         // Show popup
@@ -289,12 +346,13 @@ export const DashboardMap = ({
         ];
         const props = report?.properties;
         if (props) {
+          const infra = props.infrastructure_type[0]?.split("(")[0]?.trim() ?? "";
           new maplibregl.Popup({ offset: 12, closeButton: false })
             .setLngLat(coords)
             .setHTML(
               `<div class="${styles.popup}">` +
-                `<strong>${props.damage_level}</strong>` +
-                `<br>${props.infrastructure_type[0]?.split("(")[0]?.trim() ?? ""}` +
+                `<strong>${escapeHtml(props.damage_level)}</strong>` +
+                `<br>${escapeHtml(infra)}` +
                 `<br><small>${new Date(props.submitted_at).toLocaleDateString()}</small>` +
                 `</div>`,
             )
@@ -302,19 +360,48 @@ export const DashboardMap = ({
         }
       });
 
-      // Pointer cursors
-      map.on("mouseenter", "clusters", () => {
+      // Pointer cursors + hover tooltips
+      map.on("mouseenter", "clusters", (e) => {
         map.getCanvas().style.cursor = "pointer";
+        const feature = e.features?.[0];
+        const tip = tooltipRef.current;
+        if (!feature || !tip) return;
+        const p = feature.properties as Record<string, number>;
+        const total = p.point_count ?? 0;
+        tip.innerHTML =
+          `<strong>${total} report${total !== 1 ? "s" : ""}</strong><br>` +
+          `${p.count_complete ?? 0} complete · ${p.count_partial ?? 0} partial · ${p.count_minimal ?? 0} minimal`;
+        tip.style.display = "block";
+        tip.style.left = `${e.point.x + 14}px`;
+        tip.style.top = `${e.point.y - 10}px`;
       });
       map.on("mouseleave", "clusters", () => {
         map.getCanvas().style.cursor = "";
+        if (tooltipRef.current) tooltipRef.current.style.display = "none";
       });
-      map.on("mouseenter", "report-markers", () => {
+      map.on("mouseenter", "report-markers", (e) => {
         map.getCanvas().style.cursor = "pointer";
+        const feature = e.features?.[0];
+        const tip = tooltipRef.current;
+        if (!feature?.properties?.id || !tip) return;
+        const report = reportsByIdRef.current.get(feature.properties.id);
+        if (!report) return;
+        const props = report.properties;
+        const infra = props.infrastructure_type?.[0]?.split("(")?.[0]?.trim();
+        tip.innerHTML =
+          `<strong>${escapeHtml(props.damage_level)}</strong>` +
+          (infra ? `<br>${escapeHtml(infra)}` : "") +
+          `<br><small>${new Date(props.submitted_at).toLocaleDateString()}</small>`;
+        tip.style.display = "block";
+        tip.style.left = `${e.point.x + 14}px`;
+        tip.style.top = `${e.point.y - 10}px`;
       });
       map.on("mouseleave", "report-markers", () => {
         map.getCanvas().style.cursor = "";
+        if (tooltipRef.current) tooltipRef.current.style.display = "none";
       });
+
+      mapLoadedRef.current = true;
     });
 
     // Collapse attribution
@@ -345,10 +432,9 @@ export const DashboardMap = ({
         | undefined;
       if (!source) return;
 
-      source.setData({
-        type: "FeatureCollection",
-        features: reports,
-      });
+      const fc = { type: "FeatureCollection" as const, features: reports };
+      source.setData(fc);
+      (map.getSource("reports-heatmap") as maplibregl.GeoJSONSource | undefined)?.setData(fc);
 
       if (reports.length > 0 && !hasFittedRef.current) {
         const bounds = new maplibregl.LngLatBounds();
@@ -412,5 +498,63 @@ export const DashboardMap = ({
     };
   }, []);
 
-  return <div ref={containerRef} className={styles.container} />;
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapLoadedRef.current) return;
+    const showClusters = mapMode !== "heatmap";
+    const showHeatmap = mapMode !== "clusters";
+    for (const id of ["clusters", "cluster-count", "report-markers"]) {
+      map.setLayoutProperty(id, "visibility", showClusters ? "visible" : "none");
+    }
+    map.setLayoutProperty("report-heatmap", "visibility", showHeatmap ? "visible" : "none");
+  }, [mapMode]);
+
+  return (
+    <div className={styles.wrapper}>
+      <div ref={containerRef} className={styles.container} />
+
+      <div className={styles.toggle}>
+        {(["clusters", "heatmap", "both"] as const).map((mode) => (
+          <button
+            key={mode}
+            type="button"
+            className={`${styles.toggleBtn} ${mapMode === mode ? styles.toggleBtnActive : ""}`}
+            onClick={() => setMapMode(mode)}
+          >
+            {t(`dashboard.mapMode${mode.charAt(0).toUpperCase() + mode.slice(1)}`)}
+          </button>
+        ))}
+      </div>
+
+      <div className={styles.legend}>
+        {(mapMode === "clusters" || mapMode === "both") && (
+          <div className={styles.legendSection}>
+            <div className={styles.legendTitle}>{t("dashboard.legendDamage")}</div>
+            {([
+              { color: DAMAGE_COLORS.complete, key: "levelComplete" },
+              { color: DAMAGE_COLORS.partial,  key: "levelPartial" },
+              { color: DAMAGE_COLORS.minimal,  key: "levelMinimal" },
+            ] as const).map(({ color, key }) => (
+              <div key={key} className={styles.legendItem}>
+                <span className={styles.legendDot} style={{ background: color }} />
+                <span>{t(`dashboard.${key}`)}</span>
+              </div>
+            ))}
+          </div>
+        )}
+        {(mapMode === "heatmap" || mapMode === "both") && (
+          <div className={styles.legendSection}>
+            <div className={styles.legendTitle}>{t("dashboard.legendSeverity")}</div>
+            <div className={styles.heatGradient} />
+            <div className={styles.heatLabels}>
+              <span>{t("dashboard.legendLow")}</span>
+              <span>{t("dashboard.legendHigh")}</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div ref={tooltipRef} className={styles.tooltip} style={{ display: "none" }} />
+    </div>
+  );
 };
