@@ -106,3 +106,11 @@
   background: #fee2e2;
   color: #991b1b;
 }
+
+.followUpList {
+  margin: 0;
+  padding-left: var(--undpds-spacing-04);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}

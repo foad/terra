@@ -30,6 +30,7 @@ export interface ReportFeature {
     is_latest: boolean;
     submitted_at: string;
     version_count: number;
+    follow_up_responses: Record<string, string> | null;
   };
 }
 

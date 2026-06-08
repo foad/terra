@@ -125,7 +125,10 @@
     "queued": "报告已排队",
     "submittedMessage": "感谢您的报告。您的提交正在帮助响应团队确定您所在地区的恢复工作优先级。",
     "queuedMessage": "您的报告已保存，将在恢复连接后自动提交。",
-    "submitAnother": "提交另一份报告"
+    "submitAnother": "提交另一份报告",
+    "followUpHeading": "您在这里时有一个快速问题：",
+    "followUpHeading_plural": "您在这里时有 {{count}} 个快速问题：",
+    "otherSpecify": "其他——请说明："
   },
   "dashboard": {
     "title": "仪表板",

@@ -29,3 +29,80 @@
   line-height: 1.5;
   max-width: 320px;
 }
+
+.followUp {
+  width: 100%;
+  max-width: 400px;
+  border-top: 1px solid var(--undpds-color-gray-300);
+  padding-top: var(--undpds-spacing-05);
+  display: flex;
+  flex-direction: column;
+  gap: var(--undpds-spacing-05);
+  text-align: left;
+}
+
+.followUpHeading {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--undpds-color-gray-700);
+  margin: 0;
+}
+
+.question {
+  display: flex;
+  flex-direction: column;
+  gap: var(--undpds-spacing-03);
+}
+
+.questionText {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.optionLabel {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.optionLabel input[type="radio"] {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.otherInput {
+  display: block;
+  margin-top: 6px;
+  width: 100%;
+  font-size: 0.875rem;
+  padding: 6px 8px;
+  border: 1px solid var(--undpds-color-gray-400);
+}
+
+.buttonRow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--undpds-spacing-03);
+}
+
+.skipButton {
+  background: none;
+  border: none;
+  color: var(--undpds-color-gray-500);
+  font-size: 0.875rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}

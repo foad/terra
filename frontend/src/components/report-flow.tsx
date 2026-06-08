@@ -26,6 +26,7 @@ import {
   saveSurveyPrefs,
 } from "../utils/survey-prefs";
 import type { ReportFeature } from "../pages/dashboard";
+import type { FollowUpQuestion } from "../utils/report-queue";
 import styles from "./report-flow.module.css";
 
 const AI_CONFIDENCE_THRESHOLD = 0.6;
@@ -71,6 +72,8 @@ export const ReportFlow = ({
     useState<AiClassification | null>(null);
   const classifiedKeyRef = useRef<string | null>(null);
   const [activeCrisisType, setActiveCrisisType] = useState<string | null>(null);
+  const [activeCrisisFollowUpQuestions, setActiveCrisisFollowUpQuestions] = useState<FollowUpQuestion[]>([]);
+  const [queuedReportId, setQueuedReportId] = useState<string | null>(null);
   const crisisLookedUpRef = useRef(false);
   const [existingReports, setExistingReports] = useState<ReportFeature[]>([]);
   const [preSeeded, setPreSeeded] = useState<PreSeeded>({});
@@ -165,6 +168,7 @@ export const ReportFlow = ({
           `/crisis-events/active?lat=${latitude}&lng=${longitude}`,
         );
         if (result?.crisis_type) setActiveCrisisType(result.crisis_type);
+        if (result?.follow_up_questions) setActiveCrisisFollowUpQuestions(result.follow_up_questions);
       } catch {
         // No active crisis at this location, or network error — silent drop.
       }
@@ -242,7 +246,7 @@ export const ReportFlow = ({
     setSubmitError(null);
 
     try {
-      await reportQueue.add({
+      const queued = await reportQueue.add({
         id: crypto.randomUUID(),
         photo: photo?.blob ? await photo.blob.arrayBuffer() : null,
         photoContentType: photo?.blob?.type ?? null,
@@ -262,10 +266,13 @@ export const ReportFlow = ({
         aiConfidence: aiClassification?.damageConfidence ?? null,
         surveyData: { ...survey },
         createdAt: new Date().toISOString(),
-      });
+      }, activeCrisisFollowUpQuestions.length > 0 ? "awaiting-follow-up" : "pending");
 
       saveSurveyPrefs(reportLat, reportLng, survey);
-      syncEngine.processQueue();
+      setQueuedReportId(queued.id);
+      // When follow-up questions are present the report is queued as
+      // "awaiting-follow-up" so the sync engine won't drain it before the user
+      // has had a chance to answer. handleFollowUpComplete flips it to "pending".
       setStep("confirmation");
     } catch (err) {
       setSubmitError(
@@ -276,7 +283,14 @@ export const ReportFlow = ({
     }
   };
 
-  const handleSubmitAnother = () => {
+  const handleFollowUpComplete = async (responses: Record<string, string> | null) => {
+    if (queuedReportId) {
+      if (responses && Object.keys(responses).length > 0) {
+        await reportQueue.updateFollowUpResponses(queuedReportId, responses);
+      }
+      await reportQueue.updateStatus(queuedReportId, "pending");
+    }
+    syncEngine.processQueue();
     setStep("location");
     setSelectedBuilding(null);
     setManualPin(null);
@@ -288,6 +302,7 @@ export const ReportFlow = ({
     setAiClassification(null);
     classifiedKeyRef.current = null;
     setPreSeeded({});
+    setQueuedReportId(null);
   };
 
   const hasLocation = selectedBuilding !== null || manualPin !== null;
@@ -462,7 +477,8 @@ export const ReportFlow = ({
       <div className={styles.step} data-testid="step-confirmation">
         <SubmissionConfirmation
           isOnline={navigator.onLine}
-          onSubmitAnother={handleSubmitAnother}
+          followUpQuestions={activeCrisisFollowUpQuestions}
+          onComplete={handleFollowUpComplete}
         />
       </div>
     );
