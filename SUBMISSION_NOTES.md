@@ -43,6 +43,8 @@ _For each feature: what it does, whether it belongs in the **report**, the **vid
 | Share with neighbours CTA (PR #173) | Post-submit confirmation → native share sheet on mobile (WhatsApp, SMS etc.) | Non-monetary viral loop; message includes active crisis name | Req #3 |
 | Community coverage map (PR #183) | PWA map fills in as reports come in; gray outlines = unassessed buildings | Coverage gap is visible; directs reporters to gaps not repeats | Req #3 |
 | Dashboard heatmap + stats bar (PR #179) | Analyst view: severity-weighted heatmap updates live; counts by damage level | "Capture & Display" requirement; analysts see density of damage | Req #2 + Req #1 |
+| Time slider (#176) | Analyst scrubs through the reporting timeline — shows the wave of reports spreading across the zone in the first hours after the crisis | Temporal dimension of crowdsourced data; "Capture & Display" — live data story | Req #2 |
+| Polygon area filter + scoped export (#178) | Analyst draws a polygon on the map → report list, stats, and export all scope to that area only → exports only the selected neighbourhood's data | "Export" as triage decision tool, not bulk download; directly addresses brief's "grouping damage levels and prioritizing required interventions towards a specific location" | Req #2 + Nice-to-have GIS |
 | Export — GeoJSON + CSV | Analyst filters → exports structured data | "Export" requirement; 10k row cap (note honestly in proposal) | Req #2 |
 | Report pinned to building on map | Submitted report appears as coloured marker on analyst dashboard | "Capture & Display" — report marked to building | Req #2 |
 
@@ -81,6 +83,8 @@ _Target: record on a real Android/iOS device for the community flow; switch to d
 ### Setup before recording
 - Active crisis zone covering the demo area (Dan's #77 needed)
 - Several seed reports already in the DB so heatmap and coverage map aren't empty
+- Seed timestamps front-loaded toward first 6–24h after crisis (see #176 comment) — time slider needs a wave pattern not a flat distribution
+- Seed data **must have geographic clustering**: one neighbourhood with predominantly "complete" damage, others lighter — without this the polygon draw moment (#178) falls flat; see issue #178 for detail
 - At least one seed report for a school/hospital/utility so critical infra badge fires
 - Device in English for primary cut; have AR or ES cut ready to show multilingual
 - Airplane mode ready to toggle for offline segment (optional — cut first if over time)
@@ -172,12 +176,48 @@ _~500 words each. Bullets are talking points — Paul writes the final prose._
 
 ---
 
+## Competitive Comparators (for proposal positioning)
+
+Use these in the Solution Overview and Feasibility sections. Frame TERRA as building on proven foundations while closing specific gaps these tools leave open.
+
+### Ushahidi
+**Strengths:** Battle-tested at massive scale (40,000+ reports in Haiti 2010; Nigerian elections; Nepal earthquake). Multi-channel: SMS, email, web, Twitter — meets people where they are, works on feature phones. Open source, 160 countries, 40 languages. Trusted by UN and Red Cross.
+
+**Gaps TERRA closes:** SMS reports are "quite noisy" (free text, hard to structure); "accuracy of geotagging has been mentioned as a major drawback"; no building-level precision — just a pin on a map; no AI classification (manual triage); no structured damage scale; no offline-first architecture for field workers.
+
+**Proposal line:** "Ushahidi demonstrated that crowdsourced crisis mapping works at scale. TERRA advances it with building-footprint precision, AI-assisted structured classification, and offline-first PWA architecture — all essential for the structured damage assessment the UNDP RAPIDA methodology requires."
+
+### Premise Data
+**What it is:** Commercial intelligence platform with ~2.6M paid gig workers collecting photos + structured data via mobile app. Used by US intelligence agencies and USAID. Has a humanitarian arm (AEGIS) doing exactly what TERRA does — remote situation monitoring + AI analysis.
+
+**Gaps TERRA closes:** Requires monetary incentives (not viable for crisis-affected communities); no building-level precision; no offline-first; proprietary and expensive; not open source.
+
+**Proposal line:** "Premise Data proves the crowdsourced ground-truth collection model works commercially. TERRA applies the same model to humanitarian response — without payment barriers, with building-level precision, and as open-source infrastructure any agency can deploy."
+
+### KoboToolbox
+**What it is:** The most widely-used humanitarian data collection tool (32,000+ orgs, 20M surveys/month, used by UN agencies). Structured forms, offline collection, open source.
+
+**Gaps TERRA closes:** Form-based, not map-based — no building footprints, no geolocated photo workflow; no AI classification; no live analyst dashboard; no community engagement/viral loop.
+
+**Proposal line:** "KoboToolbox is the gold standard for structured humanitarian data collection. TERRA adds the community-facing spatial layer: building footprint selection, photo submission, AI classification, and a live analyst dashboard — all missing from KoboToolbox."
+
+---
+
+## Non-building damage (road/rubble) — proposal framing note
+
+#171 exists for dedicated non-building point-drop reports (roads, bridges, landslides). **Not building before deadline** — too much scope (DB migration, flow branching, AI prompt changes).
+
+**Framing for proposal:** Road and bridge damage is currently captured via the "Transport and Communication Infrastructure" type selection. A dedicated non-building point-drop report type (free placement on roads/slopes) is a designed next-phase extension, tracked in the open-source repo. For building-level damage assessment — the core UNDP RAPIDA use case — the current flow is complete.
+
+---
+
 ## Known Gaps & How to Frame Them
 
 | Gap | Status | Proposal framing |
 |---|---|---|
 | Textual/landmark location description (nice-to-have #4) | Not built | Manual pin-drop is the fallback; landmark text input is next-phase |
-| Analytics beyond spatial (charts, trends) | Stats bar shows damage counts; no timeline/trend view | Frame stats bar as the analytics entry point; mention extensibility |
+| Analytics beyond spatial (charts, trends) | Stats bar shows damage counts; time slider (#176) adds temporal view | Frame stats bar + time slider as the analytics entry point; mention extensibility |
 | Follow-up question translation | Analyst-typed text not auto-translated | Known limitation; constrain demo to English |
 | Live URL | Blocked on Dan #77 | — |
 | Export row cap (10k) | Hardcoded | Mention honestly; note it's a current constraint not an architectural one |
+| Dashboard auth (#155) | Deliberately skipped before deadline | EXIF stripping + anonymous submissions already address Req #7 in the proposal; login screen hurts the 2-min video (no scored moment); describe Supabase Auth approach in proposal text as the production path |
