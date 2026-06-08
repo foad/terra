@@ -158,14 +158,23 @@ def post_report():
 
 @app.exception_handler(Exception)
 def handle_unhandled(exc: Exception):
-    """Catch-all so opaque AWS internal errors never reach the client."""
+    if isinstance(exc, ServiceError):
+        return Response(
+            status_code=exc.status_code,
+            content_type="application/json",
+            body=json.dumps({"error": exc.msg}),
+        )
     request_id = getattr(app.current_event.request_context, "request_id", None)
-    logger.exception("unhandled exception", extra={"request_id": request_id})
-    return {
-        "statusCode": 500,
-        "headers": {"Content-Type": "application/json"},
-        "body": json.dumps({"error": "Internal server error", "request_id": request_id}),
-    }
+    logger.error(
+        "unhandled exception",
+        exc_info=exc,
+        extra={"request_id": request_id},
+    )
+    return Response(
+        status_code=500,
+        content_type="application/json",
+        body=json.dumps({"error": "Internal server error", "request_id": request_id}),
+    )
 
 
 def _first_validation_message(err: ValidationError) -> str:
@@ -181,6 +190,13 @@ def _first_validation_message(err: ValidationError) -> str:
 @logger.inject_lambda_context(correlation_id_path=correlation_paths.API_GATEWAY_HTTP)
 @tracer.capture_lambda_handler
 def handler(event, context):
+    # The $default route catches OPTIONS too, so API Gateway's auto-preflight
+    # handling doesn't fire — short-circuit here so the browser sees a 2xx
+    # (gateway still attaches the configured CORS headers).
+    method = event.get("requestContext", {}).get("http", {}).get("method")
+    if method == "OPTIONS":
+        return {"statusCode": 204, "headers": {}, "body": ""}
+
     body = event.get("body") or ""
     if isinstance(body, str) and len(body.encode("utf-8")) > MAX_BODY_BYTES:
         return {
