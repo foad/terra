@@ -133,8 +133,10 @@
     "otherSpecify": "Otro — por favor especifique:",
     "criticalInfraTitle": "Infraestructura crítica identificada",
     "criticalInfraMessage": "Este edificio será destacado para los equipos de respuesta del PNUD.",
-    "areaCount": "{{count}} informes enviados en su área",
-    "areaMilestone": "Su área está siendo monitoreada activamente — {{count}} informes comunitarios y contando",
+    "areaCount_one": "{{count}} informe enviado en su área",
+    "areaCount_other": "{{count}} informes enviados en su área",
+    "areaMilestone_one": "Su área está siendo monitoreada activamente — {{count}} informe comunitario y contando",
+    "areaMilestone_other": "Su área está siendo monitoreada activamente — {{count}} informes comunitarios y contando",
     "plusCodeLabel": "Código de ubicación",
     "copyPlusCode": "Copiar código de ubicación"
   },
