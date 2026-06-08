@@ -197,6 +197,7 @@ export const reportQueue = {
     const all = await reportQueue.getAll();
     const counts: Record<ReportStatus, number> = {
       pending: 0,
+      "awaiting-follow-up": 0,
       syncing: 0,
       synced: 0,
       failed: 0,
