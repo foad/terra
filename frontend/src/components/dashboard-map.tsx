@@ -5,6 +5,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { Protocol } from "pmtiles";
 import type { ReportFeature } from "../pages/dashboard";
 import { api } from "../utils/api";
+import { DAMAGE_COLORS } from "./damage-colors";
 import styles from "./dashboard-map.module.css";
 
 function escapeHtml(str: string): string {
@@ -27,11 +28,6 @@ interface CrisisEvent {
 const VIDA_BUILDINGS_URL =
   "https://data.source.coop/vida/google-microsoft-osm-open-buildings/pmtiles/goog_msft_osm.pmtiles";
 
-const DAMAGE_COLORS: Record<string, string> = {
-  minimal: "#16a34a",
-  partial: "#d97706",
-  complete: "#dc2626",
-};
 
 interface DashboardMapProps {
   reports: ReportFeature[];
@@ -47,7 +43,7 @@ export const DashboardMap = ({
   const mapRef = useRef<maplibregl.Map | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const onReportSelectRef = useRef(onReportSelect);
-  const reportsDataRef = useRef(reports);
+  const reportsByIdRef = useRef<Map<string, ReportFeature>>(new Map());
   const hasFittedRef = useRef(false);
   const mapLoadedRef = useRef(false);
   const [mapMode, setMapMode] = useState<MapMode>("clusters");
@@ -57,7 +53,7 @@ export const DashboardMap = ({
   }, [onReportSelect]);
 
   useEffect(() => {
-    reportsDataRef.current = reports;
+    reportsByIdRef.current = new Map(reports.map((r) => [r.properties.id, r]));
   }, [reports]);
 
   useEffect(() => {
@@ -340,9 +336,7 @@ export const DashboardMap = ({
       map.on("click", "report-markers", (e) => {
         const feature = e.features?.[0];
         if (!feature?.properties?.id) return;
-        const report = reportsDataRef.current.find(
-          (r) => r.properties.id === feature.properties!.id,
-        );
+        const report = reportsByIdRef.current.get(feature.properties.id);
         if (report) onReportSelectRef.current?.(report);
 
         // Show popup
@@ -389,10 +383,8 @@ export const DashboardMap = ({
         map.getCanvas().style.cursor = "pointer";
         const feature = e.features?.[0];
         const tip = tooltipRef.current;
-        if (!feature || !tip) return;
-        const report = reportsDataRef.current.find(
-          (r) => r.properties.id === feature.properties?.id,
-        );
+        if (!feature?.properties?.id || !tip) return;
+        const report = reportsByIdRef.current.get(feature.properties.id);
         if (!report) return;
         const props = report.properties;
         const infra = props.infrastructure_type?.[0]?.split("(")?.[0]?.trim();
