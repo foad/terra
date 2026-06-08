@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { DashboardMap } from "../components/dashboard-map";
+import { DAMAGE_COLORS } from "../components/damage-colors";
 import { DashboardSidebar } from "../components/dashboard-sidebar";
 import { ReportDetailsModal } from "../components/report-details-modal";
 import { api } from "../utils/api";
@@ -42,6 +44,8 @@ export interface Filters {
   to: string;
 }
 
+const STATS_REFRESH_MS = 60_000;
+
 const EMPTY_FILTERS: Filters = {
   damageLevel: [],
   infrastructureType: [],
@@ -51,6 +55,7 @@ const EMPTY_FILTERS: Filters = {
 };
 
 const DashboardPage = () => {
+  const { t } = useTranslation();
   const [reports, setReports] = useState<ReportFeature[]>([]);
   const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
@@ -62,6 +67,24 @@ const DashboardPage = () => {
     null,
   );
   const [loading, setLoading] = useState(true);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), STATS_REFRESH_MS);
+    return () => clearInterval(id);
+  }, []);
+
+  const stats = useMemo(() => {
+    const counts = { minimal: 0, partial: 0, complete: 0 };
+    let last24h = 0;
+    const cutoff = now - 24 * 60 * 60 * 1000;
+    for (const r of reports) {
+      const level = r.properties.damage_level as keyof typeof counts;
+      if (level in counts) counts[level]++;
+      if (new Date(r.properties.submitted_at).getTime() > cutoff) last24h++;
+    }
+    return { ...counts, last24h };
+  }, [reports, now]);
 
   useEffect(() => {
     let cancelled = false;
@@ -134,6 +157,28 @@ const DashboardPage = () => {
           </span>
         </div>
       </header>
+      <div className={styles.statsBar}>
+        <div className={styles.statItem}>
+          <span className={styles.statDot} style={{ background: DAMAGE_COLORS.complete }} />
+          <span className={styles.statValue}>{loading ? "—" : stats.complete}</span>
+          <span className={styles.statLabel}>{t("dashboard.levelComplete")}</span>
+        </div>
+        <div className={styles.statItem}>
+          <span className={styles.statDot} style={{ background: DAMAGE_COLORS.partial }} />
+          <span className={styles.statValue}>{loading ? "—" : stats.partial}</span>
+          <span className={styles.statLabel}>{t("dashboard.levelPartial")}</span>
+        </div>
+        <div className={styles.statItem}>
+          <span className={styles.statDot} style={{ background: DAMAGE_COLORS.minimal }} />
+          <span className={styles.statValue}>{loading ? "—" : stats.minimal}</span>
+          <span className={styles.statLabel}>{t("dashboard.levelMinimal")}</span>
+        </div>
+        <div className={styles.statDivider} />
+        <div className={styles.statItem}>
+          <span className={styles.statValue}>{loading ? "—" : stats.last24h}</span>
+          <span className={styles.statLabel}>{t("dashboard.last24h")}</span>
+        </div>
+      </div>
       <div className={styles.body}>
         <DashboardSidebar
           filters={filters}

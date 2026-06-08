@@ -1,6 +1,6 @@
 import psycopg2
-from psycopg2.extensions import TRANSACTION_STATUS_INERROR
 from aws_lambda_powertools.utilities import parameters
+from psycopg2.extensions import TRANSACTION_STATUS_INERROR
 
 _connection = None
 

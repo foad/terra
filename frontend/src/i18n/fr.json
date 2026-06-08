@@ -151,6 +151,17 @@
     "crisis": "Crise",
     "submitted": "Soumis le",
     "versions": "{{count}} rapport(s) pour cet emplacement",
-    "locationLabel": "Emplacement"
+    "locationLabel": "Emplacement",
+    "mapModeClusters": "Marqueurs",
+    "mapModeHeatmap": "Carte de chaleur",
+    "mapModeBoth": "Les deux",
+    "legendDamage": "Niveau de dégâts",
+    "levelMinimal": "Minimal",
+    "levelPartial": "Partiel",
+    "levelComplete": "Complet",
+    "legendSeverity": "Intensité de sévérité",
+    "legendLow": "Faible",
+    "legendHigh": "Élevé",
+    "last24h": "dans les 24 dernières h"
   }
 }
