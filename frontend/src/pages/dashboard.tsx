@@ -4,6 +4,7 @@ import { DashboardMap } from "../components/dashboard-map";
 import { DAMAGE_COLORS } from "../components/damage-colors";
 import { DashboardSidebar } from "../components/dashboard-sidebar";
 import { ReportDetailsModal } from "../components/report-details-modal";
+import { TimeSlider } from "../components/time-slider";
 import { api } from "../utils/api";
 import styles from "./dashboard.module.css";
 
@@ -68,6 +69,10 @@ const DashboardPage = () => {
   );
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(() => Date.now());
+  const [timeWindow, setTimeWindow] = useState<{
+    from: Date;
+    to: Date;
+  } | null>(null);
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), STATS_REFRESH_MS);
@@ -146,6 +151,16 @@ const DashboardPage = () => {
     };
   }, [selectedReport?.properties.building_id]);
 
+  const filteredReports = useMemo(() => {
+    if (!timeWindow) return reports;
+    const from = timeWindow.from.getTime();
+    const to = timeWindow.to.getTime();
+    return reports.filter((r) => {
+      const t = new Date(r.properties.submitted_at).getTime();
+      return t >= from && t <= to;
+    });
+  }, [reports, timeWindow]);
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -153,29 +168,56 @@ const DashboardPage = () => {
           <h1 className={styles.title}>TERRA</h1>
           <span className={styles.subtitle}>Dashboard</span>
           <span className={styles.reportCount}>
-            {loading ? "Loading..." : `${total} reports`}
+            {loading
+              ? "Loading..."
+              : timeWindow
+                ? `${filteredReports.length} of ${total} reports`
+                : `${total} reports`}
           </span>
         </div>
       </header>
       <div className={styles.statsBar}>
         <div className={styles.statItem}>
-          <span className={styles.statDot} style={{ background: DAMAGE_COLORS.complete }} />
-          <span className={styles.statValue}>{loading ? "—" : stats.complete}</span>
-          <span className={styles.statLabel}>{t("dashboard.levelComplete")}</span>
+          <span
+            className={styles.statDot}
+            style={{ background: DAMAGE_COLORS.complete }}
+          />
+          <span className={styles.statValue}>
+            {loading ? "—" : stats.complete}
+          </span>
+          <span className={styles.statLabel}>
+            {t("dashboard.levelComplete")}
+          </span>
         </div>
         <div className={styles.statItem}>
-          <span className={styles.statDot} style={{ background: DAMAGE_COLORS.partial }} />
-          <span className={styles.statValue}>{loading ? "—" : stats.partial}</span>
-          <span className={styles.statLabel}>{t("dashboard.levelPartial")}</span>
+          <span
+            className={styles.statDot}
+            style={{ background: DAMAGE_COLORS.partial }}
+          />
+          <span className={styles.statValue}>
+            {loading ? "—" : stats.partial}
+          </span>
+          <span className={styles.statLabel}>
+            {t("dashboard.levelPartial")}
+          </span>
         </div>
         <div className={styles.statItem}>
-          <span className={styles.statDot} style={{ background: DAMAGE_COLORS.minimal }} />
-          <span className={styles.statValue}>{loading ? "—" : stats.minimal}</span>
-          <span className={styles.statLabel}>{t("dashboard.levelMinimal")}</span>
+          <span
+            className={styles.statDot}
+            style={{ background: DAMAGE_COLORS.minimal }}
+          />
+          <span className={styles.statValue}>
+            {loading ? "—" : stats.minimal}
+          </span>
+          <span className={styles.statLabel}>
+            {t("dashboard.levelMinimal")}
+          </span>
         </div>
         <div className={styles.statDivider} />
         <div className={styles.statItem}>
-          <span className={styles.statValue}>{loading ? "—" : stats.last24h}</span>
+          <span className={styles.statValue}>
+            {loading ? "—" : stats.last24h}
+          </span>
           <span className={styles.statLabel}>{t("dashboard.last24h")}</span>
         </div>
       </div>
@@ -189,7 +231,19 @@ const DashboardPage = () => {
           onClearSelection={() => setSelectedReport(null)}
         />
         <div className={styles.mapArea}>
-          <DashboardMap reports={reports} onReportSelect={setSelectedReport} />
+          <div className={styles.mapWrapper}>
+            <DashboardMap
+              reports={filteredReports}
+              onReportSelect={setSelectedReport}
+            />
+          </div>
+          <TimeSlider
+            reports={reports}
+            filteredCount={filteredReports.length}
+            onChange={(from, to) =>
+              setTimeWindow(from && to ? { from, to } : null)
+            }
+          />
         </div>
       </div>
       {detailsReport && (

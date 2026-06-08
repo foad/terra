@@ -1,0 +1,133 @@
+.slider {
+  padding: 6px 16px 8px;
+  background: #fff;
+  border-top: 1px solid #e5e7eb;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.histogram {
+  display: flex;
+  align-items: flex-end;
+  height: 28px;
+  gap: 1px;
+  margin-bottom: 2px;
+}
+
+.bar {
+  flex: 1;
+  background: #bfdbfe;
+  border-radius: 1px 1px 0 0;
+  min-height: 2px;
+}
+
+.track {
+  position: relative;
+  height: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.trackBg {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.trackFill {
+  position: absolute;
+  height: 4px;
+  background: var(--undpds-color-blue-600, #0072bc);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.rangeInput {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  pointer-events: none;
+  outline: none;
+}
+
+.rangeInput::-webkit-slider-runnable-track {
+  background: transparent;
+  height: 4px;
+}
+
+.rangeInput::-moz-range-track {
+  background: transparent;
+  height: 4px;
+}
+
+.rangeInput::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--undpds-color-blue-600, #0072bc);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  pointer-events: all;
+  cursor: pointer;
+  margin-top: -6px;
+}
+
+.rangeInput::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--undpds-color-blue-600, #0072bc);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  pointer-events: all;
+  cursor: pointer;
+}
+
+.labels {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 3px;
+}
+
+.label {
+  font-size: 0.6875rem;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.center {
+  font-size: 0.6875rem;
+  color: #6b7280;
+  text-align: center;
+}
+
+.count {
+  font-weight: 600;
+  color: var(--undpds-color-blue-600, #0072bc);
+}
+
+.hint {
+  opacity: 0.6;
+}
+
+.reset {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.6875rem;
+  color: #6b7280;
+  cursor: pointer;
+  text-decoration: underline;
+}
