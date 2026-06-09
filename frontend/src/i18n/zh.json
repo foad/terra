@@ -7,7 +7,12 @@
     "syncing": "正在同步 {{count}} 份报告...",
     "syncing_plural": "正在同步 {{count}} 份报告...",
     "syncFailed": "{{count}} 份报告同步失败。",
-    "syncFailed_plural": "{{count}} 份报告同步失败。"
+    "syncFailed_plural": "{{count}} 份报告同步失败。",
+    "failedPanelTitle": "失败的报告",
+    "failedPanelRetry": "重试",
+    "failedPanelDiscard": "丢弃",
+    "failedPanelRetryAll": "全部重试",
+    "failedPanelEmpty": "没有失败的报告"
   },
   "common": {
     "next": "下一步",

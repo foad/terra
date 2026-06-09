@@ -7,7 +7,12 @@
     "syncing": "جارٍ مزامنة {{count}} تقرير...",
     "syncing_plural": "جارٍ مزامنة {{count}} تقارير...",
     "syncFailed": "فشلت مزامنة {{count}} تقرير.",
-    "syncFailed_plural": "فشلت مزامنة {{count}} تقارير."
+    "syncFailed_plural": "فشلت مزامنة {{count}} تقارير.",
+    "failedPanelTitle": "التقارير الفاشلة",
+    "failedPanelRetry": "إعادة المحاولة",
+    "failedPanelDiscard": "تجاهل",
+    "failedPanelRetryAll": "إعادة محاولة الكل",
+    "failedPanelEmpty": "لا توجد تقارير فاشلة"
   },
   "common": {
     "next": "التالي",
