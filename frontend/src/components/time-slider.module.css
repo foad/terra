@@ -1,23 +1,22 @@
 .slider {
-  padding: 6px 16px 8px;
+  padding: 6px 16px 10px;
   background: #fff;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--undpds-color-gray-300, #e5e7eb);
   user-select: none;
   flex-shrink: 0;
+  overflow: hidden;
 }
 
 .histogram {
   display: flex;
   align-items: flex-end;
-  height: 28px;
+  height: 24px;
   gap: 1px;
-  margin-bottom: 2px;
 }
 
 .bar {
   flex: 1;
-  background: #bfdbfe;
-  border-radius: 1px 1px 0 0;
+  background: color-mix(in srgb, var(--undpds-color-blue-600, #0468b1) 20%, white);
   min-height: 2px;
 }
 
@@ -32,17 +31,15 @@
   position: absolute;
   left: 0;
   right: 0;
-  height: 4px;
-  background: #e5e7eb;
-  border-radius: 2px;
+  height: 2px;
+  background: var(--undpds-color-gray-300, #e5e7eb);
   pointer-events: none;
 }
 
 .trackFill {
   position: absolute;
-  height: 4px;
-  background: var(--undpds-color-blue-600, #0072bc);
-  border-radius: 2px;
+  height: 2px;
+  background: var(--undpds-color-blue-600, #0468b1);
   pointer-events: none;
 }
 
@@ -50,7 +47,7 @@
   position: absolute;
   left: 0;
   width: 100%;
-  height: 4px;
+  height: 2px;
   margin: 0;
   appearance: none;
   -webkit-appearance: none;
@@ -61,61 +58,68 @@
 
 .rangeInput::-webkit-slider-runnable-track {
   background: transparent;
-  height: 4px;
+  height: 2px;
 }
 
 .rangeInput::-moz-range-track {
   background: transparent;
-  height: 4px;
+  height: 2px;
 }
 
+/* Flat rectangular thumb — matches UNDP's angular design language */
 .rangeInput::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--undpds-color-blue-600, #0072bc);
+  width: 10px;
+  height: 20px;
+  border-radius: 1px;
+  background: var(--undpds-color-blue-600, #0468b1);
   border: 2px solid #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  outline: 1px solid var(--undpds-color-blue-600, #0468b1);
   pointer-events: all;
-  cursor: pointer;
-  margin-top: -6px;
+  cursor: ew-resize;
+  margin-top: -9px;
 }
 
 .rangeInput::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--undpds-color-blue-600, #0072bc);
+  width: 10px;
+  height: 20px;
+  border-radius: 1px;
+  background: var(--undpds-color-blue-600, #0468b1);
   border: 2px solid #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  outline: 1px solid var(--undpds-color-blue-600, #0468b1);
   pointer-events: all;
-  cursor: pointer;
+  cursor: ew-resize;
 }
 
 .labels {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 3px;
+  margin-top: 4px;
+  gap: 8px;
+  min-width: 0;
 }
 
 .label {
   font-size: 0.6875rem;
-  color: #6b7280;
+  color: var(--undpds-color-gray-500, #6b7280);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .center {
   font-size: 0.6875rem;
-  color: #6b7280;
+  color: var(--undpds-color-gray-500, #6b7280);
   text-align: center;
+  min-width: 0;
+  flex: 1;
+  white-space: nowrap;
 }
 
 .count {
   font-weight: 600;
-  color: var(--undpds-color-blue-600, #0072bc);
+  color: var(--undpds-color-blue-600, #0468b1);
 }
 
 .hint {
@@ -127,7 +131,8 @@
   border: none;
   padding: 0;
   font-size: 0.6875rem;
-  color: #6b7280;
+  color: var(--undpds-color-gray-500, #6b7280);
   cursor: pointer;
   text-decoration: underline;
+  font-family: inherit;
 }
