@@ -170,6 +170,9 @@
     "legendSeverity": "Severity intensity",
     "legendLow": "Low",
     "legendHigh": "High",
-    "last24h": "in last 24h"
+    "last24h": "in last 24h",
+    "layersPanel": "Layers",
+    "layerBuildings": "Buildings",
+    "layerCrisis": "Crisis boundary"
   }
 }
