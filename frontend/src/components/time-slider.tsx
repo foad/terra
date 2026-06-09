@@ -12,34 +12,37 @@ interface Props {
 }
 
 function fmtDate(d: Date): string {
-  return (
-    d.toLocaleDateString(undefined, { month: "short", day: "numeric" }) +
-    " " +
-    d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })
-  );
+  const day = String(d.getDate()).padStart(2, "0");
+  const mon = d.toLocaleString("default", { month: "short" });
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${day} ${mon} ${hh}:${mm}`;
 }
 
 export const TimeSlider = ({ reports, filteredCount, onChange }: Props) => {
-  const { minMs, maxMs, bars } = useMemo(() => {
-    if (reports.length < 2) return { minMs: 0, maxMs: 0, bars: [] };
+  const { paddedMin, maxMs, bars } = useMemo(() => {
+    if (reports.length < 2) return { paddedMin: 0, maxMs: 0, bars: [] };
     const times = reports.map((r) =>
       new Date(r.properties.submitted_at).getTime(),
     );
     const min = Math.min(...times);
     const max = Math.max(...times);
-    if (min === max) return { minMs: min, maxMs: max, bars: [] };
-    const counts = new Array(BUCKETS).fill(0);
+    if (min === max) return { paddedMin: min, maxMs: max, bars: [] };
     const span = max - min;
+    // Extend one step before the first event so the from handle can sit
+    // at "just before all reports" rather than exactly at the first one.
+    const padded = min - span / STEPS;
+    const counts = new Array(BUCKETS).fill(0);
     times.forEach((t) => {
       const i = Math.min(
-        Math.floor(((t - min) / span) * BUCKETS),
+        Math.floor(((t - padded) / (max - padded)) * BUCKETS),
         BUCKETS - 1,
       );
       counts[i]++;
     });
     const peak = Math.max(...counts);
     return {
-      minMs: min,
+      paddedMin: padded,
       maxMs: max,
       bars: counts.map((c) => c / peak),
     };
@@ -47,24 +50,28 @@ export const TimeSlider = ({ reports, filteredCount, onChange }: Props) => {
 
   const [fromVal, setFromVal] = useState(0);
   const [toVal, setToVal] = useState(STEPS);
+  // Track which handle was last pointer-downed so its z-index stays elevated
+  // during the full drag — prevents the handle losing pointer capture when
+  // both thumbs cross the midpoint.
+  const [lastTouched, setLastTouched] = useState<"from" | "to">("to");
 
   if (bars.length === 0) return null;
 
-  const span = maxMs - minMs;
-  const fromMs = minMs + (fromVal / STEPS) * span;
-  const toMs = minMs + (toVal / STEPS) * span;
+  const span = maxMs - paddedMin;
+  const fromMs = paddedMin + (fromVal / STEPS) * span;
+  const toMs = paddedMin + (toVal / STEPS) * span;
   const fromPct = (fromVal / STEPS) * 100;
   const toPct = (toVal / STEPS) * 100;
   const isFiltered = fromVal > 0 || toVal < STEPS;
 
   const fireChange = (fv: number, tv: number) => {
-    if (fv === 0 && tv === STEPS) {
+    // from=0 means "from the very beginning" regardless of to position
+    const fromDate = fv === 0 ? null : new Date(paddedMin + (fv / STEPS) * span);
+    const toDate = tv === STEPS ? null : new Date(paddedMin + (tv / STEPS) * span);
+    if (!fromDate && !toDate) {
       onChange(null, null);
     } else {
-      onChange(
-        new Date(minMs + (fv / STEPS) * span),
-        new Date(minMs + (tv / STEPS) * span),
-      );
+      onChange(fromDate, toDate);
     }
   };
 
@@ -97,7 +104,8 @@ export const TimeSlider = ({ reports, filteredCount, onChange }: Props) => {
           max={STEPS}
           value={fromVal}
           className={styles.rangeInput}
-          style={{ zIndex: fromVal > STEPS / 2 ? 3 : 1 }}
+          style={{ zIndex: lastTouched === "from" ? 3 : 1 }}
+          onPointerDown={() => setLastTouched("from")}
           onChange={(e) => {
             const v = Math.min(Number(e.target.value), toVal - 10);
             setFromVal(v);
@@ -110,7 +118,8 @@ export const TimeSlider = ({ reports, filteredCount, onChange }: Props) => {
           max={STEPS}
           value={toVal}
           className={styles.rangeInput}
-          style={{ zIndex: fromVal > STEPS / 2 ? 1 : 3 }}
+          style={{ zIndex: lastTouched === "to" ? 3 : 1 }}
+          onPointerDown={() => setLastTouched("to")}
           onChange={(e) => {
             const v = Math.max(Number(e.target.value), fromVal + 10);
             setToVal(v);
