@@ -7,7 +7,12 @@
     "syncing": "Syncing {{count}} report...",
     "syncing_plural": "Syncing {{count}} reports...",
     "syncFailed": "{{count}} report failed to sync.",
-    "syncFailed_plural": "{{count}} reports failed to sync."
+    "syncFailed_plural": "{{count}} reports failed to sync.",
+    "failedPanelTitle": "Failed reports",
+    "failedPanelRetry": "Retry",
+    "failedPanelDiscard": "Discard",
+    "failedPanelRetryAll": "Retry all",
+    "failedPanelEmpty": "No failed reports"
   },
   "common": {
     "next": "Next",

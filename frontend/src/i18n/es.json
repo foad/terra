@@ -7,7 +7,12 @@
     "syncing": "Sincronizando {{count}} informe...",
     "syncing_plural": "Sincronizando {{count}} informes...",
     "syncFailed": "{{count}} informe no se pudo sincronizar.",
-    "syncFailed_plural": "{{count}} informes no se pudieron sincronizar."
+    "syncFailed_plural": "{{count}} informes no se pudieron sincronizar.",
+    "failedPanelTitle": "Informes fallidos",
+    "failedPanelRetry": "Reintentar",
+    "failedPanelDiscard": "Descartar",
+    "failedPanelRetryAll": "Reintentar todos",
+    "failedPanelEmpty": "No hay informes fallidos"
   },
   "common": {
     "next": "Siguiente",

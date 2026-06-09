@@ -7,7 +7,12 @@
     "syncing": "Синхронизация {{count}} отчёта...",
     "syncing_plural": "Синхронизация {{count}} отчётов...",
     "syncFailed": "Не удалось синхронизировать {{count}} отчёт.",
-    "syncFailed_plural": "Не удалось синхронизировать {{count}} отчётов."
+    "syncFailed_plural": "Не удалось синхронизировать {{count}} отчётов.",
+    "failedPanelTitle": "Неудачные отчёты",
+    "failedPanelRetry": "Повторить",
+    "failedPanelDiscard": "Удалить",
+    "failedPanelRetryAll": "Повторить все",
+    "failedPanelEmpty": "Нет неудачных отчётов"
   },
   "common": {
     "next": "Далее",
