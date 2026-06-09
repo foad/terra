@@ -47,6 +47,8 @@ export const DashboardMap = ({
   const hasFittedRef = useRef(false);
   const mapLoadedRef = useRef(false);
   const [mapMode, setMapMode] = useState<MapMode>("clusters");
+  const [showBuildings, setShowBuildings] = useState(true);
+  const [showCrisis, setShowCrisis] = useState(true);
 
   useEffect(() => {
     onReportSelectRef.current = onReportSelect;
@@ -509,6 +511,20 @@ export const DashboardMap = ({
     map.setLayoutProperty("report-heatmap", "visibility", showHeatmap ? "visible" : "none");
   }, [mapMode]);
 
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapLoadedRef.current) return;
+    map.setLayoutProperty("building-footprints", "visibility", showBuildings ? "visible" : "none");
+  }, [showBuildings]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapLoadedRef.current) return;
+    for (const id of ["crisis-fill", "crisis-outline", "crisis-label"]) {
+      map.setLayoutProperty(id, "visibility", showCrisis ? "visible" : "none");
+    }
+  }, [showCrisis]);
+
   return (
     <div className={styles.wrapper}>
       <div ref={containerRef} className={styles.container} />
@@ -552,6 +568,26 @@ export const DashboardMap = ({
             </div>
           </div>
         )}
+      </div>
+
+      <div className={styles.layersPanel}>
+        <div className={styles.layersPanelTitle}>{t("dashboard.layersPanel")}</div>
+        <label className={styles.layerItem}>
+          <input
+            type="checkbox"
+            checked={showBuildings}
+            onChange={(e) => setShowBuildings(e.target.checked)}
+          />
+          {t("dashboard.layerBuildings")}
+        </label>
+        <label className={styles.layerItem}>
+          <input
+            type="checkbox"
+            checked={showCrisis}
+            onChange={(e) => setShowCrisis(e.target.checked)}
+          />
+          {t("dashboard.layerCrisis")}
+        </label>
       </div>
 
       <div ref={tooltipRef} className={styles.tooltip} style={{ display: "none" }} />

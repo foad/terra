@@ -170,6 +170,9 @@
     "legendSeverity": "Intensidad de severidad",
     "legendLow": "Bajo",
     "legendHigh": "Alto",
-    "last24h": "en las últimas 24h"
+    "last24h": "en las últimas 24h",
+    "layersPanel": "Capas",
+    "layerBuildings": "Edificios",
+    "layerCrisis": "Zona de crisis"
   }
 }

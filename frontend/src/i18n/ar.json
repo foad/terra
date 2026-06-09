@@ -186,6 +186,9 @@
     "legendSeverity": "شدة الضرر",
     "legendLow": "منخفض",
     "legendHigh": "مرتفع",
-    "last24h": "خلال آخر 24 ساعة"
+    "last24h": "خلال آخر 24 ساعة",
+    "layersPanel": "الطبقات",
+    "layerBuildings": "المباني",
+    "layerCrisis": "منطقة الأزمة"
   }
 }
