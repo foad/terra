@@ -24,8 +24,10 @@ export const TimeSlider = ({ reports, filteredCount, onChange }: Props) => {
     if (reports.length < 2) return { paddedMin: 0, maxMs: 0, bars: [] };
     let min = Infinity;
     let max = -Infinity;
-    for (const r of reports) {
-      const t = new Date(r.properties.submitted_at).getTime();
+    const times = new Array<number>(reports.length);
+    for (let i = 0; i < reports.length; i++) {
+      const t = new Date(reports[i].properties.submitted_at).getTime();
+      times[i] = t;
       if (t < min) min = t;
       if (t > max) max = t;
     }
@@ -34,16 +36,18 @@ export const TimeSlider = ({ reports, filteredCount, onChange }: Props) => {
     // Extend one step before the first event so the from handle can sit
     // at "just before all reports" rather than exactly at the first one.
     const padded = min - span / STEPS;
+    // Bucket width depends on min/max, so bucketing needs a second pass —
+    // but over the cached timestamps, so each date is only parsed once.
     const counts = new Array(BUCKETS).fill(0);
-    for (const r of reports) {
-      const t = new Date(r.properties.submitted_at).getTime();
+    let peak = 0;
+    for (const t of times) {
       const i = Math.min(
         Math.floor(((t - padded) / (max - padded)) * BUCKETS),
         BUCKETS - 1,
       );
       counts[i]++;
+      if (counts[i] > peak) peak = counts[i];
     }
-    const peak = Math.max(...counts);
     return {
       paddedMin: padded,
       maxMs: max,
