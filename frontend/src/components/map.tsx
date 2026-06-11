@@ -4,6 +4,7 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Protocol } from "pmtiles";
 import { api } from "../utils/api";
+import type { ReportFeature } from "../pages/dashboard";
 import styles from "./map.module.css";
 
 const VIDA_BUILDINGS_URL =
@@ -103,9 +104,9 @@ export const Map = ({
             "source-layer": BUILDINGS_SOURCE_LAYER,
             minzoom: 14,
             paint: {
-              "fill-color": "#e5e7eb",
-              "fill-opacity": 0.35,
-              "fill-outline-color": "#9ca3af",
+              "fill-color": "#bfdbfe",
+              "fill-opacity": 0.45,
+              "fill-outline-color": "#93c5fd",
             },
           },
         ],
@@ -136,14 +137,14 @@ export const Map = ({
             "fill-color": [
               "case",
               ["==", ["feature-state", "damage_level"], "minimal"],
-              "#16a34a",
+              "#86efac",
               ["==", ["feature-state", "damage_level"], "partial"],
-              "#d97706",
+              "#fde68a",
               ["==", ["feature-state", "damage_level"], "complete"],
-              "#dc2626",
+              "#fca5a5",
               "transparent",
             ],
-            "fill-opacity": 0.65,
+            "fill-opacity": 0.7,
           },
         },
       );
@@ -158,9 +159,9 @@ export const Map = ({
         type: "fill",
         source: "selected-building",
         paint: {
-          "fill-color": "#f59e0b",
-          "fill-opacity": 0.7,
-          "fill-outline-color": "#d97706",
+          "fill-color": "#3b82f6",
+          "fill-opacity": 0.6,
+          "fill-outline-color": "#1d4ed8",
         },
       });
     });
@@ -271,8 +272,7 @@ export const Map = ({
         const result = await api(
           `/reports?west=${b.getWest()}&south=${b.getSouth()}&east=${b.getEast()}&north=${b.getNorth()}&limit=500`,
         );
-        const features: { properties: { building_id?: string; damage_level?: string } }[] =
-          result?.features ?? [];
+        const features: ReportFeature[] = result?.features ?? [];
         const seen = new Set<string>();
         for (const f of features) {
           const bid = f.properties?.building_id;
@@ -290,28 +290,38 @@ export const Map = ({
       }
     };
 
-    map.on("moveend", fetchNearbyReports);
+    let fetchTimer: ReturnType<typeof setTimeout> | null = null;
+    map.on("moveend", () => {
+      if (fetchTimer) clearTimeout(fetchTimer);
+      fetchTimer = setTimeout(fetchNearbyReports, 300);
+    });
 
     // After tiles settle, count visible VIDA building features to derive unassessed total.
+    let countTimer: ReturnType<typeof setTimeout> | null = null;
     map.on("idle", () => {
       if (map.getZoom() < 16) {
         setCoverageCount(null);
         return;
       }
-      const rendered = map.queryRenderedFeatures(undefined, {
-        layers: [BUILDINGS_LAYER],
-      });
-      const unique = new Set(
-        rendered.map((f) => f.properties?.geohash as string | undefined).filter(Boolean),
-      );
-      setCoverageCount((prev) =>
-        prev ? { ...prev, total: unique.size } : null,
-      );
+      if (countTimer) clearTimeout(countTimer);
+      countTimer = setTimeout(() => {
+        const rendered = map.queryRenderedFeatures(undefined, {
+          layers: [BUILDINGS_LAYER],
+        });
+        const unique = new Set(
+          rendered.map((f) => f.properties?.geohash as string | undefined).filter(Boolean),
+        );
+        setCoverageCount((prev) =>
+          prev ? { ...prev, total: unique.size } : null,
+        );
+      }, 200);
     });
 
     mapRef.current = map;
 
     return () => {
+      if (fetchTimer) clearTimeout(fetchTimer);
+      if (countTimer) clearTimeout(countTimer);
       map.remove();
       maplibregl.removeProtocol("pmtiles");
       mapRef.current = null;
