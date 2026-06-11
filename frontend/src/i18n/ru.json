@@ -168,6 +168,8 @@
     "submitted": "Отправлено",
     "versions": "{{count}} отчёт(ов) для этого местоположения",
     "locationLabel": "Местоположение",
+    "basemapStreet": "Карта",
+    "basemapSatellite": "Спутник",
     "mapModeClusters": "Метки",
     "mapModeHeatmap": "Тепловая карта",
     "mapModeBoth": "Оба",

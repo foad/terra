@@ -176,6 +176,8 @@
     "submitted": "تاريخ الإرسال",
     "versions": "{{count}} تقرير(تقارير) لهذا الموقع",
     "locationLabel": "الموقع",
+    "basemapStreet": "خريطة",
+    "basemapSatellite": "صور جوية",
     "mapModeClusters": "العلامات",
     "mapModeHeatmap": "خريطة الكثافة",
     "mapModeBoth": "كلاهما",

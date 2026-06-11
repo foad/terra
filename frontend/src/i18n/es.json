@@ -160,6 +160,8 @@
     "submitted": "Enviado",
     "versions": "{{count}} informe(s) para esta ubicación",
     "locationLabel": "Ubicación",
+    "basemapStreet": "Mapa",
+    "basemapSatellite": "Satélite",
     "mapModeClusters": "Marcadores",
     "mapModeHeatmap": "Mapa de calor",
     "mapModeBoth": "Ambos",
