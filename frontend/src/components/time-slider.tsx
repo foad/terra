@@ -22,24 +22,27 @@ function fmtDate(d: Date): string {
 export const TimeSlider = ({ reports, filteredCount, onChange }: Props) => {
   const { paddedMin, maxMs, bars } = useMemo(() => {
     if (reports.length < 2) return { paddedMin: 0, maxMs: 0, bars: [] };
-    const times = reports.map((r) =>
-      new Date(r.properties.submitted_at).getTime(),
-    );
-    const min = Math.min(...times);
-    const max = Math.max(...times);
+    let min = Infinity;
+    let max = -Infinity;
+    for (const r of reports) {
+      const t = new Date(r.properties.submitted_at).getTime();
+      if (t < min) min = t;
+      if (t > max) max = t;
+    }
     if (min === max) return { paddedMin: min, maxMs: max, bars: [] };
     const span = max - min;
     // Extend one step before the first event so the from handle can sit
     // at "just before all reports" rather than exactly at the first one.
     const padded = min - span / STEPS;
     const counts = new Array(BUCKETS).fill(0);
-    times.forEach((t) => {
+    for (const r of reports) {
+      const t = new Date(r.properties.submitted_at).getTime();
       const i = Math.min(
         Math.floor(((t - padded) / (max - padded)) * BUCKETS),
         BUCKETS - 1,
       );
       counts[i]++;
-    });
+    }
     const peak = Math.max(...counts);
     return {
       paddedMin: padded,
