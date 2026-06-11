@@ -15,7 +15,7 @@
 
 .coverageBadge {
   position: absolute;
-  bottom: 28px;
+  top: 12px;
   left: 50%;
   transform: translateX(-50%);
   background: rgba(17, 24, 39, 0.82);
