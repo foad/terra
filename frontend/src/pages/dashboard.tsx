@@ -45,6 +45,9 @@ export interface Filters {
 }
 
 const STATS_REFRESH_MS = 60_000;
+// Near-real-time requirement: new community reports must appear on the
+// analyst map without a filter change or reload (#196).
+const REPORTS_REFRESH_MS = 30_000;
 
 const EMPTY_FILTERS: Filters = {
   damageLevel: [],
@@ -88,8 +91,9 @@ const DashboardPage = () => {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      setLoading(true);
+
+    const fetchReports = async (silent: boolean) => {
+      if (!silent) setLoading(true);
       const params = new URLSearchParams();
       if (filters.damageLevel.length > 0)
         params.set("damage_level", filters.damageLevel.join(","));
@@ -101,26 +105,45 @@ const DashboardPage = () => {
       if (filters.to) params.set("to", filters.to);
       params.set("limit", "1000");
 
-      let allFeatures: ReportFeature[] = [];
-      let offset = 0;
-      let totalCount = 0;
-      while (true) {
-        params.set("offset", String(offset));
-        const data = await api(`/reports?${params.toString()}`);
-        allFeatures = allFeatures.concat(data.features);
-        totalCount = data.total;
-        if (allFeatures.length >= totalCount) break;
-        offset = allFeatures.length;
-      }
+      try {
+        let allFeatures: ReportFeature[] = [];
+        let offset = 0;
+        let totalCount = 0;
+        while (true) {
+          params.set("offset", String(offset));
+          const data = await api(`/reports?${params.toString()}`);
+          allFeatures = allFeatures.concat(data.features);
+          totalCount = data.total;
+          if (allFeatures.length >= totalCount) break;
+          offset = allFeatures.length;
+        }
 
-      if (!cancelled) {
-        setReports(allFeatures);
-        setTotal(totalCount);
-        setLoading(false);
+        if (!cancelled) {
+          setReports(allFeatures);
+          setTotal(totalCount);
+        }
+      } catch (err) {
+        // A failed background poll keeps the last good data; the next tick
+        // retries. Only surface failures on the initial/filter-change load.
+        if (!silent) throw err;
+      } finally {
+        if (!cancelled && !silent) setLoading(false);
       }
-    })();
+    };
+
+    fetchReports(false);
+
+    const refresh = () => {
+      if (!document.hidden) fetchReports(true);
+    };
+    const id = setInterval(refresh, REPORTS_REFRESH_MS);
+    window.addEventListener("online", refresh);
+    document.addEventListener("visibilitychange", refresh);
     return () => {
       cancelled = true;
+      clearInterval(id);
+      window.removeEventListener("online", refresh);
+      document.removeEventListener("visibilitychange", refresh);
     };
   }, [filters]);
 
