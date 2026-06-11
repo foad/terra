@@ -74,20 +74,20 @@ export const FailedReportsPanel = ({ onClose }: Props) => {
                   <p className={styles.error}>{report.error}</p>
                 )}
                 <div className={styles.cardActions}>
-                  <button
-                    type="button"
-                    className={styles.retryBtn}
+                  <a
+                    role="button"
+                    className={`button button-primary button-without-arrow ${styles.cardBtn}`}
                     onClick={() => handleRetry(report.id)}
                   >
                     {t("app.failedPanelRetry")}
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.discardBtn}
+                  </a>
+                  <a
+                    role="button"
+                    className={`button button-secondary button-without-arrow ${styles.cardBtn}`}
                     onClick={() => handleDiscard(report.id)}
                   >
                     {t("app.failedPanelDiscard")}
-                  </button>
+                  </a>
                 </div>
               </div>
             ))

@@ -10,8 +10,7 @@
 .sheet {
   width: 100%;
   max-height: 70vh;
-  background: #fff;
-  border-radius: 12px 12px 0 0;
+  background: var(--undpds-color-white);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -22,14 +21,14 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 16px 12px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--undpds-color-gray-300);
   flex-shrink: 0;
 }
 
 .title {
   font-weight: 700;
   font-size: 1rem;
-  color: #111827;
+  color: var(--undpds-color-black);
 }
 
 .headerActions {
@@ -51,7 +50,7 @@
 .closeBtn {
   font-size: 1.25rem;
   line-height: 1;
-  color: #6b7280;
+  color: var(--undpds-color-gray-600);
   background: none;
   border: none;
   cursor: pointer;
@@ -68,15 +67,14 @@
 
 .empty {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--undpds-color-gray-600);
   text-align: center;
   padding: 24px 0;
   margin: 0;
 }
 
 .card {
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
+  border: 1px solid var(--undpds-color-gray-300);
   padding: 12px;
   display: flex;
   flex-direction: column;
@@ -92,51 +90,31 @@
 .damageChip {
   font-size: 0.6875rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--undpds-color-white);
   padding: 2px 8px;
-  border-radius: 999px;
   text-transform: capitalize;
   letter-spacing: 0.02em;
 }
 
 .date {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--undpds-color-gray-600);
 }
 
 .error {
   font-size: 0.75rem;
-  color: #b91c1c;
+  color: var(--undpds-color-red);
   margin: 0;
   word-break: break-word;
 }
 
 .cardActions {
   display: flex;
-  gap: 8px;
+  gap: var(--undpds-spacing-03);
   margin-top: 2px;
 }
 
-.retryBtn {
+.cardActions .cardBtn {
   flex: 1;
-  padding: 7px 0;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  background: var(--undpds-color-blue-600, #0469a5);
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.discardBtn {
-  flex: 1;
-  padding: 7px 0;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  background: #fff;
-  color: #b91c1c;
-  border: 1px solid #fca5a5;
-  border-radius: 4px;
-  cursor: pointer;
+  text-align: center;
 }
