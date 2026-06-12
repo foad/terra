@@ -82,13 +82,14 @@ export const reportQueue = {
     report: Omit<
       QueuedReport,
       "status" | "error" | "retryCount" | "lastAttempt" | "syncedAt" | "followUpResponses"
-    >,
+    > &
+      Partial<Pick<QueuedReport, "followUpResponses">>,
     initialStatus: ReportStatus = "pending",
   ): Promise<QueuedReport> {
     const queued: QueuedReport = {
       ...report,
       status: initialStatus,
-      followUpResponses: null,
+      followUpResponses: report.followUpResponses ?? null,
       error: null,
       retryCount: 0,
       lastAttempt: null,
@@ -157,7 +158,9 @@ export const reportQueue = {
     await withStore("readwrite", (store) => store.put(updated));
   },
 
-  /** Write follow-up responses into a queued report before it syncs */
+  /** Merge follow-up responses into a queued report before it syncs.
+   * Merging (not replacing) preserves responses set at queue time, e.g. the
+   * textual location description for manual-pin reports. */
   async updateFollowUpResponses(
     id: string,
     responses: Record<string, string>,
@@ -165,7 +168,10 @@ export const reportQueue = {
     const report = await reportQueue.get(id);
     if (!report) return;
     await withStore("readwrite", (store) =>
-      store.put({ ...report, followUpResponses: responses }),
+      store.put({
+        ...report,
+        followUpResponses: { ...(report.followUpResponses ?? {}), ...responses },
+      }),
     );
   },
 

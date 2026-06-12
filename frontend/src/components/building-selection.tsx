@@ -5,11 +5,15 @@ import styles from "./building-selection.module.css";
 interface BuildingSelectionProps {
   building: SelectedBuilding | null;
   manualPin: [number, number] | null;
+  locationDescription?: string;
+  onLocationDescriptionChange?: (value: string) => void;
 }
 
 export const BuildingSelection = ({
   building,
   manualPin,
+  locationDescription,
+  onLocationDescriptionChange,
 }: BuildingSelectionProps) => {
   const { t } = useTranslation();
 
@@ -36,6 +40,25 @@ export const BuildingSelection = ({
             {manualPin[1].toFixed(5)}, {manualPin[0].toFixed(5)}
           </span>
         </div>
+        {onLocationDescriptionChange && (
+          <div className={styles.describeLocation}>
+            <label
+              className={styles.describeLabel}
+              htmlFor="location-description"
+            >
+              {t("location.describeLabel")}
+            </label>
+            <input
+              id="location-description"
+              type="text"
+              className={styles.describeInput}
+              value={locationDescription ?? ""}
+              placeholder={t("location.describePlaceholder")}
+              maxLength={200}
+              onChange={(e) => onLocationDescriptionChange(e.target.value)}
+            />
+          </div>
+        )}
       </div>
     );
   }

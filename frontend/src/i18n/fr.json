@@ -33,6 +33,8 @@
     "selectBuilding": "Appuyez sur un bâtiment sur la carte pour le sélectionner",
     "dropPinHint": "Pas de contour de bâtiment ? Appuyez sur la carte pour placer un repère, puis faites-le glisser pour l'ajuster.",
     "pinPlaced": "Emplacement repéré",
+    "describeLabel": "Décrivez l'emplacement (facultatif)",
+    "describePlaceholder": "Point de repère le plus proche, nom de la rue ou du bâtiment",
     "selectedBuilding": "Bâtiment sélectionné",
     "existingReportsTitle_one": "{{count}} rapport existant",
     "existingReportsTitle_other": "{{count}} rapports existants",

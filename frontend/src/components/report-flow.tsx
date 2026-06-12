@@ -63,6 +63,7 @@ export const ReportFlow = ({
   const [selectedBuilding, setSelectedBuilding] =
     useState<SelectedBuilding | null>(null);
   const [manualPin, setManualPin] = useState<[number, number] | null>(null);
+  const [locationDescription, setLocationDescription] = useState("");
   const [photo, setPhoto] = useState<PhotoResult | null>(null);
   const [damageLevel, setDamageLevel] = useState<DamageLevel | null>(null);
   const [survey, setSurvey] = useState<SurveyData>(EMPTY_SURVEY);
@@ -162,6 +163,7 @@ export const ReportFlow = ({
   const handleManualPin = useCallback((coords: [number, number] | null) => {
     setManualPin(coords);
     if (coords) setSelectedBuilding(null);
+    else setLocationDescription("");
   }, []);
 
   useEffect(() => {
@@ -277,6 +279,10 @@ export const ReportFlow = ({
             : null,
           aiConfidence: aiClassification?.damageConfidence ?? null,
           surveyData: { ...survey },
+          followUpResponses:
+            !selectedBuilding && manualPin && locationDescription.trim()
+              ? { location_description: locationDescription.trim() }
+              : null,
           createdAt: new Date().toISOString(),
         },
         activeCrisisFollowUpQuestions.length > 0
@@ -313,6 +319,7 @@ export const ReportFlow = ({
     setStep("location");
     setSelectedBuilding(null);
     setManualPin(null);
+    setLocationDescription("");
     setPhoto(null);
     setDamageLevel(null);
     setSurvey(EMPTY_SURVEY);
@@ -344,6 +351,8 @@ export const ReportFlow = ({
             <BuildingSelection
               building={selectedBuilding}
               manualPin={manualPin}
+              locationDescription={locationDescription}
+              onLocationDescriptionChange={setLocationDescription}
             />
             <ExistingReports reports={existingReports} />
           </div>
