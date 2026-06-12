@@ -35,6 +35,10 @@ export interface ReportFeature {
     submitted_at: string;
     version_count: number;
     follow_up_responses: Record<string, string> | null;
+    community_damage_level: string;
+    analyst_damage_level: string | null;
+    flag_status: "suspect" | "invalid" | null;
+    flag_reason: string | null;
   };
 }
 
@@ -292,6 +296,15 @@ const DashboardPage = () => {
         <ReportDetailsModal
           report={detailsReport}
           onClose={() => setDetailsReport(null)}
+          onReportUpdated={(updated) => {
+            setReports((prev) =>
+              prev.map((r) => (r.properties.id === updated.properties.id ? updated : r)),
+            );
+            setDetailsReport(updated);
+            setSelectedReport((prev) =>
+              prev?.properties.id === updated.properties.id ? updated : prev,
+            );
+          }}
         />
       )}
     </div>
