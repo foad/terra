@@ -41,6 +41,15 @@ export const syncEngine = {
     running = true;
 
     try {
+      // Legacy migration: clients queued reports as "awaiting-follow-up"
+      // before #51 moved the questions in-flow. Nothing flips that status
+      // anymore, so adopt any stragglers as pending — their answers (or the
+      // user's abandonment) are already final.
+      const stranded = await reportQueue.getByStatus("awaiting-follow-up");
+      for (const report of stranded) {
+        await reportQueue.updateStatus(report.id, "pending");
+      }
+
       const pending = await reportQueue.getByStatus("pending");
       const failed = await reportQueue.getByStatus("failed");
       const retryable = failed.filter((r) => r.retryCount < MAX_RETRIES);
