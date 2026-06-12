@@ -10,6 +10,13 @@ test.describe("Offline map tile caching", () => {
       permissions: ["geolocation"],
     });
 
+    // Stub source.coop so the test doesn't depend on that external service
+    // being reachable. A 200 with empty body is enough for the SW to cache
+    // the response and serve it when offline.
+    await context.route("**source.coop**", (route) =>
+      route.fulfill({ status: 200, body: "" }),
+    );
+
     const page = await context.newPage();
 
     // Collect console errors
