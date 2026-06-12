@@ -114,3 +114,91 @@
   flex-direction: column;
   gap: 4px;
 }
+
+/* --- Analyst review (#169, #170) --- */
+.review {
+  border-top: 1px solid var(--undpds-color-gray-300);
+  padding-top: 12px;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reviewTitle {
+  font-weight: 700;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--undpds-color-gray-700);
+}
+
+.flagBanner {
+  background: var(--undpds-color-red-200);
+  color: var(--undpds-color-black);
+  font-size: 0.8125rem;
+  padding: 6px 10px;
+}
+
+.reviewRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.reviewLabel {
+  font-size: 0.75rem;
+  color: var(--undpds-color-gray-600);
+  min-width: 90px;
+}
+
+.reviewButtons {
+  display: flex;
+  gap: 6px;
+}
+
+.reviewBtn {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--undpds-color-white);
+  color: var(--undpds-color-gray-700);
+  border: 1px solid var(--undpds-color-gray-300);
+  cursor: pointer;
+  text-transform: capitalize;
+}
+
+.reviewBtn:hover:not(:disabled) {
+  background: var(--undpds-color-gray-200);
+}
+
+.reviewBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.reviewBtnActive {
+  background: var(--undpds-color-blue-600, #0469a5);
+  border-color: var(--undpds-color-blue-600, #0469a5);
+  color: var(--undpds-color-white);
+}
+
+.reviewNote {
+  font-size: 0.75rem;
+  color: var(--undpds-color-gray-600);
+}
+
+.reviewLink {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.75rem;
+  color: var(--undpds-color-blue-600, #0469a5);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.reviewError {
+  font-size: 0.75rem;
+  color: var(--undpds-color-red);
+}

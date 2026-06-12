@@ -20,7 +20,7 @@ from src.handlers.crisis_events import (
 )
 from src.handlers.exports import export_reports
 from src.handlers.photos import get_upload_url
-from src.handlers.reports import create_report, query_coverage, query_reports
+from src.handlers.reports import create_report, query_coverage, query_reports, review_report
 
 logger = Logger()
 tracer = Tracer()
@@ -164,6 +164,18 @@ def post_report():
         return create_report(body)
     except ValidationError as e:
         raise BadRequestError(_first_validation_message(e)) from e
+
+
+@app.patch("/reports/<report_id>/review")
+@tracer.capture_method
+def patch_report_review(report_id: str):
+    body = app.current_event.json_body if app.current_event.body else {}
+    try:
+        return review_report(report_id, body)
+    except ValueError as e:
+        if str(e).startswith("No report with id"):
+            raise NotFoundError(str(e)) from e
+        raise BadRequestError(str(e)) from e
 
 
 @app.exception_handler(Exception)
