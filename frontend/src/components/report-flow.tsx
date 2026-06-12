@@ -187,9 +187,16 @@ export const ReportFlow = ({
             follow_up_questions: result?.follow_up_questions ?? [],
           }),
         );
-      } catch {
-        // No connectivity (or no active crisis) — fall back to the last
-        // cached crisis config so offline reporters still get the questions.
+      } catch (err) {
+        // A definitive HTTP response (404 = genuinely no active crisis at
+        // this location) must not fall back to a stale cached crisis from
+        // somewhere else — clear the cache instead.
+        if (err instanceof Error && err.message.startsWith("API error")) {
+          localStorage.removeItem("terra-crisis-config");
+          return;
+        }
+        // True network failure — fall back to the last cached crisis config
+        // so offline reporters still get the configured questions.
         try {
           const cached = localStorage.getItem("terra-crisis-config");
           if (cached) {
