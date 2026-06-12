@@ -9,6 +9,7 @@ import type { PhotoResult } from "./photo-capture";
 import { DamageClassification } from "./damage-classification";
 import type { DamageLevel } from "./damage-classification";
 import { SurveyForm } from "./survey-form";
+import { CrisisQuestionsStep } from "./crisis-questions-step";
 import {
   EMPTY_SURVEY,
   INFRASTRUCTURE_TYPES,
@@ -64,6 +65,7 @@ export const ReportFlow = ({
     useState<SelectedBuilding | null>(null);
   const [manualPin, setManualPin] = useState<[number, number] | null>(null);
   const [locationDescription, setLocationDescription] = useState("");
+  const [followUpAnswers, setFollowUpAnswers] = useState<Record<string, string>>({});
   const [photo, setPhoto] = useState<PhotoResult | null>(null);
   const [damageLevel, setDamageLevel] = useState<DamageLevel | null>(null);
   const [survey, setSurvey] = useState<SurveyData>(EMPTY_SURVEY);
@@ -75,7 +77,6 @@ export const ReportFlow = ({
   const [activeCrisisType, setActiveCrisisType] = useState<string | null>(null);
   const [activeCrisisFollowUpQuestions, setActiveCrisisFollowUpQuestions] =
     useState<FollowUpQuestion[]>([]);
-  const [queuedReportId, setQueuedReportId] = useState<string | null>(null);
   const [activeCrisisName, setActiveCrisisName] = useState<string | null>(null);
   const crisisLookedUpRef = useRef(false);
   const [reportLocation, setReportLocation] = useState<{
@@ -179,8 +180,28 @@ export const ReportFlow = ({
         if (result?.follow_up_questions)
           setActiveCrisisFollowUpQuestions(result.follow_up_questions);
         if (result?.name) setActiveCrisisName(result.name);
+        localStorage.setItem(
+          "terra-crisis-config",
+          JSON.stringify({
+            crisis_type: result?.crisis_type ?? null,
+            follow_up_questions: result?.follow_up_questions ?? [],
+          }),
+        );
       } catch {
-        // No active crisis at this location, or network error — silent drop.
+        // No connectivity (or no active crisis) — fall back to the last
+        // cached crisis config so offline reporters still get the questions.
+        try {
+          const cached = localStorage.getItem("terra-crisis-config");
+          if (cached) {
+            const config = JSON.parse(cached);
+            if (config.crisis_type) setActiveCrisisType(config.crisis_type);
+            if (Array.isArray(config.follow_up_questions)) {
+              setActiveCrisisFollowUpQuestions(config.follow_up_questions);
+            }
+          }
+        } catch {
+          // Corrupt cache — ignore.
+        }
       }
     })();
   }, [latitude, longitude]);
@@ -248,6 +269,19 @@ export const ReportFlow = ({
     setStep("survey");
   };
 
+  const buildFollowUpResponses = (): Record<string, string> | null => {
+    const responses: Record<string, string> = {};
+    for (const [id, answer] of Object.entries(followUpAnswers)) {
+      const trimmed = answer.trim();
+      // An "Other:" selection with no text entered is not an answer.
+      if (trimmed && trimmed !== "Other:") responses[id] = trimmed;
+    }
+    if (!selectedBuilding && manualPin && locationDescription.trim()) {
+      responses.location_description = locationDescription.trim();
+    }
+    return Object.keys(responses).length > 0 ? responses : null;
+  };
+
   const handleSubmit = async () => {
     const reportLat = selectedBuilding?.center[1] ?? manualPin?.[1] ?? latitude;
     const reportLng =
@@ -258,7 +292,7 @@ export const ReportFlow = ({
     setSubmitError(null);
 
     try {
-      const queued = await reportQueue.add(
+      await reportQueue.add(
         {
           id: crypto.randomUUID(),
           photo: photo?.blob ? await photo.blob.arrayBuffer() : null,
@@ -279,47 +313,31 @@ export const ReportFlow = ({
             : null,
           aiConfidence: aiClassification?.damageConfidence ?? null,
           surveyData: { ...survey },
-          followUpResponses:
-            !selectedBuilding && manualPin && locationDescription.trim()
-              ? { location_description: locationDescription.trim() }
-              : null,
+          followUpResponses: buildFollowUpResponses(),
           createdAt: new Date().toISOString(),
         },
-        activeCrisisFollowUpQuestions.length > 0
-          ? "awaiting-follow-up"
-          : "pending",
+        "pending",
       );
 
       saveSurveyPrefs(reportLat, reportLng, survey);
-      setQueuedReportId(queued.id);
       setReportLocation({ lat: reportLat, lng: reportLng });
-      // When follow-up questions are present the report is queued as
-      // "awaiting-follow-up" so the sync engine won't drain it before the user
-      // has had a chance to answer. handleFollowUpComplete flips it to "pending".
+      syncEngine.processQueue();
       setStep("confirmation");
     } catch (err) {
       setSubmitError(
         err instanceof Error ? err.message : "Failed to queue report",
       );
       setStep("survey");
-      setSurveyStep(SURVEY_STEP_COUNT - 1);
+      setSurveyStep(totalSurveySteps - 1);
     }
   };
 
-  const handleFollowUpComplete = async (
-    responses: Record<string, string> | null,
-  ) => {
-    if (queuedReportId) {
-      if (responses && Object.keys(responses).length > 0) {
-        await reportQueue.updateFollowUpResponses(queuedReportId, responses);
-      }
-      await reportQueue.updateStatus(queuedReportId, "pending");
-    }
-    syncEngine.processQueue();
+  const handleFollowUpComplete = async () => {
     setStep("location");
     setSelectedBuilding(null);
     setManualPin(null);
     setLocationDescription("");
+    setFollowUpAnswers({});
     setPhoto(null);
     setDamageLevel(null);
     setSurvey(EMPTY_SURVEY);
@@ -329,12 +347,15 @@ export const ReportFlow = ({
     setReportLocation(null);
     classifiedKeyRef.current = null;
     setPreSeeded({});
-    setQueuedReportId(null);
+
   };
 
   const hasLocation = selectedBuilding !== null || manualPin !== null;
 
-  const isLastSurveyStep = surveyStep === SURVEY_STEP_COUNT - 1;
+  // Crisis-configured questions render as one extra survey step (#51).
+  const hasCrisisQuestions = activeCrisisFollowUpQuestions.length > 0;
+  const totalSurveySteps = SURVEY_STEP_COUNT + (hasCrisisQuestions ? 1 : 0);
+  const isLastSurveyStep = surveyStep === totalSurveySteps - 1;
 
   if (step === "location") {
     return (
@@ -439,7 +460,10 @@ export const ReportFlow = ({
   }
 
   if (step === "survey" || step === "submitting") {
-    const canAdvance = isSurveyStepComplete(surveyStep, survey);
+    // The crisis-questions step is optional by design — the core report is
+    // never blocked on configured extras.
+    const canAdvance =
+      surveyStep >= SURVEY_STEP_COUNT || isSurveyStepComplete(surveyStep, survey);
     const isSubmitting = step === "submitting";
 
     const handleNext = () => {
@@ -473,18 +497,26 @@ export const ReportFlow = ({
           <span className={styles.stepTitle}>
             {t("survey.title", {
               current: surveyStep + 1,
-              total: SURVEY_STEP_COUNT,
+              total: totalSurveySteps,
             })}
           </span>
         </div>
-        <SurveyForm
-          step={surveyStep}
-          value={survey}
-          onChange={setSurvey}
-          aiInfrastructure={aiInfraSuggestion}
-          aiInfrastructureConfidence={aiInfraConfidence}
-          preSeeded={preSeeded}
-        />
+        {surveyStep < SURVEY_STEP_COUNT ? (
+          <SurveyForm
+            step={surveyStep}
+            value={survey}
+            onChange={setSurvey}
+            aiInfrastructure={aiInfraSuggestion}
+            aiInfrastructureConfidence={aiInfraConfidence}
+            preSeeded={preSeeded}
+          />
+        ) : (
+          <CrisisQuestionsStep
+            questions={activeCrisisFollowUpQuestions}
+            responses={followUpAnswers}
+            onChange={setFollowUpAnswers}
+          />
+        )}
         {submitError && <div className={styles.submitError}>{submitError}</div>}
         <div className={styles.actions}>
           <a
@@ -512,7 +544,7 @@ export const ReportFlow = ({
       <div className={styles.step} data-testid="step-confirmation">
         <SubmissionConfirmation
           isOnline={navigator.onLine}
-          followUpQuestions={activeCrisisFollowUpQuestions}
+          followUpQuestions={[]}
           onComplete={handleFollowUpComplete}
           infrastructureKeys={infraKeys}
           reportLat={reportLocation?.lat ?? null}
