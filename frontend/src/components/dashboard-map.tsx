@@ -545,7 +545,14 @@ export const DashboardMap = ({
 
   const handleStartDraw = () => {
     const map = mapRef.current;
-    if (!map || !map.isStyleLoaded()) return;
+    if (!map || drawRef.current) return;
+    if (!map.isStyleLoaded()) {
+      // The style reports not-loaded whenever basemap tiles are still
+      // streaming in (seconds at a time on slow connections) — engage once
+      // the map settles instead of silently dropping the click.
+      map.once("idle", handleStartDraw);
+      return;
+    }
 
     const draw = new TerraDraw({
       adapter: new TerraDrawMapLibreGLAdapter({ map }),
