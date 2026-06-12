@@ -62,7 +62,28 @@ export const TimeSlider = ({ reports, filteredCount, onChange }: Props) => {
   // both thumbs cross the midpoint.
   const [lastTouched, setLastTouched] = useState<"from" | "to">("to");
 
-  if (bars.length === 0) return null;
+  if (bars.length === 0) {
+    return (
+      <div className={styles.slider} style={{ opacity: 0.45, pointerEvents: "none" }}>
+        <div className={styles.histogram}>
+          {Array.from({ length: BUCKETS }, (_, i) => (
+            <div key={i} className={styles.bar} style={{ height: "4px" }} />
+          ))}
+        </div>
+        <div className={styles.track}>
+          <div className={styles.trackBg} />
+          <div className={styles.trackFill} style={{ left: "0%", right: "0%" }} />
+          <input type="range" min={0} max={STEPS} value={0} className={styles.rangeInput} onChange={() => {}} disabled />
+          <input type="range" min={0} max={STEPS} value={STEPS} className={styles.rangeInput} onChange={() => {}} disabled />
+        </div>
+        <div className={styles.labels}>
+          <span className={styles.label}>—</span>
+          <span className={styles.center}><span className={styles.hint}>no reports yet</span></span>
+          <span className={styles.label}>—</span>
+        </div>
+      </div>
+    );
+  }
 
   const span = maxMs - paddedMin;
   const fromMs = paddedMin + (fromVal / STEPS) * span;
