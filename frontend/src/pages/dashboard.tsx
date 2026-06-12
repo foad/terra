@@ -106,22 +106,26 @@ const DashboardPage = () => {
       if (filters.to) params.set("to", filters.to);
       params.set("limit", "1000");
 
-      let allFeatures: ReportFeature[] = [];
-      let offset = 0;
-      let totalCount = 0;
-      while (true) {
-        params.set("offset", String(offset));
-        const data = await api(`/reports?${params.toString()}`);
-        allFeatures = allFeatures.concat(data.features);
-        totalCount = data.total;
-        if (allFeatures.length >= totalCount) break;
-        offset = allFeatures.length;
-      }
-
-      if (!cancelled) {
-        setReports(allFeatures);
-        setTotal(totalCount);
-        setLoading(false);
+      try {
+        let allFeatures: ReportFeature[] = [];
+        let offset = 0;
+        let totalCount = 0;
+        while (true) {
+          params.set("offset", String(offset));
+          const data = await api(`/reports?${params.toString()}`);
+          allFeatures = allFeatures.concat(data.features);
+          totalCount = data.total;
+          if (allFeatures.length >= totalCount) break;
+          offset = allFeatures.length;
+        }
+        if (!cancelled) {
+          setReports(allFeatures);
+          setTotal(totalCount);
+        }
+      } catch {
+        // API unreachable (e.g. CORS in local dev) — show empty dashboard
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => {
