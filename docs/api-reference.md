@@ -2,6 +2,24 @@
 
 Base URL: `https://<api-gateway-id>.execute-api.eu-west-2.amazonaws.com`
 
+## Authentication
+
+Analyst / admin endpoints require a Cognito JWT in the `Authorization: Bearer <access_token>` header. The API Gateway HTTP API JWT authorizer validates the token before invoking the Lambda, a missing or invalid token returns `401` from the gateway.
+
+| Endpoint | Auth |
+|---|---|
+| `GET /health` | public |
+| `POST /reports` | public |
+| `POST /photos/upload` | public |
+| `POST /photos/classify` | public |
+| `GET /crisis-events/active` | public |
+| `GET /reports` | **Bearer** |
+| `GET /reports/export` | **Bearer** |
+| `GET /crisis-events` | **Bearer** |
+| `POST /crisis-events` | **Bearer** |
+| `PUT /crisis-events/{event_id}` | **Bearer** |
+| `DELETE /crisis-events/{event_id}` | **Bearer** |
+
 ## GET /health
 
 Health check endpoint.
