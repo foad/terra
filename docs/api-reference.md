@@ -20,7 +20,15 @@ Generate a presigned S3 URL for photo upload. Call this before submitting a repo
 
 **Request**
 
-Empty body.
+```json
+{
+  "content_type": "image/jpeg"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `content_type` | string | no | `image/jpeg` (default), `image/png`, or `image/webp`. Unknown values fall back to JPEG. |
 
 **Response**
 
@@ -131,7 +139,8 @@ List all crisis events that have a `region` polygon, active and inactive. Used b
       "name": "Kent Floods 2026",
       "crisis_type": "Flood",
       "region": { "type": "Polygon", "coordinates": [[[0, 50], ...]] },
-      "is_active": true
+      "is_active": true,
+      "follow_up_questions": []
     }
   ]
 }
@@ -148,11 +157,21 @@ Create a crisis event.
   "name": "Kent Floods 2026",
   "crisis_type": "Flood",
   "is_active": true,
-  "region": { "type": "Polygon", "coordinates": [[[0, 50], ...]] }
+  "region": { "type": "Polygon", "coordinates": [[[0, 50], ...]] },
+  "follow_up_questions": [
+    {
+      "id": "shelter-need",
+      "question": "Do you need temporary shelter?",
+      "options": ["Yes", "No", "Unsure"],
+      "allow_other": false
+    }
+  ]
 }
 ```
 
 `crisis_type` must be one of: `Earthquake`, `Flood`, `Tsunami`, `Hurricane/Cyclone`, `Wildfire`, `Explosion`, `Chemical incident`, `Conflict`, `Civil unrest`. `region` must be a GeoJSON Polygon.
+
+`follow_up_questions` is optional, max 3 entries. Each: `id` (<=100 chars), `question` (<=300 chars), `options` (2–10 strings, each <=200 chars), `allow_other` (boolean).
 
 **Response**: `{ "id": "<uuid>" }`
 
@@ -166,7 +185,7 @@ Hard-delete. 404 if the id is unknown.
 
 ## GET /crisis-events/active
 
-Return the active crisis event whose `region_bbox` contains the given point. Used by the PWA to pre-fill the survey's crisis nature field. 404 if no active event covers the point.
+Return the active crisis event whose `region` polygon contains the given point. Used by the PWA to pre-fill the survey's crisis nature field and surface any crisis-specific follow-up questions. 404 if no active event covers the point.
 
 **Query Parameters**
 
@@ -181,7 +200,8 @@ Return the active crisis event whose `region_bbox` contains the given point. Use
 {
   "id": "59a7cb76-...",
   "name": "Kent Floods 2026",
-  "crisis_type": "Flood"
+  "crisis_type": "Flood",
+  "follow_up_questions": []
 }
 ```
 
@@ -199,6 +219,7 @@ Query reports. Returns a GeoJSON FeatureCollection.
 | `h3` | string | H3 R8 cell filter |
 | `damage_level` | string | Comma-separated: `minimal`, `partial`, `complete` |
 | `infrastructure_type` | string | Pipe-separated infrastructure types (values contain commas) |
+| `crisis_nature` | string | Pipe-separated crisis types |
 | `from` | string | ISO datetime, reports submitted after |
 | `to` | string | ISO datetime, reports submitted before |
 | `building_id` | string | Building ID — returns all versions, not just latest |
@@ -224,10 +245,24 @@ GET /reports?west=36.1&south=36.1&east=36.3&north=36.3&damage_level=partial,comp
         "id": "59a7cb76-...",
         "building_id": "u10k7d2q",
         "damage_level": "partial",
+        "ai_damage_level": "partial",
+        "ai_infrastructure_type": ["residential"],
+        "ai_confidence": 0.85,
+        "photo_url": "https://terra-photos-*.s3.amazonaws.com/uploads/...?X-Amz-...",
+        "thumbnail_url": "https://terra-photos-*.s3.amazonaws.com/thumbnails/...?X-Amz-...",
         "infrastructure_type": ["Residential Infrastructure (Houses and apartments)"],
-        "submitted_at": "2026-04-17T15:35:47+00:00",
+        "infrastructure_description": "South wall collapsed, roof intact",
+        "crisis_nature": ["Earthquake"],
+        "debris_present": true,
+        "electricity_status": "Severe damage (major infrastructure damaged, prolonged outages)",
+        "health_status": "Partially functional",
+        "pressing_needs": ["Food assistance and safe drinking water"],
         "version_chain_id": "a34b724b-...",
         "is_latest": true,
+        "submitted_at": "2026-04-17T15:35:47+00:00",
+        "duplicate_status": null,
+        "related_report_id": null,
+        "follow_up_responses": null,
         "version_count": 1
       }
     }
@@ -236,7 +271,7 @@ GET /reports?west=36.1&south=36.1&east=36.3&north=36.3&damage_level=partial,comp
 }
 ```
 
-When `building_id` is provided, all versions for that building are returned (not just `is_latest`), ordered by `submitted_at` descending.
+`photo_url` and `thumbnail_url` are 1-hour presigned URLs generated per request. When `building_id` is provided, all versions for that building are returned (not just `is_latest`), ordered by `submitted_at` descending.
 
 ## POST /reports
 
@@ -265,6 +300,7 @@ Submit a damage assessment report.
 | `pressing_needs_other` | string | no | Free text when "Other" selected |
 | `device_id` | string | no | Anonymous device identifier |
 | `offline_queue_id` | string | no | Client-generated ID for offline dedup |
+| `follow_up_responses` | object | no | JSON map of `{ question_id: answer }` for crisis-specific follow-up questions |
 
 **Example request**
 
@@ -291,9 +327,13 @@ Submit a damage assessment report.
   "id": "59a7cb76-0b9f-4f45-a91d-e237a3760a31",
   "status": "created",
   "area_report_count": 12,
-  "version_chain_id": "a34b724b-c715-4e37-a81c-8b5ca7ef4d25"
+  "version_chain_id": "a34b724b-c715-4e37-a81c-8b5ca7ef4d25",
+  "duplicate_status": null,
+  "related_report_id": null
 }
 ```
+
+`duplicate_status` is one of `null`, `"possible_duplicate"` (another report exists within 15 m and 2 min), or `"reassessment"` (an earlier report exists for the same `building_id`). `related_report_id` references the matched earlier report when `duplicate_status` is non-null.
 
 **Response (duplicate)**
 
