@@ -105,8 +105,8 @@ export const Map = ({
             minzoom: 14,
             paint: {
               "fill-color": "#bfdbfe",
-              "fill-opacity": 0.45,
-              "fill-outline-color": "#93c5fd",
+              "fill-opacity": 0.65,
+              "fill-outline-color": "#5fa8fc",
             },
           },
         ],
