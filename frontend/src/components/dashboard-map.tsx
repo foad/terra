@@ -47,6 +47,7 @@ export const DashboardMap = ({
   const hasFittedRef = useRef(false);
   const mapLoadedRef = useRef(false);
   const [mapMode, setMapMode] = useState<MapMode>("clusters");
+  const [basemap, setBasemap] = useState<"street" | "satellite">("street");
 
   useEffect(() => {
     onReportSelectRef.current = onReportSelect;
@@ -74,6 +75,15 @@ export const DashboardMap = ({
             attribution:
               '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
           },
+          "esri-satellite": {
+            type: "raster",
+            tiles: [
+              "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+            ],
+            tileSize: 256,
+            attribution:
+              "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community",
+          },
           buildings: {
             type: "vector",
             url: `pmtiles://${VIDA_BUILDINGS_URL}`,
@@ -84,6 +94,12 @@ export const DashboardMap = ({
             id: "osm-basemap",
             type: "raster",
             source: "osm",
+          },
+          {
+            id: "esri-basemap",
+            type: "raster",
+            source: "esri-satellite",
+            layout: { visibility: "none" },
           },
           {
             id: "building-footprints",
@@ -543,6 +559,21 @@ export const DashboardMap = ({
     );
   }, [mapMode]);
 
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapLoadedRef.current) return;
+    map.setLayoutProperty(
+      "osm-basemap",
+      "visibility",
+      basemap === "street" ? "visible" : "none",
+    );
+    map.setLayoutProperty(
+      "esri-basemap",
+      "visibility",
+      basemap === "satellite" ? "visible" : "none",
+    );
+  }, [basemap]);
+
   return (
     <div className={styles.wrapper}>
       <div ref={containerRef} className={styles.container} />
@@ -599,6 +630,22 @@ export const DashboardMap = ({
         )}
       </div>
 
+      <div className={styles.basemapToggle}>
+        {(["street", "satellite"] as const).map((mode) => (
+          <button
+            key={mode}
+            type="button"
+            className={`${styles.basemapBtn} ${basemap === mode ? styles.basemapBtnActive : ""}`}
+            onClick={() => setBasemap(mode)}
+          >
+            {t(
+              mode === "street"
+                ? "dashboard.basemapStreet"
+                : "dashboard.basemapSatellite",
+            )}
+          </button>
+        ))}
+      </div>
       <div
         ref={tooltipRef}
         className={styles.tooltip}
