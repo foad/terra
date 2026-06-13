@@ -51,6 +51,83 @@
   background: var(--undpds-color-blue-600, #0469a5);
 }
 
+/* --- Layers panel --- */
+.layersPanel {
+  position: absolute;
+  top: var(--undpds-spacing-04);
+  right: var(--undpds-spacing-10);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 4px;
+  padding: 8px 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  font-size: 0.75rem;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 130px;
+}
+
+.layersPanelTitle {
+  font-weight: 700;
+  color: var(--undpds-color-gray-700);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+
+.layerItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--undpds-color-gray-700);
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+/* --- Basemap toggle --- */
+.basemapToggle {
+  position: absolute;
+  bottom: 30px;
+  right: 10px;
+  display: flex;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  z-index: 1;
+}
+
+.basemapBtn {
+  padding: 5px 11px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #fff;
+  color: var(--undpds-color-gray-700);
+  border: none;
+  cursor: pointer;
+  border-right: 1px solid #e5e7eb;
+  letter-spacing: 0.02em;
+  transition: background 0.1s;
+}
+
+.basemapBtn:last-child {
+  border-right: none;
+}
+
+.basemapBtn:hover {
+  background: #f3f4f6;
+}
+
+.basemapBtnActive {
+  background: var(--undpds-color-blue-600, #0469a5);
+  color: #fff;
+}
+
+.basemapBtnActive:hover {
+  background: var(--undpds-color-blue-600, #0469a5);
+}
+
 /* --- Legend --- */
 .legend {
   position: absolute;

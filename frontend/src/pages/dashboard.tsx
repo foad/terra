@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { AppBar } from "../components/app-bar";
 import { DashboardMap } from "../components/dashboard-map";
 import { DAMAGE_COLORS } from "../components/damage-colors";
 import { DashboardSidebar } from "../components/dashboard-sidebar";
 import { ReportDetailsModal } from "../components/report-details-modal";
-import { api } from "../utils/api";
+import { useApi } from "../hooks/use-api";
 import styles from "./dashboard.module.css";
 
 export interface ReportFeature {
@@ -56,8 +57,8 @@ const EMPTY_FILTERS: Filters = {
 
 const DashboardPage = () => {
   const { t } = useTranslation();
+  const api = useApi();
   const [reports, setReports] = useState<ReportFeature[]>([]);
-  const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [selectedReport, setSelectedReport] = useState<ReportFeature | null>(
     null,
@@ -115,14 +116,13 @@ const DashboardPage = () => {
 
       if (!cancelled) {
         setReports(allFeatures);
-        setTotal(totalCount);
         setLoading(false);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [filters]);
+  }, [filters, api]);
 
   useEffect(() => {
     const buildingId = selectedReport?.properties.building_id;
@@ -144,38 +144,53 @@ const DashboardPage = () => {
     return () => {
       cancelled = true;
     };
-  }, [selectedReport?.properties.building_id]);
+  }, [selectedReport?.properties.building_id, api]);
 
   return (
     <div className={styles.container}>
-      <header className={styles.header}>
-        <div className={styles.headerInner}>
-          <h1 className={styles.title}>TERRA</h1>
-          <span className={styles.subtitle}>Dashboard</span>
-          <span className={styles.reportCount}>
-            {loading ? "Loading..." : `${total} reports`}
-          </span>
-        </div>
-      </header>
+      <AppBar subtitle="Dashboard" />
       <div className={styles.statsBar}>
         <div className={styles.statItem}>
-          <span className={styles.statDot} style={{ background: DAMAGE_COLORS.complete }} />
-          <span className={styles.statValue}>{loading ? "—" : stats.complete}</span>
-          <span className={styles.statLabel}>{t("dashboard.levelComplete")}</span>
+          <span
+            className={styles.statDot}
+            style={{ background: DAMAGE_COLORS.complete }}
+          />
+          <span className={styles.statValue}>
+            {loading ? "—" : stats.complete}
+          </span>
+          <span className={styles.statLabel}>
+            {t("dashboard.levelComplete")}
+          </span>
         </div>
         <div className={styles.statItem}>
-          <span className={styles.statDot} style={{ background: DAMAGE_COLORS.partial }} />
-          <span className={styles.statValue}>{loading ? "—" : stats.partial}</span>
-          <span className={styles.statLabel}>{t("dashboard.levelPartial")}</span>
+          <span
+            className={styles.statDot}
+            style={{ background: DAMAGE_COLORS.partial }}
+          />
+          <span className={styles.statValue}>
+            {loading ? "—" : stats.partial}
+          </span>
+          <span className={styles.statLabel}>
+            {t("dashboard.levelPartial")}
+          </span>
         </div>
         <div className={styles.statItem}>
-          <span className={styles.statDot} style={{ background: DAMAGE_COLORS.minimal }} />
-          <span className={styles.statValue}>{loading ? "—" : stats.minimal}</span>
-          <span className={styles.statLabel}>{t("dashboard.levelMinimal")}</span>
+          <span
+            className={styles.statDot}
+            style={{ background: DAMAGE_COLORS.minimal }}
+          />
+          <span className={styles.statValue}>
+            {loading ? "—" : stats.minimal}
+          </span>
+          <span className={styles.statLabel}>
+            {t("dashboard.levelMinimal")}
+          </span>
         </div>
         <div className={styles.statDivider} />
         <div className={styles.statItem}>
-          <span className={styles.statValue}>{loading ? "—" : stats.last24h}</span>
+          <span className={styles.statValue}>
+            {loading ? "—" : stats.last24h}
+          </span>
           <span className={styles.statLabel}>{t("dashboard.last24h")}</span>
         </div>
       </div>

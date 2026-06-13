@@ -7,7 +7,12 @@
     "syncing": "Synchronisation de {{count}} rapport...",
     "syncing_plural": "Synchronisation de {{count}} rapports...",
     "syncFailed": "{{count}} rapport n'a pas pu être synchronisé.",
-    "syncFailed_plural": "{{count}} rapports n'ont pas pu être synchronisés."
+    "syncFailed_plural": "{{count}} rapports n'ont pas pu être synchronisés.",
+    "failedPanelTitle": "Rapports échoués",
+    "failedPanelRetry": "Réessayer",
+    "failedPanelDiscard": "Supprimer",
+    "failedPanelRetryAll": "Tout réessayer",
+    "failedPanelEmpty": "Aucun rapport échoué"
   },
   "common": {
     "next": "Suivant",
@@ -127,6 +132,10 @@
     "queued": "Rapport en file d'attente",
     "submittedMessage": "Merci pour votre rapport. Votre contribution aide les équipes d'intervention à prioriser les efforts de rétablissement dans votre région.",
     "queuedMessage": "Votre rapport a été enregistré et sera soumis automatiquement lorsque la connectivité sera rétablie.",
+    "shareButton": "Partager avec vos voisins",
+    "shareTitle": "Aidez à évaluer les dommages dans votre zone",
+    "shareText": "Je viens de soumettre un rapport de dommages. Aidez-nous en soumettant le vôtre — cela prend moins de 2 minutes.",
+    "shareTextWithCrisis": "Je viens de soumettre un rapport de dommages pour {{crisisName}}. Aidez-nous en soumettant le vôtre — cela prend moins de 2 minutes.",
     "submitAnother": "Soumettre un autre rapport",
     "followUpHeading": "Une question rapide pendant que vous êtes là :",
     "followUpHeading_plural": "{{count}} questions rapides pendant que vous êtes là :",
@@ -160,6 +169,8 @@
     "submitted": "Soumis le",
     "versions": "{{count}} rapport(s) pour cet emplacement",
     "locationLabel": "Emplacement",
+    "basemapStreet": "Carte",
+    "basemapSatellite": "Satellite",
     "mapModeClusters": "Marqueurs",
     "mapModeHeatmap": "Carte de chaleur",
     "mapModeBoth": "Les deux",
@@ -170,7 +181,10 @@
     "legendSeverity": "Intensité de sévérité",
     "legendLow": "Faible",
     "legendHigh": "Élevé",
-    "last24h": "dans les 24 dernières h"
+    "last24h": "dans les 24 dernières h",
+    "layersPanel": "Couches",
+    "layerBuildings": "Bâtiments",
+    "layerCrisis": "Zone de crise"
   },
   "coverage": {
     "unassessed_one": "{{count}} bâtiment proche non encore évalué",

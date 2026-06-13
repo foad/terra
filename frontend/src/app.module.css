@@ -5,6 +5,25 @@
   font-size: 0.8125rem;
 }
 
+.errorBannerBtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 16px;
+  background: var(--undpds-color-red-200);
+  color: var(--undpds-color-black);
+  font-size: 0.8125rem;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.errorBannerCaret {
+  font-size: 1rem;
+  line-height: 1;
+}
+
 .warningBanner {
   padding: 8px 16px;
   background: var(--undpds-color-yellow-200);

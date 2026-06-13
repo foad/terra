@@ -126,28 +126,26 @@ export const Map = ({
       // Damage-level fill driven by feature-state set from /reports bbox fetch.
       // minzoom 16: buildings are too small to read fills at lower zoom.
       // Outline is left at default for now — reserved for analyst priority flag (#46).
-      map.addLayer(
-        {
-          id: "building-damage",
-          type: "fill",
-          source: "buildings",
-          "source-layer": BUILDINGS_SOURCE_LAYER,
-          minzoom: 16,
-          paint: {
-            "fill-color": [
-              "case",
-              ["==", ["feature-state", "damage_level"], "minimal"],
-              "#86efac",
-              ["==", ["feature-state", "damage_level"], "partial"],
-              "#fde68a",
-              ["==", ["feature-state", "damage_level"], "complete"],
-              "#fca5a5",
-              "transparent",
-            ],
-            "fill-opacity": 0.7,
-          },
+      map.addLayer({
+        id: "building-damage",
+        type: "fill",
+        source: "buildings",
+        "source-layer": BUILDINGS_SOURCE_LAYER,
+        minzoom: 16,
+        paint: {
+          "fill-color": [
+            "case",
+            ["==", ["feature-state", "damage_level"], "minimal"],
+            "#86efac",
+            ["==", ["feature-state", "damage_level"], "partial"],
+            "#fde68a",
+            ["==", ["feature-state", "damage_level"], "complete"],
+            "#fca5a5",
+            "transparent",
+          ],
+          "fill-opacity": 0.7,
         },
-      );
+      });
 
       // Selection highlight layer (GeoJSON source, populated on click)
       map.addSource("selected-building", {
@@ -280,11 +278,18 @@ export const Map = ({
           if (!bid || !dl || seen.has(bid)) continue;
           seen.add(bid);
           map.setFeatureState(
-            { source: "buildings", sourceLayer: BUILDINGS_SOURCE_LAYER, id: bid },
+            {
+              source: "buildings",
+              sourceLayer: BUILDINGS_SOURCE_LAYER,
+              id: bid,
+            },
             { damage_level: dl },
           );
         }
-        setCoverageCount((prev) => ({ total: prev?.total ?? 0, assessed: seen.size }));
+        setCoverageCount((prev) => ({
+          total: prev?.total ?? 0,
+          assessed: seen.size,
+        }));
       } catch {
         // Silent — coverage layer is best-effort
       }
@@ -309,7 +314,9 @@ export const Map = ({
           layers: [BUILDINGS_LAYER],
         });
         const unique = new Set(
-          rendered.map((f) => f.properties?.geohash as string | undefined).filter(Boolean),
+          rendered
+            .map((f) => f.properties?.geohash as string | undefined)
+            .filter(Boolean),
         );
         setCoverageCount((prev) =>
           prev ? { ...prev, total: unique.size } : null,
@@ -328,6 +335,45 @@ export const Map = ({
       markerRef.current = null;
       pinMarkerRef.current = null;
       hasCenteredRef.current = false;
+    };
+  }, []);
+
+  // Fit the initial view to the active crisis zone(s) instead of the world
+  // view, so QR/demo links land directly on the affected area (#195). A
+  // geolocation fix takes precedence: it recentres on the user when it
+  // arrives, and once it has, the crisis fit is skipped.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await api("/crisis-events");
+        if (cancelled || hasCenteredRef.current) return;
+        const active = (data?.events ?? []).filter(
+          (e: { is_active: boolean }) => e.is_active,
+        );
+        if (active.length === 0) return;
+        const bounds = new maplibregl.LngLatBounds();
+        const extend = (coords: unknown) => {
+          if (!Array.isArray(coords)) return;
+          if (typeof coords[0] === "number") {
+            bounds.extend(coords as [number, number]);
+          } else {
+            for (const c of coords) extend(c);
+          }
+        };
+        for (const e of active) extend(e.region?.coordinates);
+        if (!bounds.isEmpty() && !hasCenteredRef.current) {
+          map.fitBounds(bounds, { padding: 60, animate: false });
+        }
+      } catch {
+        // No crisis info available — keep the default view until the
+        // geolocation fix arrives.
+      }
+    })();
+    return () => {
+      cancelled = true;
     };
   }, []);
 
