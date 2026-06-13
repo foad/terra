@@ -1,0 +1,89 @@
+.container {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--undpds-color-gray-100);
+  padding: 24px;
+  gap: 24px;
+}
+
+.brand {
+  text-align: center;
+  color: var(--undpds-color-blue-600);
+}
+
+.brandTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin: 0;
+  line-height: 1;
+}
+
+.brandSubtitle {
+  font-size: 0.8125rem;
+  margin-top: 6px;
+  color: var(--undpds-color-gray-600);
+}
+
+.card {
+  background: var(--undpds-color-white);
+  border-top: 4px solid var(--undpds-color-red);
+  max-width: 400px;
+  width: 100%;
+  padding: 28px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.cardTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+
+.cardBody {
+  margin: 0 0 24px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--undpds-color-gray-700);
+}
+
+.email {
+  font-weight: 600;
+  color: var(--undpds-color-black);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.primary {
+  background: var(--undpds-color-blue-600);
+  color: var(--undpds-color-white);
+  border: none;
+  padding: 10px 16px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primary:hover {
+  filter: brightness(0.95);
+}
+
+.secondary {
+  background: transparent;
+  color: var(--undpds-color-gray-700);
+  border: 1px solid var(--undpds-color-gray-400);
+  padding: 10px 16px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.secondary:hover {
+  background: var(--undpds-color-gray-200);
+}
