@@ -86,6 +86,7 @@ export function ActivationKitModal({ crisis, onClose }: Props) {
   const url = window.location.origin;
   const templates = whatsappTemplate(crisis.name, url);
   const [activeLang, setActiveLang] = useState<Lang>("EN");
+  const [printBlocked, setPrintBlocked] = useState(false);
   const qrRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = () => {
@@ -203,6 +204,9 @@ export function ActivationKitModal({ crisis, onClose }: Props) {
     if (win) {
       win.document.write(html);
       win.document.close();
+      setPrintBlocked(false);
+    } else {
+      setPrintBlocked(true);
     }
   };
 
@@ -266,6 +270,11 @@ export function ActivationKitModal({ crisis, onClose }: Props) {
         </div>
 
         <div className={styles.printRow}>
+          {printBlocked && (
+            <span className={styles.printError} role="alert">
+              Popup blocked. Allow popups for this site, then try again.
+            </span>
+          )}
           <button
             type="button"
             className={styles.printButton}

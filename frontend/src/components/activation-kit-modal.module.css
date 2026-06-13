@@ -162,9 +162,18 @@
 
 .printRow {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: var(--undpds-spacing-03);
   padding-top: var(--undpds-spacing-03);
   border-top: 1px solid var(--undpds-color-gray-200);
+}
+
+.printError {
+  flex: 1;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--undpds-color-red-600, #b91c1c);
 }
 
 .printButton {
