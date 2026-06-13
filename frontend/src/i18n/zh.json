@@ -7,7 +7,12 @@
     "syncing": "正在同步 {{count}} 份报告...",
     "syncing_plural": "正在同步 {{count}} 份报告...",
     "syncFailed": "{{count}} 份报告同步失败。",
-    "syncFailed_plural": "{{count}} 份报告同步失败。"
+    "syncFailed_plural": "{{count}} 份报告同步失败。",
+    "failedPanelTitle": "失败的报告",
+    "failedPanelRetry": "重试",
+    "failedPanelDiscard": "丢弃",
+    "failedPanelRetryAll": "全部重试",
+    "failedPanelEmpty": "没有失败的报告"
   },
   "common": {
     "next": "下一步",
@@ -125,6 +130,10 @@
     "queued": "报告已排队",
     "submittedMessage": "感谢您的报告。您的提交正在帮助响应团队确定您所在地区的恢复工作优先级。",
     "queuedMessage": "您的报告已保存，将在恢复连接后自动提交。",
+    "shareButton": "与邻居分享",
+    "shareTitle": "帮助评估您所在地区的损失",
+    "shareText": "我刚刚提交了一份损失报告。请通过提交您的报告来提供帮助——只需不到2分钟。",
+    "shareTextWithCrisis": "我刚刚为{{crisisName}}提交了一份损失报告。请通过提交您的报告来提供帮助——只需不到2分钟。",
     "submitAnother": "提交另一份报告",
     "followUpHeading": "您在这里时有一个快速问题：",
     "followUpHeading_plural": "您在这里时有 {{count}} 个快速问题：",
@@ -156,6 +165,8 @@
     "submitted": "提交时间",
     "versions": "此位置有 {{count}} 份报告",
     "locationLabel": "位置",
+    "basemapStreet": "地图",
+    "basemapSatellite": "卫星",
     "mapModeClusters": "标记",
     "mapModeHeatmap": "热力图",
     "mapModeBoth": "两者",
@@ -166,7 +177,10 @@
     "legendSeverity": "严重程度强度",
     "legendLow": "低",
     "legendHigh": "高",
-    "last24h": "最近24小时"
+    "last24h": "最近24小时",
+    "layersPanel": "图层",
+    "layerBuildings": "建筑",
+    "layerCrisis": "危机区域"
   },
   "coverage": {
     "unassessed_other": "附近 {{count}} 栋建筑尚未评估"

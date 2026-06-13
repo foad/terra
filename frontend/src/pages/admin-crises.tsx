@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import { Pencil, Plus, Trash2, X } from "lucide-react";
+import { Pencil, Plus, Trash2, X, QrCode } from "lucide-react";
+import { AppBar } from "../components/app-bar";
 import { CrisisRegionEditor } from "../components/crisis-region-editor";
-import { api } from "../utils/api";
+import { ActivationKitModal } from "../components/activation-kit-modal";
+import { useApi } from "../hooks/use-api";
 import type { FollowUpQuestion } from "../utils/report-queue";
 import styles from "./admin-crises.module.css";
 
@@ -30,27 +32,123 @@ const MAX_QUESTIONS = 3;
 
 const SUGGESTED_QUESTIONS: Record<string, Omit<FollowUpQuestion, "id">[]> = {
   Earthquake: [
-    { question: "Are roads and access routes passable in this area?", options: ["Fully passable", "Partially blocked", "Fully blocked", "Unknown"], allow_other: false },
-    { question: "Is clean water currently available?", options: ["Yes, fully available", "Limited availability", "Not available", "Unknown"], allow_other: false },
-    { question: "What is the current market activity in this area?", options: ["Fully open", "Partially open", "Mostly closed", "Closed", "Unknown"], allow_other: false },
+    {
+      question: "Are roads and access routes passable in this area?",
+      options: [
+        "Fully passable",
+        "Partially blocked",
+        "Fully blocked",
+        "Unknown",
+      ],
+      allow_other: false,
+    },
+    {
+      question: "Is clean water currently available?",
+      options: [
+        "Yes, fully available",
+        "Limited availability",
+        "Not available",
+        "Unknown",
+      ],
+      allow_other: false,
+    },
+    {
+      question: "What is the current market activity in this area?",
+      options: [
+        "Fully open",
+        "Partially open",
+        "Mostly closed",
+        "Closed",
+        "Unknown",
+      ],
+      allow_other: false,
+    },
   ],
   Flood: [
-    { question: "What is the current flood water level at this location?", options: ["Receding", "Stable", "Rising", "Area already dry", "Unknown"], allow_other: false },
-    { question: "Are people able to return to their homes?", options: ["Yes", "Partially", "No — unsafe", "Unknown"], allow_other: false },
-    { question: "What is the current market activity in this area?", options: ["Fully open", "Partially open", "Mostly closed", "Closed", "Unknown"], allow_other: false },
+    {
+      question: "What is the current flood water level at this location?",
+      options: ["Receding", "Stable", "Rising", "Area already dry", "Unknown"],
+      allow_other: false,
+    },
+    {
+      question: "Are people able to return to their homes?",
+      options: ["Yes", "Partially", "No — unsafe", "Unknown"],
+      allow_other: false,
+    },
+    {
+      question: "What is the current market activity in this area?",
+      options: [
+        "Fully open",
+        "Partially open",
+        "Mostly closed",
+        "Closed",
+        "Unknown",
+      ],
+      allow_other: false,
+    },
   ],
   Wildfire: [
-    { question: "Is this area accessible for emergency services?", options: ["Fully accessible", "Partially accessible", "Not accessible", "Unknown"], allow_other: false },
-    { question: "What is the current air quality?", options: ["Good", "Moderate", "Poor", "Hazardous", "Unknown"], allow_other: false },
+    {
+      question: "Is this area accessible for emergency services?",
+      options: [
+        "Fully accessible",
+        "Partially accessible",
+        "Not accessible",
+        "Unknown",
+      ],
+      allow_other: false,
+    },
+    {
+      question: "What is the current air quality?",
+      options: ["Good", "Moderate", "Poor", "Hazardous", "Unknown"],
+      allow_other: false,
+    },
   ],
   Conflict: [
-    { question: "Is movement in this area currently safe?", options: ["Yes, safe", "Use caution", "Not safe", "Unknown"], allow_other: false },
-    { question: "Are markets and essential services operating?", options: ["Fully operating", "Partially operating", "Closed", "Unknown"], allow_other: false },
+    {
+      question: "Is movement in this area currently safe?",
+      options: ["Yes, safe", "Use caution", "Not safe", "Unknown"],
+      allow_other: false,
+    },
+    {
+      question: "Are markets and essential services operating?",
+      options: ["Fully operating", "Partially operating", "Closed", "Unknown"],
+      allow_other: false,
+    },
   ],
   _default: [
-    { question: "What is the current market activity in this area?", options: ["Fully open", "Partially open", "Mostly closed", "Closed", "Unknown"], allow_other: false },
-    { question: "What does the community most urgently need?", options: ["Food and water", "Medical assistance", "Shelter", "Electricity restoration", "Transportation"], allow_other: true },
-    { question: "Are community services functioning?", options: ["Fully functioning", "Partially functioning", "Not functioning", "Unknown"], allow_other: false },
+    {
+      question: "What is the current market activity in this area?",
+      options: [
+        "Fully open",
+        "Partially open",
+        "Mostly closed",
+        "Closed",
+        "Unknown",
+      ],
+      allow_other: false,
+    },
+    {
+      question: "What does the community most urgently need?",
+      options: [
+        "Food and water",
+        "Medical assistance",
+        "Shelter",
+        "Electricity restoration",
+        "Transportation",
+      ],
+      allow_other: true,
+    },
+    {
+      question: "Are community services functioning?",
+      options: [
+        "Fully functioning",
+        "Partially functioning",
+        "Not functioning",
+        "Unknown",
+      ],
+      allow_other: false,
+    },
   ],
 };
 
@@ -59,8 +157,10 @@ function getSuggestions(crisisType: string): Omit<FollowUpQuestion, "id">[] {
 }
 
 const AdminCrisesPage = () => {
+  const api = useApi();
   const [crises, setCrises] = useState<CrisisEvent[]>([]);
   const [editing, setEditing] = useState<CrisisEvent | "new" | null>(null);
+  const [kitCrisis, setKitCrisis] = useState<CrisisEvent | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refresh = async () => {
@@ -75,6 +175,7 @@ const AdminCrisesPage = () => {
 
   useEffect(() => {
     refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleDelete = async (event: CrisisEvent) => {
@@ -85,80 +186,103 @@ const AdminCrisesPage = () => {
 
   if (editing) {
     return (
-      <CrisisForm
-        initial={editing === "new" ? null : editing}
-        onCancel={() => setEditing(null)}
-        onSaved={async () => {
-          setEditing(null);
-          await refresh();
-        }}
-      />
+      <>
+        <AppBar subtitle="Crisis Management" />
+        <CrisisForm
+          initial={editing === "new" ? null : editing}
+          onCancel={() => setEditing(null)}
+          onSaved={async () => {
+            setEditing(null);
+            await refresh();
+          }}
+        />
+      </>
     );
   }
 
   return (
-    <div className={styles.container}>
-      <header className={styles.header}>
-        <h1 className={styles.title}>Crisis events</h1>
-        <button
-          type="button"
-          className={styles.primary}
-          onClick={() => setEditing("new")}
-        >
-          <Plus size={16} /> New crisis
-        </button>
-      </header>
+    <>
+      <AppBar subtitle="Crisis Management" />
+      <div className={styles.container}>
+        <header className={styles.header}>
+          <h1 className={styles.title}>Crisis events</h1>
+          <button
+            type="button"
+            className={styles.primary}
+            onClick={() => setEditing("new")}
+          >
+            <Plus size={16} /> New crisis
+          </button>
+        </header>
 
-      {loading ? (
-        <div className={styles.empty}>Loading…</div>
-      ) : crises.length === 0 ? (
-        <div className={styles.empty}>No crisis events yet.</div>
-      ) : (
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Type</th>
-              <th>Status</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {crises.map((c) => (
-              <tr key={c.id}>
-                <td>{c.name}</td>
-                <td>{c.crisis_type}</td>
-                <td>
-                  <span
-                    className={`${styles.badge} ${c.is_active ? styles.active : styles.inactive}`}
-                  >
-                    {c.is_active ? "Active" : "Inactive"}
-                  </span>
-                </td>
-                <td className={styles.actions}>
-                  <button
-                    type="button"
-                    className={styles.iconButton}
-                    onClick={() => setEditing(c)}
-                    aria-label="Edit"
-                  >
-                    <Pencil size={16} />
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.iconButton}
-                    onClick={() => handleDelete(c)}
-                    aria-label="Delete"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </td>
+        {loading ? (
+          <div className={styles.empty}>Loading…</div>
+        ) : crises.length === 0 ? (
+          <div className={styles.empty}>No crisis events yet.</div>
+        ) : (
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th />
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {crises.map((c) => (
+                <tr key={c.id}>
+                  <td>{c.name}</td>
+                  <td>{c.crisis_type}</td>
+                  <td>
+                    <span
+                      className={`${styles.badge} ${c.is_active ? styles.active : styles.inactive}`}
+                    >
+                      {c.is_active ? "Active" : "Inactive"}
+                    </span>
+                  </td>
+                  <td className={styles.actions}>
+                    <button
+                      type="button"
+                      className={styles.iconButton}
+                      onClick={() => setKitCrisis(c)}
+                      aria-label="Activation Kit"
+                      title="Community Activation Kit"
+                    >
+                      <QrCode size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.iconButton}
+                      onClick={() => setEditing(c)}
+                      aria-label="Edit"
+                    >
+                      <Pencil size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.iconButton}
+                      onClick={() => handleDelete(c)}
+                      aria-label="Delete"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {kitCrisis && (
+        <ActivationKitModal
+          name={kitCrisis.name}
+          crisisType={kitCrisis.crisis_type}
+          onClose={() => setKitCrisis(null)}
+        />
       )}
-    </div>
+    </>
   );
 };
 
@@ -169,6 +293,7 @@ interface CrisisFormProps {
 }
 
 const CrisisForm = ({ initial, onCancel, onSaved }: CrisisFormProps) => {
+  const api = useApi();
   const [name, setName] = useState(initial?.name ?? "");
   const [crisisType, setCrisisType] = useState(
     initial?.crisis_type ?? CRISIS_TYPES[0],
@@ -199,7 +324,12 @@ const CrisisForm = ({ initial, onCancel, onSaved }: CrisisFormProps) => {
     if (questions.length >= MAX_QUESTIONS) return;
     setQuestions((prev) => [
       ...prev,
-      { id: crypto.randomUUID(), question: "", options: ["", ""], allow_other: false },
+      {
+        id: crypto.randomUUID(),
+        question: "",
+        options: ["", ""],
+        allow_other: false,
+      },
     ]);
   };
 
@@ -252,10 +382,12 @@ const CrisisForm = ({ initial, onCancel, onSaved }: CrisisFormProps) => {
         crisis_type: crisisType,
         is_active: isActive,
         region,
-        follow_up_questions: questions.map((q) => ({
-          ...q,
-          options: q.options.filter((o) => o.trim()),
-        })).filter((q) => q.question.trim() && q.options.length >= 2),
+        follow_up_questions: questions
+          .map((q) => ({
+            ...q,
+            options: q.options.filter((o) => o.trim()),
+          }))
+          .filter((q) => q.question.trim() && q.options.length >= 2),
       };
       if (initial) {
         await api(`/crisis-events/${initial.id}`, {
@@ -283,7 +415,10 @@ const CrisisForm = ({ initial, onCancel, onSaved }: CrisisFormProps) => {
         </h1>
       </header>
 
-      <CrisisRegionEditor initial={initial?.region ?? null} onChange={setRegion} />
+      <CrisisRegionEditor
+        initial={initial?.region ?? null}
+        onChange={setRegion}
+      />
       <p className={styles.help}>
         {region
           ? "Region set. Drag points to adjust, or delete and redraw."
@@ -335,12 +470,15 @@ const CrisisForm = ({ initial, onCancel, onSaved }: CrisisFormProps) => {
           </span>
         </h2>
         <p className={styles.followUpHelp}>
-          Optional questions shown to users after they submit a report. Max {MAX_QUESTIONS}.
+          Optional questions shown to users after they submit a report. Max{" "}
+          {MAX_QUESTIONS}.
         </p>
 
         {suggestions.length > 0 && (
           <div className={styles.suggestions}>
-            <p className={styles.suggestionsLabel}>Suggested for {crisisType}:</p>
+            <p className={styles.suggestionsLabel}>
+              Suggested for {crisisType}:
+            </p>
             <div className={styles.suggestionChips}>
               {suggestions.map((s) => {
                 const alreadyAdded = addedIds.has(s.question);
@@ -380,7 +518,9 @@ const CrisisForm = ({ initial, onCancel, onSaved }: CrisisFormProps) => {
                 value={q.question}
                 maxLength={500}
                 placeholder="e.g. Are roads passable in this area?"
-                onChange={(e) => updateQuestion(q.id, { question: e.target.value })}
+                onChange={(e) =>
+                  updateQuestion(q.id, { question: e.target.value })
+                }
               />
             </div>
             <div className={styles.field}>
@@ -420,7 +560,9 @@ const CrisisForm = ({ initial, onCancel, onSaved }: CrisisFormProps) => {
               <input
                 type="checkbox"
                 checked={q.allow_other}
-                onChange={(e) => updateQuestion(q.id, { allow_other: e.target.checked })}
+                onChange={(e) =>
+                  updateQuestion(q.id, { allow_other: e.target.checked })
+                }
               />
               Include "Other — please specify" option
             </label>
