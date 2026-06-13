@@ -112,9 +112,12 @@
   display: flex;
   gap: var(--undpds-spacing-03);
   margin-top: 2px;
+  justify-content: flex-end;
 }
 
 .cardActions .cardBtn {
-  flex: 1;
-  text-align: center;
+  padding: 4px 12px;
+  font-size: 0.8125rem;
+  min-height: 0;
+  min-width: 0;
 }
