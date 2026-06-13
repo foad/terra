@@ -177,6 +177,9 @@
     "legendSeverity": "严重程度强度",
     "legendLow": "低",
     "legendHigh": "高",
-    "last24h": "最近24小时"
+    "last24h": "最近24小时",
+    "layersPanel": "图层",
+    "layerBuildings": "建筑",
+    "layerCrisis": "危机区域"
   }
 }

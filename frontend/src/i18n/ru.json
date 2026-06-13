@@ -189,6 +189,9 @@
     "legendSeverity": "Интенсивность тяжести",
     "legendLow": "Низкая",
     "legendHigh": "Высокая",
-    "last24h": "за последние 24ч"
+    "last24h": "за последние 24ч",
+    "layersPanel": "Слои",
+    "layerBuildings": "Здания",
+    "layerCrisis": "Зона кризиса"
   }
 }
