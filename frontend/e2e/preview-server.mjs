@@ -23,15 +23,19 @@ if (portInUse) {
   process.exit(1);
 }
 
+// On Windows npm is npm.cmd, which Node will only spawn through a shell
+// (CVE-2024-27980 hardening made shell-less .cmd spawns throw).
+const shell = process.platform === "win32";
+
 const exitCode = await new Promise((resolve) => {
-  const build = spawn("npm", ["run", "build"], { stdio: "inherit" });
+  const build = spawn("npm", ["run", "build"], { stdio: "inherit", shell });
   build.on("exit", resolve);
 });
 if (exitCode !== 0) {
   process.exit(exitCode ?? 1);
 }
 
-const preview = spawn("npm", ["run", "preview"], { stdio: "inherit" });
+const preview = spawn("npm", ["run", "preview"], { stdio: "inherit", shell });
 const forward = (sig) => () => preview.kill(sig);
 process.on("SIGINT", forward("SIGINT"));
 process.on("SIGTERM", forward("SIGTERM"));
