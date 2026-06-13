@@ -384,6 +384,34 @@ def query_reports(params: dict) -> dict:
     }
 
 
+def query_coverage(params: dict) -> dict:
+    """Public minimal-payload view for the community PWA's damage-fill layer
+
+    Returns (building_id, damage_level) per assessed building within the bbox
+    """
+    q = ReportsQueryParams(**params)
+    where, values = build_filter_clause(q)
+
+    conn = get_connection()
+    with conn.cursor() as cur:
+        cur.execute(
+            f"""
+            SELECT building_id, damage_level
+            FROM reports
+            WHERE {where} AND building_id IS NOT NULL
+            LIMIT %s
+            """,
+            (*values, q.limit),
+        )
+        rows = cur.fetchall()
+
+    return {
+        "features": [
+            {"building_id": row[0], "damage_level": row[1]} for row in rows
+        ],
+    }
+
+
 def _find_version_chain(building_id: str | None, h3_r12: str) -> uuid.UUID:
     """Find existing version chain for this building, or create a new one."""
     conn = get_connection()

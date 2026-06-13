@@ -20,7 +20,7 @@ from src.handlers.crisis_events import (
 )
 from src.handlers.exports import export_reports
 from src.handlers.photos import get_upload_url
-from src.handlers.reports import create_report, query_reports
+from src.handlers.reports import create_report, query_coverage, query_reports
 
 logger = Logger()
 tracer = Tracer()
@@ -71,6 +71,16 @@ def get_reports():
     params = app.current_event.query_string_parameters or {}
     try:
         return query_reports(params)
+    except ValidationError as e:
+        raise BadRequestError(_first_validation_message(e)) from e
+
+
+@app.get("/reports/coverage")
+@tracer.capture_method
+def get_reports_coverage():
+    params = app.current_event.query_string_parameters or {}
+    try:
+        return query_coverage(params)
     except ValidationError as e:
         raise BadRequestError(_first_validation_message(e)) from e
 
