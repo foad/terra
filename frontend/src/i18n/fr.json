@@ -7,7 +7,12 @@
     "syncing": "Synchronisation de {{count}} rapport...",
     "syncing_plural": "Synchronisation de {{count}} rapports...",
     "syncFailed": "{{count}} rapport n'a pas pu être synchronisé.",
-    "syncFailed_plural": "{{count}} rapports n'ont pas pu être synchronisés."
+    "syncFailed_plural": "{{count}} rapports n'ont pas pu être synchronisés.",
+    "failedPanelTitle": "Rapports échoués",
+    "failedPanelRetry": "Réessayer",
+    "failedPanelDiscard": "Supprimer",
+    "failedPanelRetryAll": "Tout réessayer",
+    "failedPanelEmpty": "Aucun rapport échoué"
   },
   "common": {
     "next": "Suivant",

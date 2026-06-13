@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Layout } from "./components/layout";
 import { ReportFlow } from "./components/report-flow";
+import { FailedReportsPanel } from "./components/failed-reports-panel";
 import { useGeolocation } from "./hooks/use-geolocation";
 import { useConnectivity } from "./hooks/use-connectivity";
 import { usePersistentStorage } from "./hooks/use-persistent-storage";
@@ -17,6 +19,7 @@ export const App = () => {
   usePrefetchTiles(latitude, longitude);
 
   const pendingCount = counts.pending + counts.syncing;
+  const [showFailedPanel, setShowFailedPanel] = useState(false);
 
   return (
     <Layout>
@@ -33,9 +36,17 @@ export const App = () => {
         </div>
       )}
       {counts.failed > 0 && (
-        <div className={styles.errorBanner}>
+        <button
+          type="button"
+          className={styles.errorBannerBtn}
+          onClick={() => setShowFailedPanel(true)}
+        >
           {t("app.syncFailed", { count: counts.failed })}
-        </div>
+          <span className={styles.errorBannerCaret}>›</span>
+        </button>
+      )}
+      {showFailedPanel && (
+        <FailedReportsPanel onClose={() => setShowFailedPanel(false)} />
       )}
       <ReportFlow
         latitude={latitude}
