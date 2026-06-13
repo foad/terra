@@ -7,9 +7,9 @@ const DEFAULT_TIMEOUT = 10000;
 
 export const api = async (
   path: string,
-  options?: RequestInit & { timeout?: number },
+  options?: RequestInit & { timeout?: number; token?: string | null },
 ) => {
-  const { timeout = DEFAULT_TIMEOUT, ...fetchOptions } = options ?? {};
+  const { timeout = DEFAULT_TIMEOUT, token, ...fetchOptions } = options ?? {};
   const url = `${API_BASE}${path}`;
 
   const controller = new AbortController();
@@ -21,6 +21,7 @@ export const api = async (
       signal: controller.signal,
       headers: {
         "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...fetchOptions.headers,
       },
     });

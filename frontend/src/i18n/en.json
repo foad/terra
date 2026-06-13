@@ -7,7 +7,12 @@
     "syncing": "Syncing {{count}} report...",
     "syncing_plural": "Syncing {{count}} reports...",
     "syncFailed": "{{count}} report failed to sync.",
-    "syncFailed_plural": "{{count}} reports failed to sync."
+    "syncFailed_plural": "{{count}} reports failed to sync.",
+    "failedPanelTitle": "Failed reports",
+    "failedPanelRetry": "Retry",
+    "failedPanelDiscard": "Discard",
+    "failedPanelRetryAll": "Retry all",
+    "failedPanelEmpty": "No failed reports"
   },
   "common": {
     "next": "Next",
@@ -127,6 +132,10 @@
     "queued": "Report Queued",
     "submittedMessage": "Thank you for your report. Your submission is helping response teams prioritise recovery efforts in your area.",
     "queuedMessage": "Your report has been saved and will be submitted automatically when connectivity returns.",
+    "shareButton": "Share with your neighbours",
+    "shareTitle": "Help assess the damage in your area",
+    "shareText": "I just submitted a damage report. Please help by submitting yours — it takes less than 2 minutes.",
+    "shareTextWithCrisis": "I just submitted a damage report for {{crisisName}}. Please help by submitting yours — it takes less than 2 minutes.",
     "submitAnother": "Submit Another Report",
     "followUpHeading": "One quick question while you're here:",
     "followUpHeading_plural": "{{count}} quick questions while you're here:",
@@ -160,6 +169,8 @@
     "submitted": "Submitted",
     "versions": "{{count}} report(s) for this location",
     "locationLabel": "Location",
+    "basemapStreet": "Street",
+    "basemapSatellite": "Satellite",
     "mapModeClusters": "Markers",
     "mapModeHeatmap": "Heatmap",
     "mapModeBoth": "Both",

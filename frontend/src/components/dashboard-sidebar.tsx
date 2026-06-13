@@ -1,5 +1,6 @@
 import { CircleCheck, TriangleAlert, CircleX, Download, X } from "lucide-react";
 import type { ReactNode } from "react";
+import { useAuth } from "react-oidc-context";
 import type { Filters, ReportFeature } from "../pages/dashboard";
 import { API_BASE } from "../utils/api";
 import { MultiSelect } from "./multi-select";
@@ -64,7 +65,9 @@ export const DashboardSidebar = ({
     filters.from !== "" ||
     filters.to !== "";
 
-  const buildExportUrl = (format: "csv" | "geojson") => {
+  const auth = useAuth();
+
+  const downloadExport = async (format: "csv" | "geojson") => {
     const params = new URLSearchParams({ format });
     if (filters.damageLevel.length > 0)
       params.set("damage_level", filters.damageLevel.join(","));
@@ -74,7 +77,27 @@ export const DashboardSidebar = ({
       params.set("crisis_nature", filters.crisisNature.join("|"));
     if (filters.from) params.set("from", filters.from);
     if (filters.to) params.set("to", filters.to);
-    return `${API_BASE}/reports/export?${params.toString()}`;
+
+    const token = auth.user?.access_token;
+    const res = await fetch(`${API_BASE}/reports/export?${params.toString()}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) {
+      throw new Error(`Export failed: ${res.status}`);
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const filename =
+      res.headers
+        .get("Content-Disposition")
+        ?.match(/filename="?([^"]+)"?/)?.[1] ?? `terra-reports.${format}`;
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -250,22 +273,22 @@ export const DashboardSidebar = ({
           <div className={styles.exportGroup}>
             <div className={styles.filterLabel}>Export</div>
             <div className={styles.exportButtons}>
-              <a
+              <button
+                type="button"
                 className={styles.exportButton}
-                href={buildExportUrl("csv")}
-                download
+                onClick={() => downloadExport("csv")}
               >
                 <Download size={14} />
                 CSV
-              </a>
-              <a
+              </button>
+              <button
+                type="button"
                 className={styles.exportButton}
-                href={buildExportUrl("geojson")}
-                download
+                onClick={() => downloadExport("geojson")}
               >
                 <Download size={14} />
                 GeoJSON
-              </a>
+              </button>
             </div>
           </div>
         </div>

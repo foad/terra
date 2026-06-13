@@ -2,6 +2,7 @@ import { useRef, useEffect } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Protocol } from "pmtiles";
+import { api } from "../utils/api";
 import styles from "./map.module.css";
 
 const VIDA_BUILDINGS_URL =
@@ -237,6 +238,45 @@ export const Map = ({
       markerRef.current = null;
       pinMarkerRef.current = null;
       hasCenteredRef.current = false;
+    };
+  }, []);
+
+  // Fit the initial view to the active crisis zone(s) instead of the world
+  // view, so QR/demo links land directly on the affected area (#195). A
+  // geolocation fix takes precedence: it recentres on the user when it
+  // arrives, and once it has, the crisis fit is skipped.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await api("/crisis-events");
+        if (cancelled || hasCenteredRef.current) return;
+        const active = (data?.events ?? []).filter(
+          (e: { is_active: boolean }) => e.is_active,
+        );
+        if (active.length === 0) return;
+        const bounds = new maplibregl.LngLatBounds();
+        const extend = (coords: unknown) => {
+          if (!Array.isArray(coords)) return;
+          if (typeof coords[0] === "number") {
+            bounds.extend(coords as [number, number]);
+          } else {
+            for (const c of coords) extend(c);
+          }
+        };
+        for (const e of active) extend(e.region?.coordinates);
+        if (!bounds.isEmpty() && !hasCenteredRef.current) {
+          map.fitBounds(bounds, { padding: 60, animate: false });
+        }
+      } catch {
+        // No crisis info available — keep the default view until the
+        // geolocation fix arrives.
+      }
+    })();
+    return () => {
+      cancelled = true;
     };
   }, []);
 
