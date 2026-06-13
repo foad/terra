@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { AppBar } from "../components/app-bar";
 import { DashboardMap } from "../components/dashboard-map";
 import { DAMAGE_COLORS } from "../components/damage-colors";
 import { DashboardSidebar } from "../components/dashboard-sidebar";
 import { ReportDetailsModal } from "../components/report-details-modal";
 import { TimeSlider } from "../components/time-slider";
-import { api } from "../utils/api";
+import { useApi } from "../hooks/use-api";
 import styles from "./dashboard.module.css";
 
 export interface ReportFeature {
@@ -74,8 +75,8 @@ const EMPTY_FILTERS: Filters = {
 
 const DashboardPage = () => {
   const { t } = useTranslation();
+  const api = useApi();
   const [reports, setReports] = useState<ReportFeature[]>([]);
-  const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [selectedReport, setSelectedReport] = useState<ReportFeature | null>(
     null,
@@ -140,10 +141,9 @@ const DashboardPage = () => {
         }
         if (!cancelled) {
           setReports(allFeatures);
-          setTotal(totalCount);
         }
       } catch {
-        // API unreachable (e.g. CORS in local dev) — show empty dashboard
+        // API unreachable, show empty dashboard
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -151,7 +151,7 @@ const DashboardPage = () => {
     return () => {
       cancelled = true;
     };
-  }, [filters]);
+  }, [filters, api]);
 
   useEffect(() => {
     const buildingId = selectedReport?.properties.building_id;
@@ -173,7 +173,7 @@ const DashboardPage = () => {
     return () => {
       cancelled = true;
     };
-  }, [selectedReport?.properties.building_id]);
+  }, [selectedReport?.properties.building_id, api]);
 
   const filteredReports = useMemo(() => {
     let result = reports;
@@ -195,19 +195,7 @@ const DashboardPage = () => {
 
   return (
     <div className={styles.container}>
-      <header className={styles.header}>
-        <div className={styles.headerInner}>
-          <h1 className={styles.title}>TERRA</h1>
-          <span className={styles.subtitle}>Dashboard</span>
-          <span className={styles.reportCount}>
-            {loading
-              ? "Loading..."
-              : timeWindow
-                ? `${filteredReports.length} of ${total} reports`
-                : `${total} reports`}
-          </span>
-        </div>
-      </header>
+      <AppBar subtitle="Dashboard" />
       <div className={styles.statsBar}>
         <div className={styles.statItem}>
           <span

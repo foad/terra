@@ -7,7 +7,12 @@
     "syncing": "جارٍ مزامنة {{count}} تقرير...",
     "syncing_plural": "جارٍ مزامنة {{count}} تقارير...",
     "syncFailed": "فشلت مزامنة {{count}} تقرير.",
-    "syncFailed_plural": "فشلت مزامنة {{count}} تقارير."
+    "syncFailed_plural": "فشلت مزامنة {{count}} تقارير.",
+    "failedPanelTitle": "التقارير الفاشلة",
+    "failedPanelRetry": "إعادة المحاولة",
+    "failedPanelDiscard": "تجاهل",
+    "failedPanelRetryAll": "إعادة محاولة الكل",
+    "failedPanelEmpty": "لا توجد تقارير فاشلة"
   },
   "common": {
     "next": "التالي",
@@ -135,6 +140,10 @@
     "queued": "تم حفظ التقرير في قائمة الانتظار",
     "submittedMessage": "شكراً لتقريرك. مساهمتك تساعد فرق الاستجابة في تحديد أولويات جهود التعافي في منطقتك.",
     "queuedMessage": "تم حفظ تقريرك وسيتم إرساله تلقائياً عند عودة الاتصال.",
+    "shareButton": "شارك مع جيرانك",
+    "shareTitle": "ساعد في تقييم الأضرار في منطقتك",
+    "shareText": "لقد أرسلت للتو تقرير أضرار. يرجى المساعدة بإرسال تقريرك — يستغرق أقل من دقيقتين.",
+    "shareTextWithCrisis": "لقد أرسلت للتو تقرير أضرار لـ{{crisisName}}. يرجى المساعدة بإرسال تقريرك — يستغرق أقل من دقيقتين.",
     "submitAnother": "إرسال تقرير آخر",
     "followUpHeading": "سؤال سريع بينما أنت هنا:",
     "followUpHeading_plural": "{{count}} أسئلة سريعة بينما أنت هنا:",
@@ -176,6 +185,8 @@
     "submitted": "تاريخ الإرسال",
     "versions": "{{count}} تقرير(تقارير) لهذا الموقع",
     "locationLabel": "الموقع",
+    "basemapStreet": "خريطة",
+    "basemapSatellite": "صور جوية",
     "mapModeClusters": "العلامات",
     "mapModeHeatmap": "خريطة الكثافة",
     "mapModeBoth": "كلاهما",
@@ -186,6 +197,17 @@
     "legendSeverity": "شدة الضرر",
     "legendLow": "منخفض",
     "legendHigh": "مرتفع",
-    "last24h": "خلال آخر 24 ساعة"
+    "last24h": "خلال آخر 24 ساعة",
+    "layersPanel": "الطبقات",
+    "layerBuildings": "المباني",
+    "layerCrisis": "منطقة الأزمة"
+  },
+  "coverage": {
+    "unassessed_zero": "لا توجد مبانٍ قريبة لم يتم تقييمها بعد",
+    "unassessed_one": "مبنى واحد قريب لم يتم تقييمه بعد",
+    "unassessed_two": "مبنيان قريبان لم يتم تقييمهما بعد",
+    "unassessed_few": "{{count}} مبانٍ قريبة لم يتم تقييمها بعد",
+    "unassessed_many": "{{count}} مبنى قريب لم يتم تقييمه بعد",
+    "unassessed_other": "{{count}} مبنى قريب لم يتم تقييمه بعد"
   }
 }

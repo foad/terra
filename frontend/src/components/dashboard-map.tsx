@@ -6,7 +6,7 @@ import { Protocol } from "pmtiles";
 import { TerraDraw, TerraDrawPolygonMode } from "terra-draw";
 import { TerraDrawMapLibreGLAdapter } from "terra-draw-maplibre-gl-adapter";
 import type { ReportFeature } from "../pages/dashboard";
-import { api } from "../utils/api";
+import { useApi } from "../hooks/use-api";
 import { DAMAGE_COLORS } from "./damage-colors";
 import styles from "./dashboard-map.module.css";
 
@@ -30,7 +30,6 @@ interface CrisisEvent {
 const VIDA_BUILDINGS_URL =
   "https://data.source.coop/vida/google-microsoft-osm-open-buildings/pmtiles/goog_msft_osm.pmtiles";
 
-
 interface DashboardMapProps {
   reports: ReportFeature[];
   onReportSelect: (report: ReportFeature) => void;
@@ -43,6 +42,7 @@ export const DashboardMap = ({
   onPolygonFilter,
 }: DashboardMapProps) => {
   const { t } = useTranslation();
+  const api = useApi();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -54,6 +54,9 @@ export const DashboardMap = ({
   const onPolygonFilterRef = useRef(onPolygonFilter);
   const drawRef = useRef<TerraDraw | null>(null);
   const [drawMode, setDrawMode] = useState<"idle" | "drawing" | "active">("idle");
+  const [showBuildings, setShowBuildings] = useState(true);
+  const [showCrisis, setShowCrisis] = useState(true);
+  const [basemap, setBasemap] = useState<"street" | "satellite">("street");
 
   useEffect(() => {
     onReportSelectRef.current = onReportSelect;
@@ -85,6 +88,15 @@ export const DashboardMap = ({
             attribution:
               '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
           },
+          "esri-satellite": {
+            type: "raster",
+            tiles: [
+              "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+            ],
+            tileSize: 256,
+            attribution:
+              "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community",
+          },
           buildings: {
             type: "vector",
             url: `pmtiles://${VIDA_BUILDINGS_URL}`,
@@ -95,6 +107,12 @@ export const DashboardMap = ({
             id: "osm-basemap",
             type: "raster",
             source: "osm",
+          },
+          {
+            id: "esri-basemap",
+            type: "raster",
+            source: "esri-satellite",
+            layout: { visibility: "none" },
           },
           {
             id: "building-footprints",
@@ -198,34 +216,57 @@ export const DashboardMap = ({
           "heatmap-weight": [
             "match",
             ["get", "damage_level"],
-            "minimal", 0.33,
-            "partial", 0.66,
-            "complete", 1.0,
+            "minimal",
+            0.33,
+            "partial",
+            0.66,
+            "complete",
+            1.0,
             0.33,
           ],
           "heatmap-intensity": [
-            "interpolate", ["linear"], ["zoom"],
-            0, 1,
-            15, 3,
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            0,
+            1,
+            15,
+            3,
           ],
           "heatmap-color": [
-            "interpolate", ["linear"], ["heatmap-density"],
-            0,   "rgba(33,102,172,0)",
-            0.2, "rgb(103,169,207)",
-            0.4, "rgb(253,219,199)",
-            0.6, "rgb(239,138,98)",
-            0.8, "rgb(178,24,43)",
-            1,   "rgb(120,0,0)",
+            "interpolate",
+            ["linear"],
+            ["heatmap-density"],
+            0,
+            "rgba(33,102,172,0)",
+            0.2,
+            "rgb(103,169,207)",
+            0.4,
+            "rgb(253,219,199)",
+            0.6,
+            "rgb(239,138,98)",
+            0.8,
+            "rgb(178,24,43)",
+            1,
+            "rgb(120,0,0)",
           ],
           "heatmap-radius": [
-            "interpolate", ["linear"], ["zoom"],
-            0, 20,
-            15, 40,
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            0,
+            20,
+            15,
+            40,
           ],
           "heatmap-opacity": [
-            "interpolate", ["linear"], ["zoom"],
-            13, 0.9,
-            15, 0,
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            13,
+            0.9,
+            15,
+            0,
           ],
         },
       });
@@ -380,7 +421,8 @@ export const DashboardMap = ({
         ];
         const props = report?.properties;
         if (props) {
-          const infra = props.infrastructure_type[0]?.split("(")[0]?.trim() ?? "";
+          const infra =
+            props.infrastructure_type[0]?.split("(")[0]?.trim() ?? "";
           new maplibregl.Popup({ offset: 12, closeButton: false })
             .setLngLat(coords)
             .setHTML(
@@ -468,7 +510,9 @@ export const DashboardMap = ({
 
       const fc = { type: "FeatureCollection" as const, features: reports };
       source.setData(fc);
-      (map.getSource("reports-heatmap") as maplibregl.GeoJSONSource | undefined)?.setData(fc);
+      (
+        map.getSource("reports-heatmap") as maplibregl.GeoJSONSource | undefined
+      )?.setData(fc);
 
       if (reports.length > 0 && !hasFittedRef.current) {
         const bounds = new maplibregl.LngLatBounds();
@@ -530,7 +574,7 @@ export const DashboardMap = ({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [api]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -538,10 +582,51 @@ export const DashboardMap = ({
     const showClusters = mapMode !== "heatmap";
     const showHeatmap = mapMode !== "clusters";
     for (const id of ["clusters", "cluster-count", "report-markers"]) {
-      map.setLayoutProperty(id, "visibility", showClusters ? "visible" : "none");
+      map.setLayoutProperty(
+        id,
+        "visibility",
+        showClusters ? "visible" : "none",
+      );
     }
-    map.setLayoutProperty("report-heatmap", "visibility", showHeatmap ? "visible" : "none");
+    map.setLayoutProperty(
+      "report-heatmap",
+      "visibility",
+      showHeatmap ? "visible" : "none",
+    );
   }, [mapMode]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapLoadedRef.current) return;
+    map.setLayoutProperty(
+      "building-footprints",
+      "visibility",
+      showBuildings ? "visible" : "none",
+    );
+  }, [showBuildings]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapLoadedRef.current) return;
+    for (const id of ["crisis-fill", "crisis-outline", "crisis-label"]) {
+      map.setLayoutProperty(id, "visibility", showCrisis ? "visible" : "none");
+    }
+  }, [showCrisis]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapLoadedRef.current) return;
+    map.setLayoutProperty(
+      "osm-basemap",
+      "visibility",
+      basemap === "street" ? "visible" : "none",
+    );
+    map.setLayoutProperty(
+      "esri-basemap",
+      "visibility",
+      basemap === "satellite" ? "visible" : "none",
+    );
+  }, [basemap]);
 
   const handleStartDraw = () => {
     const map = mapRef.current;
@@ -613,7 +698,9 @@ export const DashboardMap = ({
             className={`${styles.toggleBtn} ${mapMode === mode ? styles.toggleBtnActive : ""}`}
             onClick={() => setMapMode(mode)}
           >
-            {t(`dashboard.mapMode${mode.charAt(0).toUpperCase() + mode.slice(1)}`)}
+            {t(
+              `dashboard.mapMode${mode.charAt(0).toUpperCase() + mode.slice(1)}`,
+            )}
           </button>
         ))}
       </div>
@@ -621,14 +708,21 @@ export const DashboardMap = ({
       <div className={styles.legend}>
         {(mapMode === "clusters" || mapMode === "both") && (
           <div className={styles.legendSection}>
-            <div className={styles.legendTitle}>{t("dashboard.legendDamage")}</div>
-            {([
-              { color: DAMAGE_COLORS.complete, key: "levelComplete" },
-              { color: DAMAGE_COLORS.partial,  key: "levelPartial" },
-              { color: DAMAGE_COLORS.minimal,  key: "levelMinimal" },
-            ] as const).map(({ color, key }) => (
+            <div className={styles.legendTitle}>
+              {t("dashboard.legendDamage")}
+            </div>
+            {(
+              [
+                { color: DAMAGE_COLORS.complete, key: "levelComplete" },
+                { color: DAMAGE_COLORS.partial, key: "levelPartial" },
+                { color: DAMAGE_COLORS.minimal, key: "levelMinimal" },
+              ] as const
+            ).map(({ color, key }) => (
               <div key={key} className={styles.legendItem}>
-                <span className={styles.legendDot} style={{ background: color }} />
+                <span
+                  className={styles.legendDot}
+                  style={{ background: color }}
+                />
                 <span>{t(`dashboard.${key}`)}</span>
               </div>
             ))}
@@ -636,7 +730,9 @@ export const DashboardMap = ({
         )}
         {(mapMode === "heatmap" || mapMode === "both") && (
           <div className={styles.legendSection}>
-            <div className={styles.legendTitle}>{t("dashboard.legendSeverity")}</div>
+            <div className={styles.legendTitle}>
+              {t("dashboard.legendSeverity")}
+            </div>
             <div className={styles.heatGradient} />
             <div className={styles.heatLabels}>
               <span>{t("dashboard.legendLow")}</span>
@@ -646,7 +742,50 @@ export const DashboardMap = ({
         )}
       </div>
 
-      <div ref={tooltipRef} className={styles.tooltip} style={{ display: "none" }} />
+      <div className={styles.layersPanel}>
+        <div className={styles.layersPanelTitle}>
+          {t("dashboard.layersPanel")}
+        </div>
+        <label className={styles.layerItem}>
+          <input
+            type="checkbox"
+            checked={showBuildings}
+            onChange={(e) => setShowBuildings(e.target.checked)}
+          />
+          {t("dashboard.layerBuildings")}
+        </label>
+        <label className={styles.layerItem}>
+          <input
+            type="checkbox"
+            checked={showCrisis}
+            onChange={(e) => setShowCrisis(e.target.checked)}
+          />
+          {t("dashboard.layerCrisis")}
+        </label>
+      </div>
+
+      <div
+        ref={tooltipRef}
+        className={styles.tooltip}
+        style={{ display: "none" }}
+      />
+
+      <div className={styles.basemapToggle}>
+        {(["street", "satellite"] as const).map((mode) => (
+          <button
+            key={mode}
+            type="button"
+            className={`${styles.basemapBtn} ${basemap === mode ? styles.basemapBtnActive : ""}`}
+            onClick={() => setBasemap(mode)}
+          >
+            {t(
+              mode === "street"
+                ? "dashboard.basemapStreet"
+                : "dashboard.basemapSatellite",
+            )}
+          </button>
+        ))}
+      </div>
 
       {onPolygonFilter && (
         <div className={styles.drawControls}>
