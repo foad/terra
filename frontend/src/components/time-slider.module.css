@@ -1,0 +1,157 @@
+.slider {
+  padding: 24px 16px 10px;
+  background: #fff;
+  border-top: 1px solid var(--undpds-color-gray-300, #e5e7eb);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.chart {
+  position: relative;
+  height: 36px;
+}
+
+.chartDisabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.bars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.bar {
+  position: absolute;
+  bottom: 0;
+  background: color-mix(in srgb, var(--undpds-color-blue-600, #0468b1) 22%, white);
+  min-height: 3px;
+}
+
+.barActive {
+  background: var(--undpds-color-blue-600, #0468b1);
+}
+
+.sliderRoot {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  user-select: none;
+  touch-action: none;
+}
+
+.sliderTrack {
+  position: relative;
+  flex-grow: 1;
+  height: 100%;
+  background: transparent;
+}
+
+/* Thin vertical line bracketed by a downward triangle on top and an upward
+ * triangle on bottom — reads as a draggable boundary marker. */
+.sliderThumb {
+  display: block;
+  position: relative;
+  width: 2px;
+  height: 36px;
+  background: var(--undpds-color-gray-700, #374151);
+  border-radius: 0;
+  cursor: ew-resize;
+  outline: none;
+}
+
+.sliderThumb::before,
+.sliderThumb::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+}
+
+.sliderThumb::before {
+  bottom: 100%;
+  border-top: 6px solid var(--undpds-color-gray-700, #374151);
+}
+
+.sliderThumb::after {
+  top: 100%;
+  border-bottom: 6px solid var(--undpds-color-gray-700, #374151);
+}
+
+.sliderThumb:hover,
+.sliderThumb:focus-visible,
+.sliderThumb:active {
+  background: var(--undpds-color-red, #ee402d);
+}
+
+.sliderThumb:hover::before,
+.sliderThumb:focus-visible::before,
+.sliderThumb:active::before {
+  border-top-color: var(--undpds-color-red, #ee402d);
+}
+
+.sliderThumb:hover::after,
+.sliderThumb:focus-visible::after,
+.sliderThumb:active::after {
+  border-bottom-color: var(--undpds-color-red, #ee402d);
+}
+
+/* Three-column grid keeps the center text horizontally fixed regardless of
+ * how the left/right date strings change width as handles move. */
+.labels {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: baseline;
+  column-gap: 8px;
+  margin-top: 10px;
+}
+
+.label {
+  font-size: 0.6875rem;
+  color: var(--undpds-color-gray-500, #6b7280);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.label:first-child {
+  text-align: left;
+}
+
+.label:last-child {
+  text-align: right;
+}
+
+.center {
+  font-size: 0.6875rem;
+  color: var(--undpds-color-gray-500, #6b7280);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.count {
+  font-weight: 700;
+  color: var(--undpds-color-blue-600, #0468b1);
+}
+
+.hint {
+  opacity: 0.6;
+}
+
+.reset {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.6875rem;
+  color: var(--undpds-color-gray-500, #6b7280);
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: inherit;
+}
