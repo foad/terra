@@ -11,7 +11,7 @@ The design follows two principles from the challenge brief: **scale to 500k repo
 | Column | Type | Purpose |
 |---|---|---|
 | `id` | UUID PK | Client-generated (idempotent offline retry — a resubmitted queued report can't double-insert) |
-| `crisis_event_id` | UUID → crisis_events | Owning crisis |
+| `crisis_event_id` | UUID → crisis_events | Owning crisis (column reserved for future multi-crisis link) |
 | `building_id` | TEXT | VIDA footprint identifier when the reporter tapped a building (`s2_id` from the PMTiles layer). NULL for manual-pin reports |
 | `location` | GEOMETRY(Point, 4326) | Report coordinates, GIST-indexed |
 | `h3_r12`, `h3_r8` | TEXT | Uber H3 cells at resolution 12 (~308 m² avg hexagon, edge ~9 m — building-granular) and 8 (~0.74 km² — aggregation/heatmap). Computed at ingest; B-tree indexed |
@@ -23,7 +23,7 @@ The design follows two principles from the challenge brief: **scale to 500k repo
 | `crisis_nature` | TEXT[] | Verbatim taxonomy (Earthquake … Civil unrest) |
 | `debris_present` | BOOLEAN | Verbatim debris question |
 | `electricity_status`, `health_status`, `pressing_needs` | TEXT / TEXT / TEXT[] | Appendix-1 module answers |
-| `follow_up_responses` | JSONB | Answers to crisis-configured follow-up questions, plus reserved keys (e.g. `location_description` — the textual location fallback for manual-pin reports). Modular by design: new questions need zero migrations |
+| `follow_up_responses` | JSONB | Answers to crisis-configured follow-up questions. Modular by design: new questions need zero migrations |
 | `version_chain_id`, `is_latest` | UUID / BOOLEAN | Version chaining (below) |
 | `duplicate_status`, `related_report_id` | TEXT CHECK / UUID → reports | `possible_duplicate` (same spot <15m, <2min) or `reassessment` (same building_id) — flagged at ingest, never silently dropped |
 | `device_id`, `offline_queue_id` | TEXT | Anonymous device correlation + offline-queue idempotency. **No user identity exists anywhere in the schema** |
@@ -58,4 +58,3 @@ Multiple reports about the same building are linked by `version_chain_id`. An `A
 
 - No accounts, names, or phone numbers exist in any table.
 - Photo URLs reference post-EXIF-strip objects only; raw uploads never persist.
-- `location_description` was deliberately **dropped as a column** (migration 007) and reintroduced as an optional JSONB key — collected only when the reporter volunteers it for a manual pin.
