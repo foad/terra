@@ -45,7 +45,7 @@ sequenceDiagram
     Note over Sync: Triggered by: online event, periodic poll, manual
 
     Sync->>Sync: Check navigator.onLine
-    Sync->>API: HEAD /health (verify connectivity)
+    Sync->>API: GET /health (verify connectivity)
     alt Verified online
         loop For each pending report
             Sync->>IDB: Get next pending report
@@ -91,7 +91,7 @@ sequenceDiagram
     Map->>Map: Show cached tiles (previously viewed areas)
     Map->>Map: Blank tiles for unvisited areas
 
-    U->>UI: Select building / describe location
+    U->>UI: Select building or drop a pin
     U->>UI: Capture photo (stored as blob, no upload)
     U->>UI: Select damage level (no AI suggestions)
     U->>UI: Fill survey
@@ -116,7 +116,7 @@ sequenceDiagram
     UI->>API: POST /photos/upload
     API-->>UI: { photo_key, upload_url }
     UI->>S3: PUT photo ✓
-    UI->>API: POST /photos/{key}/classify
+    UI->>API: POST /photos/classify { photo_key }
     API--xUI: Connection lost
 
     Note over UI: AI classify failed — skip suggestions
@@ -182,14 +182,14 @@ sequenceDiagram
     Note over Sync: XHR error → presigned URL still valid (15 min)
 
     Sync->>Sync: Wait (exponential backoff: 2s)
-    Sync->>API: HEAD /health ✓
+    Sync->>API: GET /health ✓
     Sync->>S3: PUT photo (retry, S3 PUT is idempotent) ✓
 
     Sync->>API: POST /reports
     API--xSync: 5xx server error
 
     Sync->>Sync: Wait (backoff: 4s)
-    Sync->>API: HEAD /health ✓
+    Sync->>API: GET /health ✓
     Sync->>API: POST /reports ✓
 
     Note over Sync: If presigned URL expired (>15 min),<br/>get a new one and re-upload
@@ -207,7 +207,7 @@ sequenceDiagram
     Note over IDB: 5 reports queued while offline
 
     U->>U: Reconnects to network
-    Note over Sync: online event → HEAD /health → verified
+    Note over Sync: online event → GET /health → verified
 
     loop Sequential processing
         Sync->>IDB: Get oldest pending report
@@ -277,6 +277,9 @@ erDiagram
         float longitude
         string building_id
         string damage_level
+        string ai_damage_level "AI suggestion (null if not returned in time)"
+        array ai_infrastructure_type "AI suggestions (string[])"
+        float ai_confidence "0..1, null if no AI result"
         json survey_data "all survey fields"
         string error "error message if failed"
         int retry_count

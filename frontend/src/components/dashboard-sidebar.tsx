@@ -1,9 +1,44 @@
-import { CircleCheck, TriangleAlert, CircleX, Download, X } from "lucide-react";
+import { CircleCheck, TriangleAlert, CircleX, Download, X, PenLine } from "lucide-react";
 import type { ReactNode } from "react";
+import { useAuth } from "react-oidc-context";
 import type { Filters, ReportFeature } from "../pages/dashboard";
 import { API_BASE } from "../utils/api";
 import { MultiSelect } from "./multi-select";
 import styles from "./dashboard-sidebar.module.css";
+
+const CSV_HEADERS = [
+  "id", "building_id", "damage_level", "infrastructure_type", "crisis_nature",
+  "debris_present", "electricity_status", "health_status", "pressing_needs",
+  "infrastructure_description", "submitted_at", "latitude", "longitude",
+  "ai_damage_level", "ai_confidence", "version_chain_id",
+];
+
+function toCSV(reports: ReportFeature[]): string {
+  const escape = (v: unknown) =>
+    `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const rows = reports.map((r) => {
+    const p = r.properties;
+    const [lng, lat] = r.geometry.coordinates;
+    return [
+      p.id, p.building_id ?? "", p.damage_level,
+      p.infrastructure_type.join("|"), p.crisis_nature.join("|"),
+      p.debris_present ?? "", p.electricity_status ?? "", p.health_status ?? "",
+      p.pressing_needs.join("|"), p.infrastructure_description ?? "",
+      p.submitted_at, lat, lng,
+      p.ai_damage_level ?? "", p.ai_confidence ?? "", p.version_chain_id,
+    ].map(escape).join(",");
+  });
+  return [CSV_HEADERS.join(","), ...rows].join("\n");
+}
+
+function downloadBlob(content: string, filename: string, mime: string) {
+  const url = URL.createObjectURL(new Blob([content], { type: mime }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 const CRISIS_NATURES = [
   "Earthquake",
@@ -40,6 +75,8 @@ interface DashboardSidebarProps {
   history: ReportFeature[];
   onShowDetails: (report: ReportFeature) => void;
   onClearSelection: () => void;
+  polygonActive?: boolean;
+  filteredReports?: ReportFeature[];
 }
 
 export const DashboardSidebar = ({
@@ -49,6 +86,8 @@ export const DashboardSidebar = ({
   history,
   onShowDetails,
   onClearSelection,
+  polygonActive = false,
+  filteredReports = [],
 }: DashboardSidebarProps) => {
   const toggleDamageLevel = (level: string) => {
     const updated = filters.damageLevel.includes(level)
@@ -64,7 +103,9 @@ export const DashboardSidebar = ({
     filters.from !== "" ||
     filters.to !== "";
 
-  const buildExportUrl = (format: "csv" | "geojson") => {
+  const auth = useAuth();
+
+  const downloadExport = async (format: "csv" | "geojson") => {
     const params = new URLSearchParams({ format });
     if (filters.damageLevel.length > 0)
       params.set("damage_level", filters.damageLevel.join(","));
@@ -74,7 +115,27 @@ export const DashboardSidebar = ({
       params.set("crisis_nature", filters.crisisNature.join("|"));
     if (filters.from) params.set("from", filters.from);
     if (filters.to) params.set("to", filters.to);
-    return `${API_BASE}/reports/export?${params.toString()}`;
+
+    const token = auth.user?.access_token;
+    const res = await fetch(`${API_BASE}/reports/export?${params.toString()}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) {
+      throw new Error(`Export failed: ${res.status}`);
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const filename =
+      res.headers
+        .get("Content-Disposition")
+        ?.match(/filename="?([^"]+)"?/)?.[1] ?? `terra-reports.${format}`;
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -150,6 +211,12 @@ export const DashboardSidebar = ({
         </div>
       ) : (
         <div className={styles.filters}>
+          {polygonActive && (
+            <div className={styles.polygonBadge}>
+              <PenLine size={12} />
+              Area filter active — clear via map
+            </div>
+          )}
           <div className={styles.filtersHeader}>
             <h2 className={styles.filtersTitle}>Filters</h2>
             {hasActiveFilters && (
@@ -250,22 +317,61 @@ export const DashboardSidebar = ({
           <div className={styles.exportGroup}>
             <div className={styles.filterLabel}>Export</div>
             <div className={styles.exportButtons}>
-              <a
-                className={styles.exportButton}
-                href={buildExportUrl("csv")}
-                download
-              >
-                <Download size={14} />
-                CSV
-              </a>
-              <a
-                className={styles.exportButton}
-                href={buildExportUrl("geojson")}
-                download
-              >
-                <Download size={14} />
-                GeoJSON
-              </a>
+              {polygonActive ? (
+                <>
+                  <button
+                    type="button"
+                    className={styles.exportButton}
+                    onClick={() =>
+                      downloadBlob(
+                        toCSV(filteredReports),
+                        "terra-export.csv",
+                        "text/csv",
+                      )
+                    }
+                  >
+                    <Download size={14} />
+                    CSV
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.exportButton}
+                    onClick={() =>
+                      downloadBlob(
+                        JSON.stringify(
+                          { type: "FeatureCollection", features: filteredReports },
+                          null,
+                          2,
+                        ),
+                        "terra-export.geojson",
+                        "application/geo+json",
+                      )
+                    }
+                  >
+                    <Download size={14} />
+                    GeoJSON
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className={styles.exportButton}
+                    onClick={() => downloadExport("csv")}
+                  >
+                    <Download size={14} />
+                    CSV
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.exportButton}
+                    onClick={() => downloadExport("geojson")}
+                  >
+                    <Download size={14} />
+                    GeoJSON
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>

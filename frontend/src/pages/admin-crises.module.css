@@ -29,7 +29,6 @@
 .table td {
   text-align: left;
   padding: var(--undpds-spacing-03) var(--undpds-spacing-04);
-  border-bottom: 1px solid var(--undpds-color-gray-300);
 }
 
 .table th {
