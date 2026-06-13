@@ -41,6 +41,20 @@ export async function stubNonReportsApi(page: Page): Promise<void> {
       body: JSON.stringify({ message: "stubbed" }),
     }),
   );
+  // Stub the bbox reports fetch used by the coverage map so tests don't hit
+  // the real reports endpoint on every map move.
+  await page.route("**/reports**", (route) => {
+    const url = new URL(route.request().url());
+    if (route.request().method() === "GET" && url.searchParams.has("west")) {
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ type: "FeatureCollection", features: [] }),
+      });
+    } else {
+      route.continue();
+    }
+  });
 }
 
 /**
