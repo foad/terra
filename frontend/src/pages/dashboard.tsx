@@ -48,6 +48,23 @@ export interface Filters {
 
 const STATS_REFRESH_MS = 60_000;
 
+function pointInPolygon(
+  point: [number, number],
+  polygon: GeoJSON.Polygon,
+): boolean {
+  const [x, y] = point;
+  const ring = polygon.coordinates[0];
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i];
+    const [xj, yj] = ring[j];
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
 const EMPTY_FILTERS: Filters = {
   damageLevel: [],
   infrastructureType: [],
@@ -74,6 +91,9 @@ const DashboardPage = () => {
     from: Date;
     to: Date;
   } | null>(null);
+  const [polygonFilter, setPolygonFilter] = useState<GeoJSON.Polygon | null>(
+    null,
+  );
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), STATS_REFRESH_MS);
@@ -156,14 +176,22 @@ const DashboardPage = () => {
   }, [selectedReport?.properties.building_id, api]);
 
   const filteredReports = useMemo(() => {
-    if (!timeWindow) return reports;
-    const from = timeWindow.from.getTime();
-    const to = timeWindow.to.getTime();
-    return reports.filter((r) => {
-      const t = new Date(r.properties.submitted_at).getTime();
-      return t >= from && t <= to;
-    });
-  }, [reports, timeWindow]);
+    let result = reports;
+    if (timeWindow) {
+      const from = timeWindow.from.getTime();
+      const to = timeWindow.to.getTime();
+      result = result.filter((r) => {
+        const t = new Date(r.properties.submitted_at).getTime();
+        return t >= from && t <= to;
+      });
+    }
+    if (polygonFilter) {
+      result = result.filter((r) =>
+        pointInPolygon(r.geometry.coordinates, polygonFilter),
+      );
+    }
+    return result;
+  }, [reports, timeWindow, polygonFilter]);
 
   return (
     <div className={styles.container}>
@@ -221,12 +249,15 @@ const DashboardPage = () => {
           history={history}
           onShowDetails={setDetailsReport}
           onClearSelection={() => setSelectedReport(null)}
+          polygonActive={polygonFilter !== null}
+          filteredReports={filteredReports}
         />
         <div className={styles.mapArea}>
           <div className={styles.mapWrapper}>
             <DashboardMap
               reports={filteredReports}
               onReportSelect={setSelectedReport}
+              onPolygonFilter={setPolygonFilter}
             />
           </div>
           <TimeSlider
