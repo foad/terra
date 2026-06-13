@@ -197,3 +197,9 @@
 .copyIconDone {
   color: var(--undpds-color-green);
 }
+
+.shareButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}

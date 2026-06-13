@@ -72,8 +72,10 @@ export const ReportFlow = ({
     useState<AiClassification | null>(null);
   const classifiedKeyRef = useRef<string | null>(null);
   const [activeCrisisType, setActiveCrisisType] = useState<string | null>(null);
-  const [activeCrisisFollowUpQuestions, setActiveCrisisFollowUpQuestions] = useState<FollowUpQuestion[]>([]);
+  const [activeCrisisFollowUpQuestions, setActiveCrisisFollowUpQuestions] =
+    useState<FollowUpQuestion[]>([]);
   const [queuedReportId, setQueuedReportId] = useState<string | null>(null);
+  const [activeCrisisName, setActiveCrisisName] = useState<string | null>(null);
   const crisisLookedUpRef = useRef(false);
   const [reportLocation, setReportLocation] = useState<{
     lat: number;
@@ -172,7 +174,9 @@ export const ReportFlow = ({
           `/crisis-events/active?lat=${latitude}&lng=${longitude}`,
         );
         if (result?.crisis_type) setActiveCrisisType(result.crisis_type);
-        if (result?.follow_up_questions) setActiveCrisisFollowUpQuestions(result.follow_up_questions);
+        if (result?.follow_up_questions)
+          setActiveCrisisFollowUpQuestions(result.follow_up_questions);
+        if (result?.name) setActiveCrisisName(result.name);
       } catch {
         // No active crisis at this location, or network error — silent drop.
       }
@@ -186,7 +190,7 @@ export const ReportFlow = ({
     (async () => {
       try {
         const result = await api(
-          `/reports?building_id=${encodeURIComponent(buildingId)}`,
+          `/reports/coverage?building_id=${encodeURIComponent(buildingId)}`,
         );
         if (!cancelled) setExistingReports(result?.features ?? []);
       } catch {
@@ -206,7 +210,8 @@ export const ReportFlow = ({
 
   const handleAdvanceToSurvey = () => {
     const reportLat = selectedBuilding?.center[1] ?? manualPin?.[1] ?? latitude;
-    const reportLng = selectedBuilding?.center[0] ?? manualPin?.[0] ?? longitude;
+    const reportLng =
+      selectedBuilding?.center[0] ?? manualPin?.[0] ?? longitude;
     const seeded: PreSeeded = {};
     setSurvey((prev) => {
       let next = prev;
@@ -243,34 +248,41 @@ export const ReportFlow = ({
 
   const handleSubmit = async () => {
     const reportLat = selectedBuilding?.center[1] ?? manualPin?.[1] ?? latitude;
-    const reportLng = selectedBuilding?.center[0] ?? manualPin?.[0] ?? longitude;
+    const reportLng =
+      selectedBuilding?.center[0] ?? manualPin?.[0] ?? longitude;
     if (!damageLevel || reportLat == null || reportLng == null) return;
 
     setStep("submitting");
     setSubmitError(null);
 
     try {
-      const queued = await reportQueue.add({
-        id: crypto.randomUUID(),
-        photo: photo?.blob ? await photo.blob.arrayBuffer() : null,
-        photoContentType: photo?.blob?.type ?? null,
-        photoKey: photo?.photoKey ?? null,
-        latitude: reportLat,
-        longitude: reportLng,
-        buildingId: selectedBuilding?.buildingId ?? null,
-        damageLevel,
-        aiDamageLevel: aiClassification?.damageLevel ?? null,
-        aiInfrastructureType: aiClassification
-          ? aiClassification.infrastructureType
-              .map(
-                (key) => INFRASTRUCTURE_TYPES.find((t) => t.key === key)?.value,
-              )
-              .filter((v): v is string => Boolean(v))
-          : null,
-        aiConfidence: aiClassification?.damageConfidence ?? null,
-        surveyData: { ...survey },
-        createdAt: new Date().toISOString(),
-      }, activeCrisisFollowUpQuestions.length > 0 ? "awaiting-follow-up" : "pending");
+      const queued = await reportQueue.add(
+        {
+          id: crypto.randomUUID(),
+          photo: photo?.blob ? await photo.blob.arrayBuffer() : null,
+          photoContentType: photo?.blob?.type ?? null,
+          photoKey: photo?.photoKey ?? null,
+          latitude: reportLat,
+          longitude: reportLng,
+          buildingId: selectedBuilding?.buildingId ?? null,
+          damageLevel,
+          aiDamageLevel: aiClassification?.damageLevel ?? null,
+          aiInfrastructureType: aiClassification
+            ? aiClassification.infrastructureType
+                .map(
+                  (key) =>
+                    INFRASTRUCTURE_TYPES.find((t) => t.key === key)?.value,
+                )
+                .filter((v): v is string => Boolean(v))
+            : null,
+          aiConfidence: aiClassification?.damageConfidence ?? null,
+          surveyData: { ...survey },
+          createdAt: new Date().toISOString(),
+        },
+        activeCrisisFollowUpQuestions.length > 0
+          ? "awaiting-follow-up"
+          : "pending",
+      );
 
       saveSurveyPrefs(reportLat, reportLng, survey);
       setQueuedReportId(queued.id);
@@ -288,7 +300,9 @@ export const ReportFlow = ({
     }
   };
 
-  const handleFollowUpComplete = async (responses: Record<string, string> | null) => {
+  const handleFollowUpComplete = async (
+    responses: Record<string, string> | null,
+  ) => {
     if (queuedReportId) {
       if (responses && Object.keys(responses).length > 0) {
         await reportQueue.updateFollowUpResponses(queuedReportId, responses);
@@ -327,7 +341,10 @@ export const ReportFlow = ({
             onManualPin={handleManualPin}
           />
           <div className={styles.locationOverlay}>
-            <BuildingSelection building={selectedBuilding} manualPin={manualPin} />
+            <BuildingSelection
+              building={selectedBuilding}
+              manualPin={manualPin}
+            />
             <ExistingReports reports={existingReports} />
           </div>
         </div>
@@ -491,6 +508,7 @@ export const ReportFlow = ({
           infrastructureKeys={infraKeys}
           reportLat={reportLocation?.lat ?? null}
           reportLng={reportLocation?.lng ?? null}
+          crisisName={activeCrisisName ?? undefined}
         />
       </div>
     );

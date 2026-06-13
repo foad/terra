@@ -30,6 +30,10 @@ export const syncEngine = {
     };
   },
 
+  async refreshCounts() {
+    await notifyListeners();
+  },
+
   async processQueue() {
     if (running) return;
     if (!navigator.onLine) return;

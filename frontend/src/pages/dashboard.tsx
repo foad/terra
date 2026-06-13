@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { AppBar } from "../components/app-bar";
 import { DashboardMap } from "../components/dashboard-map";
 import { DAMAGE_COLORS } from "../components/damage-colors";
 import { DashboardSidebar } from "../components/dashboard-sidebar";
 import { ReportDetailsModal } from "../components/report-details-modal";
-import { api } from "../utils/api";
+import { TimeSlider } from "../components/time-slider";
+import { useApi } from "../hooks/use-api";
 import styles from "./dashboard.module.css";
 
 export interface ReportFeature {
@@ -49,6 +51,23 @@ const STATS_REFRESH_MS = 60_000;
 // analyst map without a filter change or reload (#196).
 const REPORTS_REFRESH_MS = 30_000;
 
+function pointInPolygon(
+  point: [number, number],
+  polygon: GeoJSON.Polygon,
+): boolean {
+  const [x, y] = point;
+  const ring = polygon.coordinates[0];
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i];
+    const [xj, yj] = ring[j];
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
 const EMPTY_FILTERS: Filters = {
   damageLevel: [],
   infrastructureType: [],
@@ -59,8 +78,8 @@ const EMPTY_FILTERS: Filters = {
 
 const DashboardPage = () => {
   const { t } = useTranslation();
+  const api = useApi();
   const [reports, setReports] = useState<ReportFeature[]>([]);
-  const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [selectedReport, setSelectedReport] = useState<ReportFeature | null>(
     null,
@@ -71,6 +90,13 @@ const DashboardPage = () => {
   );
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(() => Date.now());
+  const [timeWindow, setTimeWindow] = useState<{
+    from: Date;
+    to: Date;
+  } | null>(null);
+  const [polygonFilter, setPolygonFilter] = useState<GeoJSON.Polygon | null>(
+    null,
+  );
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), STATS_REFRESH_MS);
@@ -120,7 +146,6 @@ const DashboardPage = () => {
 
         if (!cancelled) {
           setReports(allFeatures);
-          setTotal(totalCount);
         }
       } catch (err) {
         // A failed background poll keeps the last good data; the next tick
@@ -145,7 +170,7 @@ const DashboardPage = () => {
       window.removeEventListener("online", refresh);
       document.removeEventListener("visibilitychange", refresh);
     };
-  }, [filters]);
+  }, [filters, api]);
 
   useEffect(() => {
     const buildingId = selectedReport?.properties.building_id;
@@ -167,38 +192,71 @@ const DashboardPage = () => {
     return () => {
       cancelled = true;
     };
-  }, [selectedReport?.properties.building_id]);
+  }, [selectedReport?.properties.building_id, api]);
+
+  const filteredReports = useMemo(() => {
+    let result = reports;
+    if (timeWindow) {
+      const from = timeWindow.from.getTime();
+      const to = timeWindow.to.getTime();
+      result = result.filter((r) => {
+        const t = new Date(r.properties.submitted_at).getTime();
+        return t >= from && t <= to;
+      });
+    }
+    if (polygonFilter) {
+      result = result.filter((r) =>
+        pointInPolygon(r.geometry.coordinates, polygonFilter),
+      );
+    }
+    return result;
+  }, [reports, timeWindow, polygonFilter]);
 
   return (
     <div className={styles.container}>
-      <header className={styles.header}>
-        <div className={styles.headerInner}>
-          <h1 className={styles.title}>TERRA</h1>
-          <span className={styles.subtitle}>Dashboard</span>
-          <span className={styles.reportCount}>
-            {loading ? "Loading..." : `${total} reports`}
-          </span>
-        </div>
-      </header>
+      <AppBar subtitle="Dashboard" />
       <div className={styles.statsBar}>
         <div className={styles.statItem}>
-          <span className={styles.statDot} style={{ background: DAMAGE_COLORS.complete }} />
-          <span className={styles.statValue}>{loading ? "—" : stats.complete}</span>
-          <span className={styles.statLabel}>{t("dashboard.levelComplete")}</span>
+          <span
+            className={styles.statDot}
+            style={{ background: DAMAGE_COLORS.complete }}
+          />
+          <span className={styles.statValue}>
+            {loading ? "—" : stats.complete}
+          </span>
+          <span className={styles.statLabel}>
+            {t("dashboard.levelComplete")}
+          </span>
         </div>
         <div className={styles.statItem}>
-          <span className={styles.statDot} style={{ background: DAMAGE_COLORS.partial }} />
-          <span className={styles.statValue}>{loading ? "—" : stats.partial}</span>
-          <span className={styles.statLabel}>{t("dashboard.levelPartial")}</span>
+          <span
+            className={styles.statDot}
+            style={{ background: DAMAGE_COLORS.partial }}
+          />
+          <span className={styles.statValue}>
+            {loading ? "—" : stats.partial}
+          </span>
+          <span className={styles.statLabel}>
+            {t("dashboard.levelPartial")}
+          </span>
         </div>
         <div className={styles.statItem}>
-          <span className={styles.statDot} style={{ background: DAMAGE_COLORS.minimal }} />
-          <span className={styles.statValue}>{loading ? "—" : stats.minimal}</span>
-          <span className={styles.statLabel}>{t("dashboard.levelMinimal")}</span>
+          <span
+            className={styles.statDot}
+            style={{ background: DAMAGE_COLORS.minimal }}
+          />
+          <span className={styles.statValue}>
+            {loading ? "—" : stats.minimal}
+          </span>
+          <span className={styles.statLabel}>
+            {t("dashboard.levelMinimal")}
+          </span>
         </div>
         <div className={styles.statDivider} />
         <div className={styles.statItem}>
-          <span className={styles.statValue}>{loading ? "—" : stats.last24h}</span>
+          <span className={styles.statValue}>
+            {loading ? "—" : stats.last24h}
+          </span>
           <span className={styles.statLabel}>{t("dashboard.last24h")}</span>
         </div>
       </div>
@@ -210,9 +268,24 @@ const DashboardPage = () => {
           history={history}
           onShowDetails={setDetailsReport}
           onClearSelection={() => setSelectedReport(null)}
+          polygonActive={polygonFilter !== null}
+          filteredReports={filteredReports}
         />
         <div className={styles.mapArea}>
-          <DashboardMap reports={reports} onReportSelect={setSelectedReport} />
+          <div className={styles.mapWrapper}>
+            <DashboardMap
+              reports={filteredReports}
+              onReportSelect={setSelectedReport}
+              onPolygonFilter={setPolygonFilter}
+            />
+          </div>
+          <TimeSlider
+            reports={reports}
+            filteredCount={filteredReports.length}
+            onChange={(from, to) =>
+              setTimeWindow(from && to ? { from, to } : null)
+            }
+          />
         </div>
       </div>
       {detailsReport && (

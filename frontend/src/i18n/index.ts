@@ -6,6 +6,7 @@ import zh from "./zh.json";
 import fr from "./fr.json";
 import ru from "./ru.json";
 import es from "./es.json";
+import tr from "./tr.json";
 
 const RTL_LANGUAGES = ["ar"];
 
@@ -22,6 +23,9 @@ i18n.use(initReactI18next).init({
     fr: { translation: fr },
     ru: { translation: ru },
     es: { translation: es },
+    // Beyond the six core UN languages: local languages are one locale file
+    // each — Turkish serves the simulated Antakya deployment (#205).
+    tr: { translation: tr },
   },
   lng: savedLanguage,
   fallbackLng: "en",
@@ -48,4 +52,5 @@ export const SUPPORTED_LANGUAGES = [
   { code: "fr", name: "Français" },
   { code: "ru", name: "Русский" },
   { code: "es", name: "Español" },
+  { code: "tr", name: "Türkçe" },
 ];
