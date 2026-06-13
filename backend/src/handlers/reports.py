@@ -385,9 +385,10 @@ def query_reports(params: dict) -> dict:
 
 
 def query_coverage(params: dict) -> dict:
-    """Public minimal-payload view for the community PWA's damage-fill layer
+    """Public minimal-payload view for the community PWA
 
-    Returns (building_id, damage_level) per assessed building within the bbox
+    Returns a FeatureCollection with only (id, building_id, damage_level,
+    submitted_at) per row
     """
     q = ReportsQueryParams(**params)
     where, values = build_filter_clause(q)
@@ -396,19 +397,42 @@ def query_coverage(params: dict) -> dict:
     with conn.cursor() as cur:
         cur.execute(
             f"""
-            SELECT building_id, damage_level
+            SELECT
+                id, ST_X(location) as lng, ST_Y(location) as lat,
+                building_id, damage_level, submitted_at
             FROM reports
-            WHERE {where} AND building_id IS NOT NULL
-            LIMIT %s
+            WHERE {where}
+            ORDER BY submitted_at DESC
+            LIMIT %s OFFSET %s
             """,
-            (*values, q.limit),
+            (*values, q.limit, q.offset),
         )
         rows = cur.fetchall()
 
+        cur.execute(
+            f"SELECT COUNT(*) FROM reports WHERE {where}",
+            tuple(values),
+        )
+        total = cur.fetchone()[0]
+
+    features = [
+        {
+            "type": "Feature",
+            "geometry": {"type": "Point", "coordinates": [row[1], row[2]]},
+            "properties": {
+                "id": str(row[0]),
+                "building_id": row[3],
+                "damage_level": row[4],
+                "submitted_at": row[5].isoformat() if row[5] else None,
+            },
+        }
+        for row in rows
+    ]
+
     return {
-        "features": [
-            {"building_id": row[0], "damage_level": row[1]} for row in rows
-        ],
+        "type": "FeatureCollection",
+        "features": features,
+        "total": total,
     }
 
 
