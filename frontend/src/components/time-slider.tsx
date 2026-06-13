@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
+import * as Slider from "@radix-ui/react-slider";
 import type { ReportFeature } from "../pages/dashboard";
 import styles from "./time-slider.module.css";
 
 const STEPS = 1000;
-const BUCKETS = 28;
+const BUCKETS = 100;
+const MIN_GAP = 10;
 
 interface Props {
   reports: ReportFeature[];
@@ -32,12 +34,10 @@ export const TimeSlider = ({ reports, filteredCount, onChange }: Props) => {
       if (t > max) max = t;
     }
     if (min === max) return { paddedMin: min, maxMs: max, bars: [] };
-    const span = max - min;
+    const sp = max - min;
     // Extend one step before the first event so the from handle can sit
     // at "just before all reports" rather than exactly at the first one.
-    const padded = min - span / STEPS;
-    // Bucket width depends on min/max, so bucketing needs a second pass —
-    // but over the cached timestamps, so each date is only parsed once.
+    const padded = min - sp / STEPS;
     const counts = new Array(BUCKETS).fill(0);
     let peak = 0;
     for (const t of times) {
@@ -55,124 +55,107 @@ export const TimeSlider = ({ reports, filteredCount, onChange }: Props) => {
     };
   }, [reports]);
 
-  const [fromVal, setFromVal] = useState(0);
-  const [toVal, setToVal] = useState(STEPS);
-  // Track which handle was last pointer-downed so its z-index stays elevated
-  // during the full drag — prevents the handle losing pointer capture when
-  // both thumbs cross the midpoint.
-  const [lastTouched, setLastTouched] = useState<"from" | "to">("to");
+  const [range, setRange] = useState<[number, number]>([0, STEPS]);
+  const [fromVal, toVal] = range;
 
-  if (bars.length === 0) {
-    return (
-      <div className={styles.slider} style={{ opacity: 0.45, pointerEvents: "none" }}>
-        <div className={styles.histogram}>
-          {Array.from({ length: BUCKETS }, (_, i) => (
-            <div key={i} className={styles.bar} style={{ height: "4px" }} />
-          ))}
-        </div>
-        <div className={styles.track}>
-          <div className={styles.trackBg} />
-          <div className={styles.trackFill} style={{ left: "0%", right: "0%" }} />
-          <input type="range" min={0} max={STEPS} value={0} className={styles.rangeInput} onChange={() => {}} disabled />
-          <input type="range" min={0} max={STEPS} value={STEPS} className={styles.rangeInput} onChange={() => {}} disabled />
-        </div>
-        <div className={styles.labels}>
-          <span className={styles.label}>—</span>
-          <span className={styles.center}><span className={styles.hint}>no reports yet</span></span>
-          <span className={styles.label}>—</span>
-        </div>
-      </div>
-    );
-  }
-
+  const empty = bars.length === 0;
   const span = maxMs - paddedMin;
-  const fromMs = paddedMin + (fromVal / STEPS) * span;
-  const toMs = paddedMin + (toVal / STEPS) * span;
-  const fromPct = (fromVal / STEPS) * 100;
-  const toPct = (toVal / STEPS) * 100;
-  const isFiltered = fromVal > 0 || toVal < STEPS;
+  const fromMs = empty ? 0 : paddedMin + (fromVal / STEPS) * span;
+  const toMs = empty ? 0 : paddedMin + (toVal / STEPS) * span;
+  const isFiltered = !empty && (fromVal > 0 || toVal < STEPS);
 
+  // Always emit concrete dates whenever ANY handle has moved — otherwise the
+  // dashboard's `from && to` gate drops single-sided filters and the count
+  // appears stuck at "N of N".
   const fireChange = (fv: number, tv: number) => {
-    // from=0 means "from the very beginning" regardless of to position
-    const fromDate = fv === 0 ? null : new Date(paddedMin + (fv / STEPS) * span);
-    const toDate = tv === STEPS ? null : new Date(paddedMin + (tv / STEPS) * span);
-    if (!fromDate && !toDate) {
+    if (fv === 0 && tv === STEPS) {
       onChange(null, null);
     } else {
-      onChange(fromDate, toDate);
+      onChange(
+        new Date(paddedMin + (fv / STEPS) * span),
+        new Date(paddedMin + (tv / STEPS) * span),
+      );
     }
   };
 
+  const handleChange = (next: number[]) => {
+    const tuple: [number, number] = [next[0], next[1]];
+    setRange(tuple);
+    fireChange(tuple[0], tuple[1]);
+  };
+
   const reset = () => {
-    setFromVal(0);
-    setToVal(STEPS);
+    setRange([0, STEPS]);
     onChange(null, null);
   };
 
+  const displayBars = empty ? new Array<number>(BUCKETS).fill(0) : bars;
+  const fromFrac = fromVal / STEPS;
+  const toFrac = toVal / STEPS;
+  const barWidthPct = 100 / BUCKETS;
+
   return (
     <div className={styles.slider}>
-      <div className={styles.histogram}>
-        {bars.map((h, i) => (
-          <div
-            key={i}
-            className={styles.bar}
-            style={{ height: `${Math.max(h * 100, 4)}%` }}
-          />
-        ))}
-      </div>
-      <div className={styles.track}>
-        <div className={styles.trackBg} />
-        <div
-          className={styles.trackFill}
-          style={{ left: `${fromPct}%`, right: `${100 - toPct}%` }}
-        />
-        <input
-          type="range"
+      <div className={`${styles.chart} ${empty ? styles.chartDisabled : ""}`}>
+        <div className={styles.bars}>
+          {displayBars.map((h, i) => {
+            const left = i / BUCKETS;
+            const right = (i + 1) / BUCKETS;
+            const inRange = left >= fromFrac && right <= toFrac;
+            return (
+              <div
+                key={i}
+                className={`${styles.bar} ${inRange ? styles.barActive : ""}`}
+                style={{
+                  left: `${left * 100}%`,
+                  width: `calc(${barWidthPct}% - 2px)`,
+                  height: `${Math.max(h * 100, 8)}%`,
+                }}
+              />
+            );
+          })}
+        </div>
+        <Slider.Root
+          className={styles.sliderRoot}
           min={0}
           max={STEPS}
-          value={fromVal}
-          className={styles.rangeInput}
-          style={{ zIndex: lastTouched === "from" ? 3 : 1 }}
-          onPointerDown={() => setLastTouched("from")}
-          onChange={(e) => {
-            const v = Math.min(Number(e.target.value), toVal - 10);
-            setFromVal(v);
-            fireChange(v, toVal);
-          }}
-        />
-        <input
-          type="range"
-          min={0}
-          max={STEPS}
-          value={toVal}
-          className={styles.rangeInput}
-          style={{ zIndex: lastTouched === "to" ? 3 : 1 }}
-          onPointerDown={() => setLastTouched("to")}
-          onChange={(e) => {
-            const v = Math.max(Number(e.target.value), fromVal + 10);
-            setToVal(v);
-            fireChange(fromVal, v);
-          }}
-        />
+          step={1}
+          minStepsBetweenThumbs={MIN_GAP}
+          value={range}
+          onValueChange={handleChange}
+          disabled={empty}
+        >
+          <Slider.Track className={styles.sliderTrack} />
+          <Slider.Thumb className={styles.sliderThumb} aria-label="From" />
+          <Slider.Thumb className={styles.sliderThumb} aria-label="To" />
+        </Slider.Root>
       </div>
       <div className={styles.labels}>
-        <span className={styles.label}>{fmtDate(new Date(fromMs))}</span>
+        <span className={styles.label}>
+          {empty ? "—" : fmtDate(new Date(fromMs))}
+        </span>
         <span className={styles.center}>
-          {isFiltered ? (
+          {empty ? (
+            <span className={styles.hint}>no reports yet</span>
+          ) : (
             <>
               <span className={styles.count}>
                 {filteredCount} of {reports.length}
               </span>
-              {" · "}
-              <button className={styles.reset} onClick={reset}>
-                reset
-              </button>
+              {isFiltered && (
+                <>
+                  {" · "}
+                  <button className={styles.reset} onClick={reset}>
+                    reset
+                  </button>
+                </>
+              )}
             </>
-          ) : (
-            <span className={styles.hint}>drag to filter by time</span>
           )}
         </span>
-        <span className={styles.label}>{fmtDate(new Date(toMs))}</span>
+        <span className={styles.label}>
+          {empty ? "—" : fmtDate(new Date(toMs))}
+        </span>
       </div>
     </div>
   );

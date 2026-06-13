@@ -11,6 +11,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@radix-ui/react-slider": "^1.4.0",
     "@undp/design-system": "^1.7.3",
     "@undp/design-system-assets": "^1.7.3",
     "h3-js": "^4.4.0",
