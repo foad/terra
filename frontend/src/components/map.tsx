@@ -268,7 +268,7 @@ export const Map = ({
       const b = map.getBounds();
       try {
         const result = await api(
-          `/reports?west=${b.getWest()}&south=${b.getSouth()}&east=${b.getEast()}&north=${b.getNorth()}&limit=500`,
+          `/reports/coverage?west=${b.getWest()}&south=${b.getSouth()}&east=${b.getEast()}&north=${b.getNorth()}&limit=500`,
         );
         const features: ReportFeature[] = result?.features ?? [];
         const seen = new Set<string>();
