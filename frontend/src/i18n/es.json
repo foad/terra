@@ -7,7 +7,12 @@
     "syncing": "Sincronizando {{count}} informe...",
     "syncing_plural": "Sincronizando {{count}} informes...",
     "syncFailed": "{{count}} informe no se pudo sincronizar.",
-    "syncFailed_plural": "{{count}} informes no se pudieron sincronizar."
+    "syncFailed_plural": "{{count}} informes no se pudieron sincronizar.",
+    "failedPanelTitle": "Informes fallidos",
+    "failedPanelRetry": "Reintentar",
+    "failedPanelDiscard": "Descartar",
+    "failedPanelRetryAll": "Reintentar todos",
+    "failedPanelEmpty": "No hay informes fallidos"
   },
   "common": {
     "next": "Siguiente",
@@ -127,6 +132,10 @@
     "queued": "Informe en cola",
     "submittedMessage": "Gracias por su informe. Su contribución está ayudando a los equipos de respuesta a priorizar los esfuerzos de recuperación en su área.",
     "queuedMessage": "Su informe ha sido guardado y se enviará automáticamente cuando se restablezca la conectividad.",
+    "shareButton": "Compartir con sus vecinos",
+    "shareTitle": "Ayude a evaluar los daños en su área",
+    "shareText": "Acabo de enviar un informe de daños. Por favor ayude enviando el suyo — toma menos de 2 minutos.",
+    "shareTextWithCrisis": "Acabo de enviar un informe de daños para {{crisisName}}. Por favor ayude enviando el suyo — toma menos de 2 minutos.",
     "submitAnother": "Enviar otro informe",
     "followUpHeading": "Una pregunta rápida mientras está aquí:",
     "followUpHeading_plural": "{{count}} preguntas rápidas mientras está aquí:",
