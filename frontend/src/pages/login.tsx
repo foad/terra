@@ -13,6 +13,7 @@ const LoginPage = ({ mode }: LoginPageProps) => {
 
   useEffect(() => {
     auth.clearStaleState();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -21,6 +22,7 @@ const LoginPage = ({ mode }: LoginPageProps) => {
     } else if (mode === "signout" && !auth.isAuthenticated) {
       navigate("/login", { replace: true });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, auth.isAuthenticated]);
 
   const email = (auth.user?.profile?.email as string | undefined) ?? null;

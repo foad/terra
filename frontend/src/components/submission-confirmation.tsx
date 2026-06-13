@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { CircleCheck, CloudOff, Copy, Check, Shield, Share2 } from "lucide-react";
+import {
+  CircleCheck,
+  CloudOff,
+  Copy,
+  Check,
+  Shield,
+  Share2,
+} from "lucide-react";
 import { latLngToCell } from "h3-js";
 import { OpenLocationCode } from "open-location-code";
 import { useTranslation } from "react-i18next";
@@ -34,7 +41,9 @@ export const SubmissionConfirmation = ({
   const { t } = useTranslation();
   const [responses, setResponses] = useState<Record<string, string>>({});
   const [otherValues, setOtherValues] = useState<Record<string, string>>({});
-  const [otherSelected, setOtherSelected] = useState<Record<string, boolean>>({});
+  const [otherSelected, setOtherSelected] = useState<Record<string, boolean>>(
+    {},
+  );
   const [areaCount, setAreaCount] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -64,7 +73,7 @@ export const SubmissionConfirmation = ({
     (async () => {
       try {
         const h3Cell = latLngToCell(reportLat, reportLng, 8);
-        const result = await api(`/reports?h3=${h3Cell}&limit=1`);
+        const result = await api(`/reports/coverage?h3=${h3Cell}&limit=1`);
         if (!cancelled && typeof result?.total === "number") {
           setAreaCount(result.total);
         }
@@ -88,7 +97,10 @@ export const SubmissionConfirmation = ({
   const selectOther = (questionId: string) => {
     setOtherSelected((prev) => ({ ...prev, [questionId]: true }));
     const currentText = otherValues[questionId] ?? "";
-    setResponses((prev) => ({ ...prev, [questionId]: `Other: ${currentText}` }));
+    setResponses((prev) => ({
+      ...prev,
+      [questionId]: `Other: ${currentText}`,
+    }));
   };
 
   const setOther = (questionId: string, value: string) => {
@@ -98,7 +110,10 @@ export const SubmissionConfirmation = ({
 
   const handleComplete = () => {
     const hasEmptyOther = followUpQuestions.some(
-      (q) => q.allow_other && (otherSelected[q.id] ?? false) && !otherValues[q.id]?.trim(),
+      (q) =>
+        q.allow_other &&
+        (otherSelected[q.id] ?? false) &&
+        !otherValues[q.id]?.trim(),
     );
     if (hasEmptyOther) return;
     const finalResponses = Object.keys(responses).length > 0 ? responses : null;
@@ -193,7 +208,9 @@ export const SubmissionConfirmation = ({
       {hasQuestions && (
         <div className={styles.followUp}>
           <p className={styles.followUpHeading}>
-            {t("confirmation.followUpHeading", { count: followUpQuestions.length })}
+            {t("confirmation.followUpHeading", {
+              count: followUpQuestions.length,
+            })}
           </p>
           {followUpQuestions.map((q) => {
             const isOtherActive = otherSelected[q.id] ?? false;

@@ -1,7 +1,13 @@
 import uuid
 from unittest.mock import MagicMock, patch
 
-from src.handlers.reports import ReportSubmission, _find_version_chain, create_report, query_reports
+from src.handlers.reports import (
+    ReportSubmission,
+    _find_version_chain,
+    create_report,
+    query_coverage,
+    query_reports,
+)
 
 
 def _valid_body(**overrides):
@@ -411,3 +417,148 @@ class TestFindVersionChain:
 
         result = _find_version_chain(None, "8a2a1072b59ffff")
         assert isinstance(result, uuid.UUID)
+
+
+class TestQueryCoverage:
+    @patch("src.handlers.reports.get_connection")
+    def test_returns_minimal_feature_collection(self, mock_get_conn):
+        from datetime import datetime, timezone
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        # SELECT id, lng, lat, building_id, damage_level, submitted_at
+        mock_cursor.fetchall.return_value = [
+            (
+                "report-id-1",
+                36.16,
+                36.2,
+                "u10k7d2q",
+                "partial",
+                datetime(2026, 4, 17, tzinfo=timezone.utc),
+            )
+        ]
+        mock_cursor.fetchone.return_value = (1,)
+        mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_get_conn.return_value = mock_conn
+
+        result = query_coverage({})
+
+        assert result["type"] == "FeatureCollection"
+        assert result["total"] == 1
+        assert len(result["features"]) == 1
+        feature = result["features"][0]
+        assert feature["geometry"]["coordinates"] == [36.16, 36.2]
+        props = feature["properties"]
+        assert props["id"] == "report-id-1"
+        assert props["building_id"] == "u10k7d2q"
+        assert props["damage_level"] == "partial"
+        assert props["submitted_at"] == "2026-04-17T00:00:00+00:00"
+
+    @patch("src.handlers.reports.get_connection")
+    def test_response_excludes_sensitive_fields(self, mock_get_conn):
+        """Privacy regression — coverage must never leak detail fields."""
+        from datetime import datetime, timezone
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchall.return_value = [
+            (
+                "report-id-1", 36.16, 36.2, "u10k7d2q", "partial",
+                datetime(2026, 4, 17, tzinfo=timezone.utc),
+            )
+        ]
+        mock_cursor.fetchone.return_value = (1,)
+        mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_get_conn.return_value = mock_conn
+
+        result = query_coverage({})
+
+        props = result["features"][0]["properties"]
+        for forbidden in (
+            "photo_url",
+            "thumbnail_url",
+            "infrastructure_description",
+            "infrastructure_type",
+            "crisis_nature",
+            "ai_damage_level",
+            "ai_infrastructure_type",
+            "ai_confidence",
+            "follow_up_responses",
+            "electricity_status",
+            "health_status",
+            "pressing_needs",
+            "debris_present",
+        ):
+            assert forbidden not in props, (
+                f"coverage response leaked '{forbidden}'"
+            )
+
+        # SQL itself only selects the minimal columns.
+        sql = mock_cursor.execute.call_args_list[0][0][0]
+        for forbidden_col in (
+            "photo_url",
+            "infrastructure_description",
+            "follow_up_responses",
+            "ai_confidence",
+        ):
+            assert forbidden_col not in sql, (
+                f"coverage SELECT included '{forbidden_col}'"
+            )
+
+    @patch("src.handlers.reports.get_connection")
+    def test_empty_results(self, mock_get_conn):
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchall.return_value = []
+        mock_cursor.fetchone.return_value = (0,)
+        mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_get_conn.return_value = mock_conn
+
+        result = query_coverage(
+            {"west": "0", "south": "0", "east": "1", "north": "1"}
+        )
+
+        assert result["type"] == "FeatureCollection"
+        assert result["features"] == []
+        assert result["total"] == 0
+
+    @patch("src.handlers.reports.get_connection")
+    def test_filters_apply(self, mock_get_conn):
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchall.return_value = []
+        mock_cursor.fetchone.return_value = (0,)
+        mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_get_conn.return_value = mock_conn
+
+        query_coverage({"h3": "882da16601fffff", "damage_level": "complete"})
+
+        sql = mock_cursor.execute.call_args_list[0][0][0]
+        where = sql.split("WHERE")[-1].split("ORDER BY")[0]
+        assert "h3_r8 = %s" in where
+        assert "damage_level IN" in where
+
+    @patch("src.handlers.reports.get_connection")
+    def test_building_id_returns_all_versions(self, mock_get_conn):
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchall.return_value = []
+        mock_cursor.fetchone.return_value = (0,)
+        mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_get_conn.return_value = mock_conn
+
+        query_coverage({"building_id": "u10k7d2q"})
+
+        sql = mock_cursor.execute.call_args_list[0][0][0]
+        main_where = sql.split("WHERE")[-1].split("ORDER BY")[0]
+        assert "is_latest = true" not in main_where
+        assert "building_id = %s" in main_where
+
+    def test_limit_over_1000_rejected(self):
+        import pytest
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError):
+            query_coverage({"limit": "5000"})
