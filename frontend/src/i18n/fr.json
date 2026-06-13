@@ -185,5 +185,9 @@
     "layersPanel": "Couches",
     "layerBuildings": "Bâtiments",
     "layerCrisis": "Zone de crise"
+  },
+  "coverage": {
+    "unassessed_one": "{{count}} bâtiment proche non encore évalué",
+    "unassessed_other": "{{count}} bâtiments proches non encore évalués"
   }
 }

@@ -201,5 +201,13 @@
     "layersPanel": "الطبقات",
     "layerBuildings": "المباني",
     "layerCrisis": "منطقة الأزمة"
+  },
+  "coverage": {
+    "unassessed_zero": "لا توجد مبانٍ قريبة لم يتم تقييمها بعد",
+    "unassessed_one": "مبنى واحد قريب لم يتم تقييمه بعد",
+    "unassessed_two": "مبنيان قريبان لم يتم تقييمهما بعد",
+    "unassessed_few": "{{count}} مبانٍ قريبة لم يتم تقييمها بعد",
+    "unassessed_many": "{{count}} مبنى قريب لم يتم تقييمه بعد",
+    "unassessed_other": "{{count}} مبنى قريب لم يتم تقييمه بعد"
   }
 }

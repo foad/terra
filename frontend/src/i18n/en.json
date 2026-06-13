@@ -185,5 +185,9 @@
     "layersPanel": "Layers",
     "layerBuildings": "Buildings",
     "layerCrisis": "Crisis boundary"
+  },
+  "coverage": {
+    "unassessed_one": "{{count}} building nearby not yet assessed",
+    "unassessed_other": "{{count}} buildings nearby not yet assessed"
   }
 }

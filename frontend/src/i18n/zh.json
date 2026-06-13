@@ -181,5 +181,8 @@
     "layersPanel": "图层",
     "layerBuildings": "建筑",
     "layerCrisis": "危机区域"
+  },
+  "coverage": {
+    "unassessed_other": "附近 {{count}} 栋建筑尚未评估"
   }
 }
