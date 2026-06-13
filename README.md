@@ -71,6 +71,8 @@ Terraform manages AWS resources (Lambda, API Gateway, S3, CloudFront, IAM). Data
 
 ## Architecture
 
+![TERRA Architecture Diagram](docs/TERRA_architecture.png)
+
 | Layer | Technology |
 |-------|------------|
 | Frontend | React + Vite (PWA) |
@@ -81,6 +83,7 @@ Terraform manages AWS resources (Lambda, API Gateway, S3, CloudFront, IAM). Data
 | Storage | AWS S3 |
 | CDN | AWS CloudFront |
 | AI | AWS Bedrock |
+
 
 ## Project Structure
 
