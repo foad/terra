@@ -5,6 +5,7 @@ import { DashboardMap } from "../components/dashboard-map";
 import { DAMAGE_COLORS } from "../components/damage-colors";
 import { DashboardSidebar } from "../components/dashboard-sidebar";
 import { ReportDetailsModal } from "../components/report-details-modal";
+import { TimeSlider } from "../components/time-slider";
 import { useApi } from "../hooks/use-api";
 import styles from "./dashboard.module.css";
 
@@ -69,6 +70,10 @@ const DashboardPage = () => {
   );
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(() => Date.now());
+  const [timeWindow, setTimeWindow] = useState<{
+    from: Date;
+    to: Date;
+  } | null>(null);
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), STATS_REFRESH_MS);
@@ -102,21 +107,25 @@ const DashboardPage = () => {
       if (filters.to) params.set("to", filters.to);
       params.set("limit", "1000");
 
-      let allFeatures: ReportFeature[] = [];
-      let offset = 0;
-      let totalCount = 0;
-      while (true) {
-        params.set("offset", String(offset));
-        const data = await api(`/reports?${params.toString()}`);
-        allFeatures = allFeatures.concat(data.features);
-        totalCount = data.total;
-        if (allFeatures.length >= totalCount) break;
-        offset = allFeatures.length;
-      }
-
-      if (!cancelled) {
-        setReports(allFeatures);
-        setLoading(false);
+      try {
+        let allFeatures: ReportFeature[] = [];
+        let offset = 0;
+        let totalCount = 0;
+        while (true) {
+          params.set("offset", String(offset));
+          const data = await api(`/reports?${params.toString()}`);
+          allFeatures = allFeatures.concat(data.features);
+          totalCount = data.total;
+          if (allFeatures.length >= totalCount) break;
+          offset = allFeatures.length;
+        }
+        if (!cancelled) {
+          setReports(allFeatures);
+        }
+      } catch {
+        // API unreachable, show empty dashboard
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => {
@@ -145,6 +154,16 @@ const DashboardPage = () => {
       cancelled = true;
     };
   }, [selectedReport?.properties.building_id, api]);
+
+  const filteredReports = useMemo(() => {
+    if (!timeWindow) return reports;
+    const from = timeWindow.from.getTime();
+    const to = timeWindow.to.getTime();
+    return reports.filter((r) => {
+      const t = new Date(r.properties.submitted_at).getTime();
+      return t >= from && t <= to;
+    });
+  }, [reports, timeWindow]);
 
   return (
     <div className={styles.container}>
@@ -204,7 +223,19 @@ const DashboardPage = () => {
           onClearSelection={() => setSelectedReport(null)}
         />
         <div className={styles.mapArea}>
-          <DashboardMap reports={reports} onReportSelect={setSelectedReport} />
+          <div className={styles.mapWrapper}>
+            <DashboardMap
+              reports={filteredReports}
+              onReportSelect={setSelectedReport}
+            />
+          </div>
+          <TimeSlider
+            reports={reports}
+            filteredCount={filteredReports.length}
+            onChange={(from, to) =>
+              setTimeWindow(from && to ? { from, to } : null)
+            }
+          />
         </div>
       </div>
       {detailsReport && (
