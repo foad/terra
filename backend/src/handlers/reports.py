@@ -8,6 +8,7 @@ import h3
 from aws_lambda_powertools import Logger
 from pydantic import BaseModel, ConfigDict, Field
 
+from src.handlers.pii_filter import redact_pii
 from src.utils.db import get_connection
 
 logger = Logger()
@@ -156,6 +157,19 @@ def create_report(body: dict) -> dict:
                     "status": "duplicate",
                     "message": "Report already submitted from offline queue",
                 }
+
+    # Redact PII from user-submitted free-text. Best-effort: a Bedrock failure
+    # falls through with the original text rather than blocking the submission.
+    for _field in ("infrastructure_description", "infrastructure_type_other", "pressing_needs_other"):
+        _raw = getattr(submission, _field)
+        if _raw:
+            _redacted, _entities = redact_pii(_raw)
+            if _entities:
+                setattr(submission, _field, _redacted)
+                logger.info(
+                    "pii_redacted",
+                    extra={"field": _field, "entity_types": _entities, "count": len(_entities)},
+                )
 
     # Compute H3 indexes
     h3_r12 = h3.latlng_to_cell(submission.latitude, submission.longitude, 12)
