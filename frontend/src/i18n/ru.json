@@ -193,5 +193,11 @@
     "layersPanel": "Слои",
     "layerBuildings": "Здания",
     "layerCrisis": "Зона кризиса"
+  },
+  "coverage": {
+    "unassessed_one": "{{count}} близлежащее здание ещё не оценено",
+    "unassessed_few": "{{count}} близлежащих здания ещё не оценено",
+    "unassessed_many": "{{count}} близлежащих зданий ещё не оценено",
+    "unassessed_other": "{{count}} близлежащего здания ещё не оценено"
   }
 }

@@ -185,5 +185,9 @@
     "layersPanel": "Capas",
     "layerBuildings": "Edificios",
     "layerCrisis": "Zona de crisis"
+  },
+  "coverage": {
+    "unassessed_one": "{{count}} edificio cercano sin evaluar",
+    "unassessed_other": "{{count}} edificios cercanos sin evaluar"
   }
 }
