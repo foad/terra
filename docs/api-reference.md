@@ -13,9 +13,10 @@ Analyst / admin endpoints require a Cognito JWT in the `Authorization: Bearer <a
 | `POST /photos/upload` | public |
 | `POST /photos/classify` | public |
 | `GET /crisis-events/active` | public |
+| `GET /crisis-events` | public |
+| `GET /reports/coverage` | public |
 | `GET /reports` | **Bearer** |
 | `GET /reports/export` | **Bearer** |
-| `GET /crisis-events` | **Bearer** |
 | `POST /crisis-events` | **Bearer** |
 | `PUT /crisis-events/{event_id}` | **Bearer** |
 | `DELETE /crisis-events/{event_id}` | **Bearer** |
@@ -224,6 +225,10 @@ Return the active crisis event whose `region` polygon contains the given point. 
 ```
 
 `crisis_type` matches the English display strings stored in `reports.crisis_nature`.
+
+## GET /reports/coverage
+
+Public, minimal-payload view of reports for the community PWA — area count, existing-reports panel, and building damage-fill layer. Accepts the same query parameters as `GET /reports` (`west/south/east/north`, `h3`, `damage_level`, `infrastructure_type`, `crisis_nature`, `from`, `to`, `building_id`, `limit`, `offset`). Returns a GeoJSON `FeatureCollection` with only `id`, `building_id`, `damage_level`, `submitted_at` per feature, plus `total`. No photos, descriptions, AI fields, or follow-up responses — those live behind the authenticated `GET /reports`.
 
 ## GET /reports
 
