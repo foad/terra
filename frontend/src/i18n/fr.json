@@ -169,6 +169,8 @@
     "submitted": "Soumis le",
     "versions": "{{count}} rapport(s) pour cet emplacement",
     "locationLabel": "Emplacement",
+    "basemapStreet": "Carte",
+    "basemapSatellite": "Satellite",
     "mapModeClusters": "Marqueurs",
     "mapModeHeatmap": "Carte de chaleur",
     "mapModeBoth": "Les deux",

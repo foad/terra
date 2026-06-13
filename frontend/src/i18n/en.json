@@ -169,6 +169,8 @@
     "submitted": "Submitted",
     "versions": "{{count}} report(s) for this location",
     "locationLabel": "Location",
+    "basemapStreet": "Street",
+    "basemapSatellite": "Satellite",
     "mapModeClusters": "Markers",
     "mapModeHeatmap": "Heatmap",
     "mapModeBoth": "Both",

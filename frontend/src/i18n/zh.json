@@ -165,6 +165,8 @@
     "submitted": "提交时间",
     "versions": "此位置有 {{count}} 份报告",
     "locationLabel": "位置",
+    "basemapStreet": "地图",
+    "basemapSatellite": "卫星",
     "mapModeClusters": "标记",
     "mapModeHeatmap": "热力图",
     "mapModeBoth": "两者",
