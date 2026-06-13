@@ -384,6 +384,58 @@ def query_reports(params: dict) -> dict:
     }
 
 
+def query_coverage(params: dict) -> dict:
+    """Public minimal-payload view for the community PWA
+
+    Returns a FeatureCollection with only (id, building_id, damage_level,
+    submitted_at) per row
+    """
+    q = ReportsQueryParams(**params)
+    where, values = build_filter_clause(q)
+
+    conn = get_connection()
+    with conn.cursor() as cur:
+        cur.execute(
+            f"""
+            SELECT
+                id, ST_X(location) as lng, ST_Y(location) as lat,
+                building_id, damage_level, submitted_at
+            FROM reports
+            WHERE {where}
+            ORDER BY submitted_at DESC
+            LIMIT %s OFFSET %s
+            """,
+            (*values, q.limit, q.offset),
+        )
+        rows = cur.fetchall()
+
+        cur.execute(
+            f"SELECT COUNT(*) FROM reports WHERE {where}",
+            tuple(values),
+        )
+        total = cur.fetchone()[0]
+
+    features = [
+        {
+            "type": "Feature",
+            "geometry": {"type": "Point", "coordinates": [row[1], row[2]]},
+            "properties": {
+                "id": str(row[0]),
+                "building_id": row[3],
+                "damage_level": row[4],
+                "submitted_at": row[5].isoformat() if row[5] else None,
+            },
+        }
+        for row in rows
+    ]
+
+    return {
+        "type": "FeatureCollection",
+        "features": features,
+        "total": total,
+    }
+
+
 def _find_version_chain(building_id: str | None, h3_r12: str) -> uuid.UUID:
     """Find existing version chain for this building, or create a new one."""
     conn = get_connection()

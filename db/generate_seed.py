@@ -1,5 +1,6 @@
 """Generate seed SQL for demo data in Hatay, Turkey earthquake zone."""
 
+import math
 import random
 import uuid
 from datetime import datetime, timedelta
@@ -15,7 +16,19 @@ BBOX = {
 }
 
 DAMAGE_LEVELS = ["minimal", "partial", "complete"]
-DAMAGE_WEIGHTS = [0.2, 0.6, 0.2]
+
+# Epicentre of the simulated earthquake (central Antakya). Reports cluster in
+# three severity zones around it so the polygon-filter demo (#178) has a
+# visibly worst-hit area to select, per #186.
+EPICENTRE = (36.16, 36.21)  # (lng, lat)
+
+ZONES = {
+    # name: (share of locations, max radius in degrees, damage weights
+    #        [minimal, partial, complete])
+    "centre": (0.40, 0.012, [0.10, 0.20, 0.70]),
+    "ring": (0.35, 0.030, [0.20, 0.60, 0.20]),
+    "periphery": (0.25, 0.055, [0.70, 0.20, 0.10]),
+}
 
 INFRASTRUCTURE_TYPES = [
     "Residential Infrastructure (Houses and apartments)",
@@ -71,20 +84,45 @@ BASE_TIME = datetime(2026, 4, 5, 8, 0, 0)
 random.seed(0xf0ad)
 
 
-def random_point():
-    """Generate a random point biased toward the centre of the bbox using a normal distribution."""
-    center_lng = (BBOX["west"] + BBOX["east"]) / 2
-    center_lat = (BBOX["south"] + BBOX["north"]) / 2
-    spread_lng = (BBOX["east"] - BBOX["west"]) / 6
-    spread_lat = (BBOX["north"] - BBOX["south"]) / 6
+def pick_zone():
+    names = list(ZONES)
+    shares = [ZONES[n][0] for n in names]
+    return random.choices(names, weights=shares, k=1)[0]
 
-    lng = max(BBOX["west"], min(BBOX["east"], random.gauss(center_lng, spread_lng)))
-    lat = max(BBOX["south"], min(BBOX["north"], random.gauss(center_lat, spread_lat)))
+
+def random_point(zone):
+    """Generate a point in the given severity zone around the epicentre."""
+    zone_idx = list(ZONES).index(zone)
+    inner = 0.0 if zone_idx == 0 else ZONES[list(ZONES)[zone_idx - 1]][1]
+    outer = ZONES[zone][1]
+
+    angle = random.uniform(0, 2 * math.pi)
+    radius = random.uniform(inner, outer)
+    lng = EPICENTRE[0] + radius * math.cos(angle)
+    lat = EPICENTRE[1] + radius * math.sin(angle) * 0.8  # rough lat/lng aspect
+
+    lng = max(BBOX["west"], min(BBOX["east"], lng))
+    lat = max(BBOX["south"], min(BBOX["north"], lat))
     return lng, lat
 
 
-def random_damage():
-    return random.choices(DAMAGE_LEVELS, weights=DAMAGE_WEIGHTS, k=1)[0]
+def random_damage(zone):
+    return random.choices(DAMAGE_LEVELS, weights=ZONES[zone][2], k=1)[0]
+
+
+def wave_time():
+    """Crisis-wave timestamp: ~60% in the first 6h, ~30% in 6-48h, ~10% later.
+
+    Makes the time slider (#176) show the crisis unfolding as you scrub.
+    """
+    r = random.random()
+    if r < 0.6:
+        hours = random.uniform(0, 6)
+    elif r < 0.9:
+        hours = random.uniform(6, 48)
+    else:
+        hours = random.uniform(48, 120)
+    return BASE_TIME + timedelta(hours=hours)
 
 
 def damage_correlated_fields(damage):
@@ -125,8 +163,8 @@ def sql_str(val):
 
 
 def generate(
-    num_locations: int = 35,
-    num_versioned: int = 5,
+    num_locations: int = 150,
+    num_versioned: int = 8,
     versions_range: tuple[int, int] = (2, 3),
 ):
     """Generate seed SQL.
@@ -156,15 +194,16 @@ def generate(
 
     locations = []
     for _ in range(num_locations):
-        lng, lat = random_point()
+        zone = pick_zone()
+        lng, lat = random_point(zone)
         h3_r12 = h3.latlng_to_cell(lat, lng, 12)
         h3_r8 = h3.latlng_to_cell(lat, lng, 8)
-        locations.append((lng, lat, h3_r12, h3_r8))
+        locations.append((lng, lat, h3_r12, h3_r8, zone))
 
     # First num_versioned locations get version chains
     report_idx = 0
     for loc_idx in range(num_versioned):
-        lng, lat, h3_r12, h3_r8 = locations[loc_idx]
+        lng, lat, h3_r12, h3_r8, zone = locations[loc_idx]
         chain_id = str(uuid.uuid4())
         infra, infra_name = random_infra()
         num_versions = random.randint(versions_range[0], versions_range[1])
@@ -173,22 +212,22 @@ def generate(
         if random.random() < 0.6:
             # Escalating
             damage_seq = sorted(
-                [random_damage() for _ in range(num_versions)],
+                [random_damage(zone) for _ in range(num_versions)],
                 key=lambda d: DAMAGE_LEVELS.index(d),
             )
         else:
             # Stable
-            d = random_damage()
+            d = random_damage(zone)
             damage_seq = [d] * num_versions
 
+        first_submitted = wave_time()
         for v in range(num_versions):
             report_id = str(uuid.uuid4())
             damage = damage_seq[v]
             elec, health, needs, debris = damage_correlated_fields(damage)
-            submitted = BASE_TIME + timedelta(
-                hours=random.randint(0, 24 * loc_idx),
-                minutes=random.randint(0, 59),
-            ) + timedelta(days=v * 2)
+            submitted = first_submitted + timedelta(
+                days=v * 2, minutes=random.randint(0, 59)
+            )
             device = f"device-seed-{random.randint(1, 15)}"
 
             # Small offset for repeated reports at same building
@@ -210,16 +249,13 @@ def generate(
 
     # Remaining locations: single reports
     for loc_idx in range(num_versioned, num_locations):
-        lng, lat, h3_r12, h3_r8 = locations[loc_idx]
+        lng, lat, h3_r12, h3_r8, zone = locations[loc_idx]
         report_id = str(uuid.uuid4())
         chain_id = str(uuid.uuid4())
-        damage = random_damage()
+        damage = random_damage(zone)
         infra, infra_name = random_infra()
         elec, health, needs, debris = damage_correlated_fields(damage)
-        submitted = BASE_TIME + timedelta(
-            hours=random.randint(0, 120),
-            minutes=random.randint(0, 59),
-        )
+        submitted = wave_time() + timedelta(minutes=random.randint(0, 59))
         device = f"device-seed-{random.randint(1, 15)}"
 
         val = (
@@ -256,8 +292,8 @@ if __name__ == "__main__":
     import os
 
     parser = argparse.ArgumentParser(description="Generate seed SQL for TERRA demo data")
-    parser.add_argument("--locations", type=int, default=35, help="Number of unique locations (default: 35)")
-    parser.add_argument("--versioned", type=int, default=5, help="Number of locations with version chains (default: 5)")
+    parser.add_argument("--locations", type=int, default=150, help="Number of unique locations (default: 150)")
+    parser.add_argument("--versioned", type=int, default=8, help="Number of locations with version chains (default: 8)")
     parser.add_argument("--min-versions", type=int, default=2, help="Min reports per versioned location (default: 2)")
     parser.add_argument("--max-versions", type=int, default=3, help="Max reports per versioned location (default: 3)")
     args = parser.parse_args()
