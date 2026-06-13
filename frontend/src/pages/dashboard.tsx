@@ -47,6 +47,9 @@ export interface Filters {
 }
 
 const STATS_REFRESH_MS = 60_000;
+// Near-real-time requirement: new community reports must appear on the
+// analyst map without a filter change or reload (#196).
+const REPORTS_REFRESH_MS = 30_000;
 
 function pointInPolygon(
   point: [number, number],
@@ -114,8 +117,9 @@ const DashboardPage = () => {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      setLoading(true);
+
+    const fetchReports = async (silent: boolean) => {
+      if (!silent) setLoading(true);
       const params = new URLSearchParams();
       if (filters.damageLevel.length > 0)
         params.set("damage_level", filters.damageLevel.join(","));
@@ -139,17 +143,32 @@ const DashboardPage = () => {
           if (allFeatures.length >= totalCount) break;
           offset = allFeatures.length;
         }
+
         if (!cancelled) {
           setReports(allFeatures);
         }
-      } catch {
-        // API unreachable, show empty dashboard
+      } catch (err) {
+        // A failed background poll keeps the last good data; the next tick
+        // retries. Only surface failures on the initial/filter-change load.
+        if (!silent) throw err;
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled && !silent) setLoading(false);
       }
-    })();
+    };
+
+    fetchReports(false);
+
+    const refresh = () => {
+      if (!document.hidden) fetchReports(true);
+    };
+    const id = setInterval(refresh, REPORTS_REFRESH_MS);
+    window.addEventListener("online", refresh);
+    document.addEventListener("visibilitychange", refresh);
     return () => {
       cancelled = true;
+      clearInterval(id);
+      window.removeEventListener("online", refresh);
+      document.removeEventListener("visibilitychange", refresh);
     };
   }, [filters, api]);
 
