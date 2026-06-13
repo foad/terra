@@ -1,16 +1,11 @@
-import { useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { X, Copy, Check, Printer } from "lucide-react";
 import styles from "./activation-kit-modal.module.css";
 
-interface CrisisEvent {
-  id: string;
-  name: string;
-  crisis_type: string;
-}
-
 interface Props {
-  crisis: CrisisEvent;
+  name: string;
+  crisisType: string;
   onClose: () => void;
 }
 
@@ -82,12 +77,21 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
-export function ActivationKitModal({ crisis, onClose }: Props) {
+export function ActivationKitModal({ name, crisisType, onClose }: Props) {
   const url = window.location.origin;
-  const templates = whatsappTemplate(crisis.name, url);
+  const templates = whatsappTemplate(name, url);
   const [activeLang, setActiveLang] = useState<Lang>("EN");
   const [printBlocked, setPrintBlocked] = useState(false);
   const qrRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
 
   const handlePrint = () => {
     const svgEl = qrRef.current?.querySelector("svg");
@@ -104,7 +108,7 @@ export function ActivationKitModal({ crisis, onClose }: Props) {
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>TERRA — ${escapeHtml(crisis.name)}</title>
+<title>TERRA — ${escapeHtml(name)}</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -188,8 +192,8 @@ export function ActivationKitModal({ crisis, onClose }: Props) {
     <span class="terra-name">TERRA</span>
     <span class="undp-label">Crisis Damage Assessment · UNDP</span>
   </div>
-  <div class="crisis-name">${escapeHtml(crisis.name)}</div>
-  <div class="crisis-type">${escapeHtml(crisis.crisis_type)}</div>
+  <div class="crisis-name">${escapeHtml(name)}</div>
+  <div class="crisis-type">${escapeHtml(crisisType)}</div>
   <div class="qr-section">
     ${svgString}
     <div class="instructions">${instructions}</div>
@@ -212,12 +216,18 @@ export function ActivationKitModal({ crisis, onClose }: Props) {
 
   return (
     <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+      <div
+        className={styles.modal}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+      >
         <div className={styles.modalHeader}>
           <div>
-            <h2 className={styles.modalTitle}>Community Activation Kit</h2>
+            <h2 id={titleId} className={styles.modalTitle}>Community Activation Kit</h2>
             <p className={styles.modalSubtitle}>
-              {crisis.name} · {crisis.crisis_type}
+              {name} · {crisisType}
             </p>
           </div>
           <button

@@ -174,7 +174,8 @@ const AdminCrisesPage = () => {
 
     {kitCrisis && (
       <ActivationKitModal
-        crisis={kitCrisis}
+        name={kitCrisis.name}
+        crisisType={kitCrisis.crisis_type}
         onClose={() => setKitCrisis(null)}
       />
     )}
