@@ -178,6 +178,7 @@ class TestQueryReports:
                 1,
                 None,  # follow_up_responses
                 "partial", None, None, None,  # community_damage_level, analyst_damage_level, flag_status, flag_reason
+                None,  # infrastructure_description_en
             )
         ]
         mock_cursor.fetchone.return_value = (1,)
