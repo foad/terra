@@ -286,7 +286,11 @@ def build_filter_clause(q: "ReportsQueryParams | object") -> tuple[str, list]:
     if q.damage_level:
         levels = q.damage_level.split(",")
         placeholders = ",".join(["%s"] * len(levels))
-        conditions.append(f"damage_level IN ({placeholders})")
+        # Filter on the effective level: an analyst override (#169) supersedes
+        # the community classification everywhere downstream.
+        conditions.append(
+            f"COALESCE(analyst_damage_level, damage_level) IN ({placeholders})"
+        )
         values.extend(levels)
 
     if q.infrastructure_type:
@@ -331,7 +335,7 @@ def query_reports(params: dict) -> dict:
             f"""
             SELECT
                 id, ST_X(location) as lng, ST_Y(location) as lat,
-                building_id, damage_level,
+                building_id, COALESCE(analyst_damage_level, damage_level) as damage_level,
                 ai_damage_level, ai_infrastructure_type, ai_confidence,
                 photo_url, thumbnail_url,
                 infrastructure_type, infrastructure_description,
@@ -341,7 +345,8 @@ def query_reports(params: dict) -> dict:
                 duplicate_status, related_report_id,
                 (SELECT COUNT(*) FROM reports r2
                  WHERE r2.version_chain_id = reports.version_chain_id) as version_count,
-                follow_up_responses
+                follow_up_responses,
+                damage_level, analyst_damage_level, flag_status, flag_reason
             FROM reports
             WHERE {where}
             ORDER BY submitted_at DESC
@@ -388,6 +393,10 @@ def query_reports(params: dict) -> dict:
                 "related_report_id": str(row[21]) if row[21] else None,
                 "version_count": row[22],
                 "follow_up_responses": row[23],
+                "community_damage_level": row[24],
+                "analyst_damage_level": row[25],
+                "flag_status": row[26],
+                "flag_reason": row[27],
             },
         })
 
@@ -413,7 +422,8 @@ def query_coverage(params: dict) -> dict:
             f"""
             SELECT
                 id, ST_X(location) as lng, ST_Y(location) as lat,
-                building_id, damage_level, submitted_at
+                building_id, COALESCE(analyst_damage_level, damage_level) as damage_level,
+                submitted_at
             FROM reports
             WHERE {where}
             ORDER BY submitted_at DESC
@@ -447,6 +457,84 @@ def query_coverage(params: dict) -> dict:
         "type": "FeatureCollection",
         "features": features,
         "total": total,
+    }
+
+
+REVIEW_DAMAGE_LEVELS = {"minimal", "partial", "complete"}
+REVIEW_FLAG_STATUSES = {"suspect", "invalid"}
+
+
+def review_report(report_id: str, body: dict) -> dict:
+    """Analyst review actions (#169, #170): set or clear a damage-level
+    override and/or a flag. The community's original classification is never
+    overwritten — overrides live in analyst_damage_level and all queries read
+    the effective level via COALESCE.
+
+    Accepts any of: analyst_damage_level (level or null to clear),
+    flag_status ('suspect' | 'invalid' | null to clear), flag_reason (text).
+    """
+    updates = []
+    values: list = []
+
+    if "analyst_damage_level" in body:
+        level = body["analyst_damage_level"]
+        if level is not None and level not in REVIEW_DAMAGE_LEVELS:
+            raise ValueError(
+                f"analyst_damage_level must be one of {sorted(REVIEW_DAMAGE_LEVELS)} or null"
+            )
+        updates.append("analyst_damage_level = %s")
+        values.append(level)
+
+    if "flag_status" in body:
+        status = body["flag_status"]
+        if status is not None and status not in REVIEW_FLAG_STATUSES:
+            raise ValueError(
+                f"flag_status must be one of {sorted(REVIEW_FLAG_STATUSES)} or null"
+            )
+        updates.append("flag_status = %s")
+        values.append(status)
+        if status is None:
+            updates.append("flag_reason = NULL")
+
+    if "flag_reason" in body:
+        reason = body["flag_reason"]
+        if reason is not None:
+            if len(reason) > 500:
+                raise ValueError("flag_reason must be 500 characters or fewer")
+            if "flag_status" not in body:
+                raise ValueError("flag_reason requires flag_status to be set in the same request")
+        updates.append("flag_reason = %s")
+        values.append(reason)
+
+    if not updates:
+        raise ValueError(
+            "Provide at least one of: analyst_damage_level, flag_status, flag_reason"
+        )
+
+    conn = get_connection()
+    with conn.cursor() as cur:
+        cur.execute(
+            f"""
+            UPDATE reports
+            SET {", ".join(updates)}, updated_at = now()
+            WHERE id = %s
+            RETURNING id, COALESCE(analyst_damage_level, damage_level),
+                      damage_level, analyst_damage_level, flag_status, flag_reason
+            """,
+            (*values, report_id),
+        )
+        row = cur.fetchone()
+    conn.commit()
+    if row is None:
+        raise ValueError(f"No report with id {report_id}")
+
+    return {
+        "id": str(row[0]),
+        "damage_level": row[1],
+        "community_damage_level": row[2],
+        "analyst_damage_level": row[3],
+        "flag_status": row[4],
+        "flag_reason": row[5],
     }
 
 

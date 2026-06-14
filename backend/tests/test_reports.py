@@ -7,6 +7,7 @@ from src.handlers.reports import (
     create_report,
     query_coverage,
     query_reports,
+    review_report,
 )
 
 
@@ -176,6 +177,7 @@ class TestQueryReports:
                 None, None,  # duplicate_status, related_report_id
                 1,
                 None,  # follow_up_responses
+                "partial", None, None, None,  # community_damage_level, analyst_damage_level, flag_status, flag_reason
             )
         ]
         mock_cursor.fetchone.return_value = (1,)
@@ -265,7 +267,7 @@ class TestQueryReports:
 
         sql = mock_cursor.execute.call_args_list[0][0][0]
         main_where = sql.split("WHERE")[-1].split("ORDER BY")[0]
-        assert "damage_level IN" in main_where
+        assert "COALESCE(analyst_damage_level, damage_level) IN" in main_where
         params = mock_cursor.execute.call_args_list[0][0][1]
         assert "partial" in params
         assert "complete" in params
@@ -361,7 +363,7 @@ class TestQueryReports:
 
         sql = mock_cursor.execute.call_args_list[0][0][0]
         main_where = sql.split("WHERE")[-1].split("ORDER BY")[0]
-        assert "damage_level IN" in main_where
+        assert "COALESCE(analyst_damage_level, damage_level) IN" in main_where
         assert "ANY(crisis_nature)" in main_where
         assert "submitted_at >=" in main_where
 
@@ -538,7 +540,7 @@ class TestQueryCoverage:
         sql = mock_cursor.execute.call_args_list[0][0][0]
         where = sql.split("WHERE")[-1].split("ORDER BY")[0]
         assert "h3_r8 = %s" in where
-        assert "damage_level IN" in where
+        assert "COALESCE(analyst_damage_level, damage_level) IN" in where
 
     @patch("src.handlers.reports.get_connection")
     def test_building_id_returns_all_versions(self, mock_get_conn):
@@ -562,3 +564,104 @@ class TestQueryCoverage:
         from pydantic import ValidationError
         with pytest.raises(ValidationError):
             query_coverage({"limit": "5000"})
+
+
+def _make_review_conn(fetchone_result):
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_cursor.fetchone.return_value = fetchone_result
+    mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+    mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+    return mock_conn, mock_cursor
+
+
+class TestReviewReport:
+    @patch("src.handlers.reports.get_connection")
+    def test_set_analyst_damage_level(self, mock_get_conn):
+        row = ("report-1", "complete", "partial", "complete", None, None)
+        mock_conn, _ = _make_review_conn(row)
+        mock_get_conn.return_value = mock_conn
+
+        result = review_report("report-1", {"analyst_damage_level": "complete"})
+
+        assert result["damage_level"] == "complete"
+        assert result["community_damage_level"] == "partial"
+        assert result["analyst_damage_level"] == "complete"
+        assert result["flag_status"] is None
+
+    @patch("src.handlers.reports.get_connection")
+    def test_clear_analyst_damage_level(self, mock_get_conn):
+        row = ("report-1", "partial", "partial", None, None, None)
+        mock_conn, mock_cursor = _make_review_conn(row)
+        mock_get_conn.return_value = mock_conn
+
+        result = review_report("report-1", {"analyst_damage_level": None})
+
+        assert result["analyst_damage_level"] is None
+        sql = mock_cursor.execute.call_args[0][0]
+        assert "analyst_damage_level = %s" in sql
+
+    @patch("src.handlers.reports.get_connection")
+    def test_set_flag_status(self, mock_get_conn):
+        row = ("report-1", "partial", "partial", None, "suspect", None)
+        mock_conn, _ = _make_review_conn(row)
+        mock_get_conn.return_value = mock_conn
+
+        result = review_report("report-1", {"flag_status": "suspect"})
+
+        assert result["flag_status"] == "suspect"
+
+    @patch("src.handlers.reports.get_connection")
+    def test_clear_flag_status_also_clears_reason(self, mock_get_conn):
+        row = ("report-1", "partial", "partial", None, None, None)
+        mock_conn, mock_cursor = _make_review_conn(row)
+        mock_get_conn.return_value = mock_conn
+
+        review_report("report-1", {"flag_status": None})
+
+        sql = mock_cursor.execute.call_args[0][0]
+        assert "flag_reason = NULL" in sql
+
+    @patch("src.handlers.reports.get_connection")
+    def test_commit_is_called(self, mock_get_conn):
+        row = ("report-1", "partial", "partial", None, None, None)
+        mock_conn, _ = _make_review_conn(row)
+        mock_get_conn.return_value = mock_conn
+
+        review_report("report-1", {"flag_status": "invalid"})
+
+        mock_conn.commit.assert_called_once()
+
+    @patch("src.handlers.reports.get_connection")
+    def test_report_not_found_raises(self, mock_get_conn):
+        import pytest
+        mock_conn, _ = _make_review_conn(None)
+        mock_get_conn.return_value = mock_conn
+
+        with pytest.raises(ValueError, match="No report with id"):
+            review_report("missing-id", {"flag_status": "suspect"})
+
+    def test_empty_body_raises(self):
+        import pytest
+        with pytest.raises(ValueError, match="Provide at least one of"):
+            review_report("report-1", {})
+
+    def test_invalid_damage_level_raises(self):
+        import pytest
+        with pytest.raises(ValueError, match="analyst_damage_level must be one of"):
+            review_report("report-1", {"analyst_damage_level": "destroyed"})
+
+    def test_invalid_flag_status_raises(self):
+        import pytest
+        with pytest.raises(ValueError, match="flag_status must be one of"):
+            review_report("report-1", {"flag_status": "maybe"})
+
+    def test_flag_reason_without_flag_status_raises(self):
+        import pytest
+        with pytest.raises(ValueError, match="flag_reason requires flag_status"):
+            review_report("report-1", {"flag_reason": "looks fake"})
+
+    def test_flag_reason_too_long_raises(self):
+        import pytest
+        with pytest.raises(ValueError, match="500 characters or fewer"):
+            review_report("report-1", {"flag_status": "suspect", "flag_reason": "x" * 501})
