@@ -54,6 +54,7 @@ export const DashboardMap = ({
   const onPolygonFilterRef = useRef(onPolygonFilter);
   const drawRef = useRef<TerraDraw | null>(null);
   const [drawMode, setDrawMode] = useState<"idle" | "drawing" | "active">("idle");
+  const drawModeRef = useRef<"idle" | "drawing" | "active">("idle");
   const [showBuildings, setShowBuildings] = useState(true);
   const [showCrisis, setShowCrisis] = useState(true);
   const [basemap, setBasemap] = useState<"street" | "satellite">("street");
@@ -65,6 +66,10 @@ export const DashboardMap = ({
   useEffect(() => {
     onPolygonFilterRef.current = onPolygonFilter;
   }, [onPolygonFilter]);
+
+  useEffect(() => {
+    drawModeRef.current = drawMode;
+  }, [drawMode]);
 
   useEffect(() => {
     reportsByIdRef.current = new Map(reports.map((r) => [r.properties.id, r]));
@@ -390,6 +395,7 @@ export const DashboardMap = ({
 
       // Click cluster to zoom in
       map.on("click", "clusters", (e) => {
+        if (drawModeRef.current === "drawing") return;
         const features = map.queryRenderedFeatures(e.point, {
           layers: ["clusters"],
         });
@@ -409,6 +415,7 @@ export const DashboardMap = ({
 
       // Click individual marker to select
       map.on("click", "report-markers", (e) => {
+        if (drawModeRef.current === "drawing") return;
         const feature = e.features?.[0];
         if (!feature?.properties?.id) return;
         const report = reportsByIdRef.current.get(feature.properties.id);
@@ -438,6 +445,7 @@ export const DashboardMap = ({
 
       // Pointer cursors + hover tooltips
       map.on("mouseenter", "clusters", (e) => {
+        if (drawModeRef.current === "drawing") return;
         map.getCanvas().style.cursor = "pointer";
         const feature = e.features?.[0];
         const tip = tooltipRef.current;
@@ -456,6 +464,7 @@ export const DashboardMap = ({
         if (tooltipRef.current) tooltipRef.current.style.display = "none";
       });
       map.on("mouseenter", "report-markers", (e) => {
+        if (drawModeRef.current === "drawing") return;
         map.getCanvas().style.cursor = "pointer";
         const feature = e.features?.[0];
         const tip = tooltipRef.current;
