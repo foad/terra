@@ -138,7 +138,7 @@ export const ReportDetailsModal = ({
                     onClick={() =>
                       sendReview({
                         analyst_damage_level:
-                          level === p.community_damage_level ? null : level,
+                          level === p.damage_level ? null : level,
                       })
                     }
                   >
