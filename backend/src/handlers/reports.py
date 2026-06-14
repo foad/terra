@@ -422,7 +422,8 @@ def query_coverage(params: dict) -> dict:
             f"""
             SELECT
                 id, ST_X(location) as lng, ST_Y(location) as lat,
-                building_id, damage_level, submitted_at
+                building_id, COALESCE(analyst_damage_level, damage_level) as damage_level,
+                submitted_at
             FROM reports
             WHERE {where}
             ORDER BY submitted_at DESC
@@ -497,8 +498,11 @@ def review_report(report_id: str, body: dict) -> dict:
 
     if "flag_reason" in body:
         reason = body["flag_reason"]
-        if reason is not None and len(reason) > 500:
-            raise ValueError("flag_reason must be 500 characters or fewer")
+        if reason is not None:
+            if len(reason) > 500:
+                raise ValueError("flag_reason must be 500 characters or fewer")
+            if "flag_status" not in body:
+                raise ValueError("flag_reason requires flag_status to be set in the same request")
         updates.append("flag_reason = %s")
         values.append(reason)
 
@@ -520,6 +524,7 @@ def review_report(report_id: str, body: dict) -> dict:
             (*values, report_id),
         )
         row = cur.fetchone()
+    conn.commit()
     if row is None:
         raise ValueError(f"No report with id {report_id}")
 

@@ -265,7 +265,7 @@ class TestQueryReports:
 
         sql = mock_cursor.execute.call_args_list[0][0][0]
         main_where = sql.split("WHERE")[-1].split("ORDER BY")[0]
-        assert "damage_level IN" in main_where
+        assert "COALESCE(analyst_damage_level, damage_level) IN" in main_where
         params = mock_cursor.execute.call_args_list[0][0][1]
         assert "partial" in params
         assert "complete" in params
@@ -361,7 +361,7 @@ class TestQueryReports:
 
         sql = mock_cursor.execute.call_args_list[0][0][0]
         main_where = sql.split("WHERE")[-1].split("ORDER BY")[0]
-        assert "damage_level IN" in main_where
+        assert "COALESCE(analyst_damage_level, damage_level) IN" in main_where
         assert "ANY(crisis_nature)" in main_where
         assert "submitted_at >=" in main_where
 
@@ -538,7 +538,7 @@ class TestQueryCoverage:
         sql = mock_cursor.execute.call_args_list[0][0][0]
         where = sql.split("WHERE")[-1].split("ORDER BY")[0]
         assert "h3_r8 = %s" in where
-        assert "damage_level IN" in where
+        assert "COALESCE(analyst_damage_level, damage_level) IN" in where
 
     @patch("src.handlers.reports.get_connection")
     def test_building_id_returns_all_versions(self, mock_get_conn):
