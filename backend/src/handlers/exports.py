@@ -64,6 +64,9 @@ def export_reports(params: dict) -> tuple[str, str, str]:
     """Return (body, content_type, filename) for the requested export."""
     q = ExportParams(**params)
     where, values = build_filter_clause(q)
+    # Flagged reports (#170) stay visible on the dashboard but are excluded
+    # from exports — they must not feed downstream aid analysis.
+    where += " AND flag_status IS NULL"
 
     conn = get_connection()
     with conn.cursor() as cur:
@@ -71,7 +74,7 @@ def export_reports(params: dict) -> tuple[str, str, str]:
             f"""
             SELECT
                 id, ST_X(location) as lng, ST_Y(location) as lat,
-                building_id, damage_level,
+                building_id, COALESCE(analyst_damage_level, damage_level) as damage_level,
                 ai_damage_level, ai_confidence,
                 photo_url, thumbnail_url,
                 infrastructure_type, infrastructure_description,
