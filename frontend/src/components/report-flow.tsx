@@ -20,7 +20,7 @@ import type { PreSeeded, SurveyData } from "./survey-data";
 import { SubmissionConfirmation } from "./submission-confirmation";
 import { reportQueue } from "../utils/report-queue";
 import { syncEngine } from "../utils/sync-engine";
-import { api } from "../utils/api";
+import { api, isApiError } from "../utils/api";
 import {
   loadSurveyPrefs,
   mergeEmptyFields,
@@ -163,8 +163,8 @@ export const ReportFlow = ({
 
   const handleManualPin = useCallback((coords: [number, number] | null) => {
     setManualPin(coords);
+    setLocationDescription("");
     if (coords) setSelectedBuilding(null);
-    else setLocationDescription("");
   }, []);
 
   useEffect(() => {
@@ -191,7 +191,7 @@ export const ReportFlow = ({
         // A definitive HTTP response (404 = genuinely no active crisis at
         // this location) must not fall back to a stale cached crisis from
         // somewhere else — clear the cache instead.
-        if (err instanceof Error && err.message.startsWith("API error")) {
+        if (isApiError(err)) {
           localStorage.removeItem("terra-crisis-config");
           return;
         }
@@ -279,6 +279,7 @@ export const ReportFlow = ({
   const buildFollowUpResponses = (): Record<string, string> | null => {
     const responses: Record<string, string> = {};
     for (const [id, answer] of Object.entries(followUpAnswers)) {
+      if (id === "location_description") continue; // system-reserved key
       const trimmed = answer.trim();
       // An "Other:" selection with no text entered is not an answer.
       if (trimmed && trimmed !== "Other:") responses[id] = trimmed;
@@ -335,7 +336,7 @@ export const ReportFlow = ({
         err instanceof Error ? err.message : "Failed to queue report",
       );
       setStep("survey");
-      setSurveyStep(totalSurveySteps - 1);
+      setSurveyStep(SURVEY_STEP_COUNT - 1);
     }
   };
 

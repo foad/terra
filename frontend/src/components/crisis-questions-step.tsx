@@ -26,7 +26,7 @@ export const CrisisQuestionsStep = ({
     <div className={styles.container} data-testid="survey-step-crisis">
       {questions.map((q) => {
         const current = responses[q.id] ?? "";
-        const isOther = current.startsWith("Other:");
+        const isOther = current.startsWith("Other: ");
         return (
           <div key={q.id}>
             <h2 className={styles.question}>{q.question}</h2>

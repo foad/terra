@@ -22,7 +22,7 @@ const AREA_MILESTONE_THRESHOLD = 25;
 interface SubmissionConfirmationProps {
   isOnline: boolean;
   followUpQuestions: FollowUpQuestion[];
-  onComplete: (responses: Record<string, string> | null) => void;
+  onComplete: () => void;
   infrastructureKeys: string[];
   reportLat: number | null;
   reportLng: number | null;
@@ -116,8 +116,7 @@ export const SubmissionConfirmation = ({
         !otherValues[q.id]?.trim(),
     );
     if (hasEmptyOther) return;
-    const finalResponses = Object.keys(responses).length > 0 ? responses : null;
-    onComplete(finalResponses);
+    onComplete();
   };
 
   const handleShare = async () => {
@@ -278,7 +277,7 @@ export const SubmissionConfirmation = ({
           <button
             type="button"
             className={styles.skipButton}
-            onClick={() => onComplete(null)}
+            onClick={() => onComplete()}
           >
             Skip
           </button>
