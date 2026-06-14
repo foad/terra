@@ -109,7 +109,7 @@ class TestExportReports:
         body, _, _ = export_reports({"format": "csv"})
         row = body.strip().split("\r\n")[1]
         cells = row.split(",")
-        # debris_present is at index 10 (infrastructure_description_en added at 8)
+        # debris_present is at index 10
         assert cells[10] == "false"
 
     def test_unknown_format_rejected(self):
