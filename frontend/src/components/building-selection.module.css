@@ -48,3 +48,30 @@
   font-size: 0.8125rem;
   color: var(--undpds-color-gray-600);
 }
+
+.describeLocation {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 16px 12px;
+}
+
+.describeLabel {
+  font-size: 0.75rem;
+  color: var(--undpds-color-gray-600);
+}
+
+.describeInput {
+  font-family: inherit;
+  font-size: 0.875rem;
+  padding: 8px 10px;
+  border: 1px solid var(--undpds-color-gray-300);
+  color: var(--undpds-color-black);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.describeInput:focus {
+  outline: 2px solid var(--undpds-color-blue-600, #0469a5);
+  outline-offset: -1px;
+}

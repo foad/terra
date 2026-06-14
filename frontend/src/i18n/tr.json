@@ -28,6 +28,8 @@
     "selectBuilding": "Seçmek için haritada bir binaya dokunun",
     "dropPinHint": "Bina hatları görünmüyor mu? Haritaya dokunarak işaret bırakın, ayarlamak için sürükleyin.",
     "pinPlaced": "Konum işaretlendi",
+    "describeLabel": "Konumu tarif edin (isteğe bağlı)",
+    "describePlaceholder": "En yakın yer işareti, cadde adı veya bina adı",
     "selectedBuilding": "Seçilen bina",
     "existingReportsTitle_one": "{{count}} mevcut rapor",
     "existingReportsTitle_other": "{{count}} mevcut rapor",

@@ -33,6 +33,8 @@
     "selectBuilding": "انقر على مبنى على الخريطة لتحديده",
     "dropPinHint": "لا يوجد مخطط للمبنى؟ انقر على الخريطة لوضع علامة، ثم اسحبها لضبط الموقع.",
     "pinPlaced": "تم تحديد الموقع",
+    "describeLabel": "صِف الموقع (اختياري)",
+    "describePlaceholder": "أقرب معلم بارز أو اسم الشارع أو اسم المبنى",
     "selectedBuilding": "المبنى المحدد",
     "existingReportsTitle_zero": "لا توجد تقارير سابقة",
     "existingReportsTitle_one": "تقرير واحد موجود",
