@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { X } from "lucide-react";
-import { api } from "../utils/api";
+import { useApi } from "../hooks/use-api";
 import type { ReportFeature } from "../pages/dashboard";
 import styles from "./report-details-modal.module.css";
 
@@ -21,6 +21,7 @@ export const ReportDetailsModal = ({
   const photo = p.photo_url ?? p.thumbnail_url;
   const [saving, setSaving] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
+  const api = useApi();
 
   const sendReview = async (patch: Record<string, string | null>) => {
     setSaving(true);
@@ -102,16 +103,16 @@ export const ReportDetailsModal = ({
               Object.keys(p.follow_up_responses).some(
                 (k) => k !== "location_description",
               ) && (
-              <Field label="Follow-up responses">
-                <ul className={styles.followUpList}>
-                  {Object.entries(p.follow_up_responses)
-                    .filter(([key]) => key !== "location_description")
-                    .map(([key, value]) => (
-                      <li key={key}>{value}</li>
-                    ))}
-                </ul>
-              </Field>
-            )}
+                <Field label="Follow-up responses">
+                  <ul className={styles.followUpList}>
+                    {Object.entries(p.follow_up_responses)
+                      .filter(([key]) => key !== "location_description")
+                      .map(([key, value]) => (
+                        <li key={key}>{value}</li>
+                      ))}
+                  </ul>
+                </Field>
+              )}
           </div>
 
           <div className={styles.review}>
