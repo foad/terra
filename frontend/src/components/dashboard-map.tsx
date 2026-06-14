@@ -53,7 +53,10 @@ export const DashboardMap = ({
   const [mapMode, setMapMode] = useState<MapMode>("clusters");
   const onPolygonFilterRef = useRef(onPolygonFilter);
   const drawRef = useRef<TerraDraw | null>(null);
-  const [drawMode, setDrawMode] = useState<"idle" | "drawing" | "active">("idle");
+  const [drawMode, setDrawMode] = useState<"idle" | "drawing" | "active">(
+    "idle",
+  );
+  const drawModeRef = useRef(drawMode);
   const [showBuildings, setShowBuildings] = useState(true);
   const [showCrisis, setShowCrisis] = useState(true);
   const [basemap, setBasemap] = useState<"street" | "satellite">("street");
@@ -69,6 +72,13 @@ export const DashboardMap = ({
   useEffect(() => {
     reportsByIdRef.current = new Map(reports.map((r) => [r.properties.id, r]));
   }, [reports]);
+
+  useEffect(() => {
+    drawModeRef.current = drawMode;
+    if (drawMode === "drawing" && tooltipRef.current) {
+      tooltipRef.current.style.display = "none";
+    }
+  }, [drawMode]);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -390,6 +400,7 @@ export const DashboardMap = ({
 
       // Click cluster to zoom in
       map.on("click", "clusters", (e) => {
+        if (drawModeRef.current === "drawing") return;
         const features = map.queryRenderedFeatures(e.point, {
           layers: ["clusters"],
         });
@@ -409,6 +420,7 @@ export const DashboardMap = ({
 
       // Click individual marker to select
       map.on("click", "report-markers", (e) => {
+        if (drawModeRef.current === "drawing") return;
         const feature = e.features?.[0];
         if (!feature?.properties?.id) return;
         const report = reportsByIdRef.current.get(feature.properties.id);
@@ -438,6 +450,7 @@ export const DashboardMap = ({
 
       // Pointer cursors + hover tooltips
       map.on("mouseenter", "clusters", (e) => {
+        if (drawModeRef.current === "drawing") return;
         map.getCanvas().style.cursor = "pointer";
         const feature = e.features?.[0];
         const tip = tooltipRef.current;
@@ -456,6 +469,7 @@ export const DashboardMap = ({
         if (tooltipRef.current) tooltipRef.current.style.display = "none";
       });
       map.on("mouseenter", "report-markers", (e) => {
+        if (drawModeRef.current === "drawing") return;
         map.getCanvas().style.cursor = "pointer";
         const feature = e.features?.[0];
         const tip = tooltipRef.current;
@@ -657,9 +671,9 @@ export const DashboardMap = ({
       draw.stop();
       drawRef.current = null;
 
-      const source = map.getSource(
-        "polygon-filter",
-      ) as maplibregl.GeoJSONSource | undefined;
+      const source = map.getSource("polygon-filter") as
+        | maplibregl.GeoJSONSource
+        | undefined;
       source?.setData({
         type: "FeatureCollection",
         features: [{ type: "Feature", geometry: polygon, properties: {} }],
@@ -677,9 +691,9 @@ export const DashboardMap = ({
     drawRef.current = null;
 
     const map = mapRef.current;
-    const source = map?.getSource(
-      "polygon-filter",
-    ) as maplibregl.GeoJSONSource | undefined;
+    const source = map?.getSource("polygon-filter") as
+      | maplibregl.GeoJSONSource
+      | undefined;
     source?.setData({ type: "FeatureCollection", features: [] });
 
     onPolygonFilterRef.current?.(null);
