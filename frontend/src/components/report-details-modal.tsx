@@ -42,6 +42,11 @@ export const ReportDetailsModal = ({
             {p.infrastructure_description && (
               <Field label="Description">{p.infrastructure_description}</Field>
             )}
+            {p.follow_up_responses?.location_description && (
+              <Field label="Location described as">
+                {p.follow_up_responses.location_description}
+              </Field>
+            )}
             <Field label="Crisis">{p.crisis_nature.join(", ")}</Field>
             {p.debris_present !== null && (
               <Field label="Debris">{p.debris_present ? "Yes" : "No"}</Field>
@@ -57,12 +62,17 @@ export const ReportDetailsModal = ({
                 {p.pressing_needs.join(", ")}
               </Field>
             )}
-            {p.follow_up_responses && Object.keys(p.follow_up_responses).length > 0 && (
+            {p.follow_up_responses &&
+              Object.keys(p.follow_up_responses).some(
+                (k) => k !== "location_description",
+              ) && (
               <Field label="Follow-up responses">
                 <ul className={styles.followUpList}>
-                  {Object.entries(p.follow_up_responses).map(([key, value]) => (
-                    <li key={key}>{value}</li>
-                  ))}
+                  {Object.entries(p.follow_up_responses)
+                    .filter(([key]) => key !== "location_description")
+                    .map(([key, value]) => (
+                      <li key={key}>{value}</li>
+                    ))}
                 </ul>
               </Field>
             )}

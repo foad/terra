@@ -33,6 +33,8 @@
     "selectBuilding": "Tap a building on the map to select it",
     "dropPinHint": "No building outline? Tap the map to drop a pin, then drag to adjust.",
     "pinPlaced": "Location pinned",
+    "describeLabel": "Describe the location (optional)",
+    "describePlaceholder": "Nearest landmark, street name, or building name",
     "selectedBuilding": "Selected building",
     "existingReportsTitle_one": "{{count}} existing report",
     "existingReportsTitle_other": "{{count}} existing reports",

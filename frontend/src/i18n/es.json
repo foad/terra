@@ -33,6 +33,8 @@
     "selectBuilding": "Toque un edificio en el mapa para seleccionarlo",
     "dropPinHint": "¿Sin contorno del edificio? Toque el mapa para colocar un marcador y arrástrelo para ajustarlo.",
     "pinPlaced": "Ubicación marcada",
+    "describeLabel": "Describe la ubicación (opcional)",
+    "describePlaceholder": "Punto de referencia más cercano, nombre de la calle o del edificio",
     "selectedBuilding": "Edificio seleccionado",
     "existingReportsTitle_one": "{{count}} informe existente",
     "existingReportsTitle_other": "{{count}} informes existentes",

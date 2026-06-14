@@ -34,3 +34,7 @@ export const api = async (
     clearTimeout(timeoutId);
   }
 };
+
+/** True when err is a definitive HTTP error from our API (vs a network failure). */
+export const isApiError = (err: unknown): err is Error =>
+  err instanceof Error && err.message.startsWith("API error");
