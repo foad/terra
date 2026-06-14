@@ -169,7 +169,11 @@
 }
 
 .reviewBtn:hover:not(:disabled) {
-  background: var(--undpds-color-gray-200);
+  background: var(--undpds-color-gray-400);
+}
+
+.reviewBtn.reviewBtnActive:hover:not(:disabled) {
+  background: var(--undpds-color-blue-700);
 }
 
 .reviewBtn:disabled {
