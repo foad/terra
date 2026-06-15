@@ -113,4 +113,15 @@
   padding: 2px 8px;
   text-transform: uppercase;
   letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.aiInfoIcon {
+  display: flex;
+  align-items: center;
+  cursor: help;
+  opacity: 0.85;
+  flex-shrink: 0;
 }

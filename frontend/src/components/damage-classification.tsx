@@ -1,4 +1,4 @@
-import { CircleCheck, TriangleAlert, CircleX } from "lucide-react";
+import { CircleCheck, TriangleAlert, CircleX, Info } from "lucide-react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import styles from "./damage-classification.module.css";
@@ -76,6 +76,13 @@ export const DamageClassification = ({
                   {t("common.aiConfidence", {
                     confidence: Math.round(aiConfidence * 100),
                   })}
+                  <span
+                    className={styles.aiInfoIcon}
+                    title={t("common.aiConfidenceTooltip")}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Info size={10} />
+                  </span>
                 </div>
               )}
             </button>

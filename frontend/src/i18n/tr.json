@@ -21,6 +21,7 @@
     "clearAll": "Tümünü temizle",
     "otherSpecify": "Diğer, lütfen belirtin:",
     "aiConfidence": "Güven: %{{confidence}}",
+    "aiConfidenceTooltip": "Yapay zekanın fotoğrafa dayalı bu değerlendirmeden ne kadar emin olduğu",
     "currentBadge": "Mevcut",
     "lastUsedBadge": "Son kullanılan"
   },
