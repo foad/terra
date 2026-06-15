@@ -1,12 +1,8 @@
 import { useAuth } from "react-oidc-context";
-import { useNavigate } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import styles from "./app-bar.module.css";
 
-interface AppBarProps {
-  subtitle: string;
-}
-
-export const AppBar = ({ subtitle }: AppBarProps) => {
+export const AppBar = () => {
   const auth = useAuth();
   const navigate = useNavigate();
   const email =
@@ -14,11 +10,21 @@ export const AppBar = ({ subtitle }: AppBarProps) => {
     (auth.user?.profile?.["cognito:username"] as string | undefined) ??
     null;
 
+  const navClass = ({ isActive }: { isActive: boolean }) =>
+    `${styles.navLink}${isActive ? ` ${styles.navLinkActive}` : ""}`;
+
   return (
     <header className={styles.bar}>
       <div className={styles.inner}>
         <h1 className={styles.title}>TERRA</h1>
-        <span className={styles.subtitle}>{subtitle}</span>
+        <nav className={styles.nav}>
+          <NavLink to="/dashboard" className={navClass}>
+            Dashboard
+          </NavLink>
+          <NavLink to="/admin/crises" className={navClass}>
+            Crisis Management
+          </NavLink>
+        </nav>
         {email && (
           <span className={styles.userArea}>
             <span className={styles.email}>{email}</span>

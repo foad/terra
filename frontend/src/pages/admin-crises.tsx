@@ -187,7 +187,7 @@ const AdminCrisesPage = () => {
   if (editing) {
     return (
       <>
-        <AppBar subtitle="Crisis Management" />
+        <AppBar />
         <CrisisForm
           initial={editing === "new" ? null : editing}
           onCancel={() => setEditing(null)}

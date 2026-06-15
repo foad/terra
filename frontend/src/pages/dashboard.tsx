@@ -218,7 +218,7 @@ const DashboardPage = () => {
 
   return (
     <div className={styles.container}>
-      <AppBar subtitle="Dashboard" />
+      <AppBar />
       <div className={styles.statsBar}>
         <div className={styles.statItem}>
           <span
