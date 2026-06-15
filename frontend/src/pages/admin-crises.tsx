@@ -202,7 +202,7 @@ const AdminCrisesPage = () => {
 
   return (
     <>
-      <AppBar subtitle="Crisis Management" />
+      <AppBar />
       <div className={styles.container}>
         <header className={styles.header}>
           <h1 className={styles.title}>Crisis events</h1>
