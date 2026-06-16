@@ -356,6 +356,11 @@ export const Map = ({
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
+    // Reset centering state so each new pinnedCrisisId gets a fresh evaluation
+    // rather than inheriting flags set for a previous crisis.
+    hasCenteredRef.current = false;
+    hasFlownToUserRef.current = false;
+    pinnedCrisisRegionRef.current = null;
     let cancelled = false;
     (async () => {
       try {
@@ -369,6 +374,9 @@ export const Map = ({
         let target = pinnedCrisisId
           ? active.filter((e: { id: string }) => e.id === pinnedCrisisId)
           : active;
+        // Capture the exact match BEFORE the fallback may replace target, so
+        // we store the correct polygon even when the id is stale/unknown.
+        const exactMatch = pinnedCrisisId ? (target[0] ?? null) : null;
         if (target.length === 0) target = active;
         if (target.length === 0) return;
         const bounds = new maplibregl.LngLatBounds();
@@ -381,12 +389,10 @@ export const Map = ({
           }
         };
         for (const e of target) extend(e.region?.coordinates);
-        // Store the pinned crisis polygon so the GPS effect can check whether
-        // the user is inside the zone and should override the zone-fit (#228).
-        if (pinnedCrisisId && target.length > 0) {
-          pinnedCrisisRegionRef.current =
-            (target[0].region as GeoJSON.Polygon) ?? null;
-        }
+        // Store only the exact match — if the id was stale, leave ref null so
+        // the gps-in-zone check returns false rather than testing a random zone.
+        pinnedCrisisRegionRef.current =
+          exactMatch ? (exactMatch.region as GeoJSON.Polygon) ?? null : null;
         // Fit to the crisis zone unless GPS already placed the user inside it.
         const gpsInZone =
           pinnedCrisisId && gpsPositionRef.current && pinnedCrisisRegionRef.current
@@ -502,6 +508,7 @@ export const Map = ({
 function pointInPolygon(point: [number, number], polygon: GeoJSON.Polygon): boolean {
   const [x, y] = point;
   const ring = polygon.coordinates[0];
+  if (!ring || ring.length < 3) return false;
   let inside = false;
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
     const [xi, yi] = ring[i] as [number, number];
