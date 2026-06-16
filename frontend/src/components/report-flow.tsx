@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Map } from "./map";
 import type { SelectedBuilding } from "./map";
@@ -79,6 +79,13 @@ export const ReportFlow = ({
     useState<FollowUpQuestion[]>([]);
   const [activeCrisisName, setActiveCrisisName] = useState<string | null>(null);
   const crisisLookedUpRef = useRef(false);
+  // A `?crisis=<id>` deep link pins the flow to a specific crisis regardless
+  // of the reporter's location — so evaluators (and Activation-Kit links) load
+  // the right config without being in the zone (#228).
+  const crisisIdParam = useMemo(
+    () => new URLSearchParams(window.location.search).get("crisis"),
+    [],
+  );
   const [reportLocation, setReportLocation] = useState<{
     lat: number;
     lng: number;
@@ -169,24 +176,44 @@ export const ReportFlow = ({
 
   useEffect(() => {
     if (crisisLookedUpRef.current) return;
-    if (latitude == null || longitude == null) return;
+    // The geolocation path needs a fix first; the `?crisis=` param path does not.
+    if (!crisisIdParam && (latitude == null || longitude == null)) return;
     crisisLookedUpRef.current = true;
+
+    const applyConfig = (config: {
+      crisis_type?: string | null;
+      follow_up_questions?: FollowUpQuestion[];
+      name?: string | null;
+    }) => {
+      if (config.crisis_type) setActiveCrisisType(config.crisis_type);
+      if (config.follow_up_questions)
+        setActiveCrisisFollowUpQuestions(config.follow_up_questions);
+      if (config.name) setActiveCrisisName(config.name);
+      localStorage.setItem(
+        "terra-crisis-config",
+        JSON.stringify({
+          crisis_type: config.crisis_type ?? null,
+          follow_up_questions: config.follow_up_questions ?? [],
+        }),
+      );
+    };
+
     (async () => {
       try {
+        if (crisisIdParam) {
+          // Match the crisis by id from the public list, so a deep link loads
+          // the right config independent of the reporter's location (#228).
+          const data = await api("/crisis-events");
+          const match = (data?.events ?? []).find(
+            (e: { id: string }) => e.id === crisisIdParam,
+          );
+          if (match) applyConfig(match);
+          return;
+        }
         const result = await api(
           `/crisis-events/active?lat=${latitude}&lng=${longitude}`,
         );
-        if (result?.crisis_type) setActiveCrisisType(result.crisis_type);
-        if (result?.follow_up_questions)
-          setActiveCrisisFollowUpQuestions(result.follow_up_questions);
-        if (result?.name) setActiveCrisisName(result.name);
-        localStorage.setItem(
-          "terra-crisis-config",
-          JSON.stringify({
-            crisis_type: result?.crisis_type ?? null,
-            follow_up_questions: result?.follow_up_questions ?? [],
-          }),
-        );
+        if (result) applyConfig(result);
       } catch (err) {
         // A definitive HTTP response (404 = genuinely no active crisis at
         // this location) must not fall back to a stale cached crisis from
@@ -211,7 +238,7 @@ export const ReportFlow = ({
         }
       }
     })();
-  }, [latitude, longitude]);
+  }, [latitude, longitude, crisisIdParam]);
 
   useEffect(() => {
     const buildingId = selectedBuilding?.buildingId;
@@ -373,6 +400,7 @@ export const ReportFlow = ({
             latitude={latitude}
             longitude={longitude}
             accuracy={accuracy}
+            pinnedCrisisId={crisisIdParam}
             onBuildingSelect={handleBuildingSelect}
             onManualPin={handleManualPin}
           />
