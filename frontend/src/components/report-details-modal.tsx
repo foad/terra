@@ -21,6 +21,7 @@ export const ReportDetailsModal = ({
   const photo = p.photo_url ?? p.thumbnail_url;
   const [saving, setSaving] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
+  const [showOriginalDesc, setShowOriginalDesc] = useState(false);
   const api = useApi();
 
   const sendReview = async (patch: Record<string, string | null>) => {
@@ -76,8 +77,30 @@ export const ReportDetailsModal = ({
             <Field label="Infrastructure">
               {p.infrastructure_type.join(", ")}
             </Field>
-            {p.infrastructure_description && (
-              <Field label="Description">{p.infrastructure_description}</Field>
+            {(p.infrastructure_description_en ?? p.infrastructure_description) && (
+              <Field label="Description">
+                <div className={styles.descriptionField}>
+                  <span>
+                    {p.infrastructure_description_en ?? p.infrastructure_description}
+                  </span>
+                  {p.infrastructure_description_en && (
+                    <>
+                      <button
+                        type="button"
+                        className={styles.reviewLink}
+                        onClick={() => setShowOriginalDesc((v) => !v)}
+                      >
+                        {showOriginalDesc ? "Hide original" : "Show original"}
+                      </button>
+                      {showOriginalDesc && (
+                        <div className={styles.originalDesc}>
+                          {p.infrastructure_description}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </Field>
             )}
             {p.follow_up_responses?.location_description && (
               <Field label="Location described as">
