@@ -26,6 +26,7 @@
     "clearAll": "清除全部",
     "otherSpecify": "其他，请说明：",
     "aiConfidence": "置信度：{{confidence}}%",
+    "aiConfidenceTooltip": "AI 根据照片对此评估的确信程度",
     "currentBadge": "当前",
     "lastUsedBadge": "上次使用"
   },

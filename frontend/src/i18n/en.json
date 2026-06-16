@@ -26,6 +26,7 @@
     "clearAll": "Clear all",
     "otherSpecify": "Other, please specify:",
     "aiConfidence": "Confidence: {{confidence}}%",
+    "aiConfidenceTooltip": "How certain the AI is about this assessment based on the photo",
     "currentBadge": "Current",
     "lastUsedBadge": "Last used"
   },
