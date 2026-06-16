@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Layout } from "./components/layout";
 import { ReportFlow } from "./components/report-flow";
@@ -21,9 +21,19 @@ export const App = () => {
   const pendingCount = counts.pending + counts.syncing;
   const [showFailedPanel, setShowFailedPanel] = useState(false);
 
+  // With a `?crisis=` deep link, location is optional (the crisis zone is
+  // already known), so a denied/blocked geolocation isn't an error worth
+  // alarming the reporter with (#228).
+  const hasCrisisParam = useMemo(
+    () => !!new URLSearchParams(window.location.search).get("crisis"),
+    [],
+  );
+
   return (
     <Layout>
-      {error && <div className={styles.errorBanner}>{error}</div>}
+      {error && !hasCrisisParam && (
+        <div className={styles.errorBanner}>{error}</div>
+      )}
       {!isOnline && (
         <div className={styles.warningBanner}>{t("app.offline")}</div>
       )}
