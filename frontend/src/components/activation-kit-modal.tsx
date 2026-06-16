@@ -6,10 +6,11 @@ import styles from "./activation-kit-modal.module.css";
 interface Props {
   name: string;
   crisisType: string;
+  crisisId: string;
   onClose: () => void;
 }
 
-const LANGUAGES = ["EN", "ES", "FR", "AR", "RU", "ZH"] as const;
+const LANGUAGES = ["EN", "ES", "FR", "AR", "RU", "ZH", "TR"] as const;
 type Lang = (typeof LANGUAGES)[number];
 
 const LANG_LABELS: Record<Lang, string> = {
@@ -19,6 +20,7 @@ const LANG_LABELS: Record<Lang, string> = {
   AR: "العربية",
   RU: "Русский",
   ZH: "中文",
+  TR: "Türkçe",
 };
 
 const LANG_META: Record<Lang, { bcp47: string; dir: "ltr" | "rtl" }> = {
@@ -28,16 +30,21 @@ const LANG_META: Record<Lang, { bcp47: string; dir: "ltr" | "rtl" }> = {
   AR: { bcp47: "ar", dir: "rtl" },
   RU: { bcp47: "ru", dir: "ltr" },
   ZH: { bcp47: "zh", dir: "ltr" },
+  TR: { bcp47: "tr", dir: "ltr" },
 };
 
-function whatsappTemplate(name: string, url: string): Record<Lang, string> {
+function whatsappTemplate(
+  name: string,
+  linkFor: (lang: Lang) => string,
+): Record<Lang, string> {
   return {
-    EN: `🚨 *${name}*\n\nWe need your help. Can you share what you're seeing near you? It takes less than 2 minutes and helps emergency teams reach the right places first.\n\nTake a photo and submit here:\n${url}\n\nEvery report makes a difference. Thank you.`,
-    ES: `🚨 *${name}*\n\nNecesitamos tu ayuda. ¿Puedes compartir lo que estás viendo cerca de ti? Toma menos de 2 minutos y ayuda a los equipos de emergencia a llegar primero a los lugares correctos.\n\nToma una foto y envíala aquí:\n${url}\n\nCada informe marca la diferencia. Gracias.`,
-    FR: `🚨 *${name}*\n\nNous avons besoin de votre aide. Pouvez-vous nous dire ce que vous voyez près de chez vous ? Cela prend moins de 2 minutes et aide les équipes d'urgence à se rendre là où c'est le plus nécessaire.\n\nPrenez une photo et signalez ici :\n${url}\n\nChaque signalement compte. Merci.`,
-    AR: `🚨 *${name}*\n\nنحتاج إلى مساعدتك. هل يمكنك مشاركة ما تراه بالقرب منك؟ يستغرق الأمر أقل من دقيقتين ويساعد فرق الطوارئ على الوصول إلى الأماكن الصحيحة أولاً.\n\nالتقط صورة وأرسل تقريرك هنا:\n${url}\n\nكل تقرير يُحدث فرقاً. شكراً لك.`,
-    RU: `🚨 *${name}*\n\nНам нужна ваша помощь. Можете рассказать, что происходит рядом с вами? Это займёт менее 2 минут и поможет экстренным службам прибыть туда, где это нужнее всего.\n\nСфотографируйте и отправьте здесь:\n${url}\n\nКаждый отчёт важен. Спасибо.`,
-    ZH: `🚨 *${name}*\n\n我们需要您的帮助。您能分享一下您附近看到的情况吗？只需不到2分钟，就能帮助救援队第一时间到达最需要的地方。\n\n拍一张照片，在此提交：\n${url}\n\n每一份报告都很重要。谢谢您。`,
+    EN: `🚨 *${name}*\n\nWe need your help. Can you share what you're seeing near you? It takes less than 2 minutes and helps emergency teams reach the right places first.\n\nTake a photo and submit here:\n${linkFor("EN")}\n\nEvery report makes a difference. Thank you.`,
+    ES: `🚨 *${name}*\n\nNecesitamos tu ayuda. ¿Puedes compartir lo que estás viendo cerca de ti? Toma menos de 2 minutos y ayuda a los equipos de emergencia a llegar primero a los lugares correctos.\n\nToma una foto y envíala aquí:\n${linkFor("ES")}\n\nCada informe marca la diferencia. Gracias.`,
+    FR: `🚨 *${name}*\n\nNous avons besoin de votre aide. Pouvez-vous nous dire ce que vous voyez près de chez vous ? Cela prend moins de 2 minutes et aide les équipes d'urgence à se rendre là où c'est le plus nécessaire.\n\nPrenez une photo et signalez ici :\n${linkFor("FR")}\n\nChaque signalement compte. Merci.`,
+    AR: `🚨 *${name}*\n\nنحتاج إلى مساعدتك. هل يمكنك مشاركة ما تراه بالقرب منك؟ يستغرق الأمر أقل من دقيقتين ويساعد فرق الطوارئ على الوصول إلى الأماكن الصحيحة أولاً.\n\nالتقط صورة وأرسل تقريرك هنا:\n${linkFor("AR")}\n\nكل تقرير يُحدث فرقاً. شكراً لك.`,
+    RU: `🚨 *${name}*\n\nНам нужна ваша помощь. Можете рассказать, что происходит рядом с вами? Это займёт менее 2 минут и поможет экстренным службам прибыть туда, где это нужнее всего.\n\nСфотографируйте и отправьте здесь:\n${linkFor("RU")}\n\nКаждый отчёт важен. Спасибо.`,
+    ZH: `🚨 *${name}*\n\n我们需要您的帮助。您能分享一下您附近看到的情况吗？只需不到2分钟，就能帮助救援队第一时间到达最需要的地方。\n\n拍一张照片，在此提交：\n${linkFor("ZH")}\n\n每一份报告都很重要。谢谢您。`,
+    TR: `🚨 *${name}*\n\nYardımınıza ihtiyacımız var. Yakınınızda neler olduğunu paylaşabilir misiniz? 2 dakikadan az sürer ve acil ekiplerin doğru yerlere önce ulaşmasına yardımcı olur.\n\nBir fotoğraf çekin ve buradan gönderin:\n${linkFor("TR")}\n\nHer rapor bir fark yaratır. Teşekkür ederiz.`,
   };
 }
 
@@ -48,6 +55,7 @@ const POSTER_INSTRUCTIONS: Record<Lang, string> = {
   AR: "امسح لإبلاغ عن الأضرار في منطقتك",
   RU: "Сканируйте, чтобы сообщить об ущербе",
   ZH: "扫描以报告您所在地区的损坏情况",
+  TR: "Bölgenizdeki hasarı bildirmek için tarayın",
 };
 
 function escapeHtml(str: string): string {
@@ -77,9 +85,19 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
-export function ActivationKitModal({ name, crisisType, onClose }: Props) {
-  const url = window.location.origin;
-  const templates = whatsappTemplate(name, url);
+export function ActivationKitModal({
+  name,
+  crisisType,
+  crisisId,
+  onClose,
+}: Props) {
+  // Deterministic entry link (#228): the QR and shared links carry the crisis
+  // id so they open straight onto this crisis zone regardless of where the
+  // device is, and each language template presets its own UI language.
+  const base = window.location.origin;
+  const url = `${base}/?crisis=${crisisId}`;
+  const linkFor = (lang: Lang) => `${url}&lng=${LANG_META[lang].bcp47}`;
+  const templates = whatsappTemplate(name, linkFor);
   const [activeLang, setActiveLang] = useState<Lang>("EN");
   const [printBlocked, setPrintBlocked] = useState(false);
   const qrRef = useRef<HTMLDivElement>(null);
@@ -243,7 +261,7 @@ export function ActivationKitModal({ name, crisisType, onClose }: Props) {
         <div className={styles.section}>
           <div className={styles.sectionLabel}>QR Code</div>
           <div className={styles.qrWrap} ref={qrRef}>
-            <QRCodeSVG value={url} size={160} />
+            <QRCodeSVG value={linkFor(activeLang)} size={160} />
           </div>
         </div>
 

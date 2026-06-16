@@ -184,10 +184,10 @@ const AdminCrisesPage = () => {
     await refresh();
   };
 
-  if (editing) {
-    return (
-      <>
-        <AppBar />
+  return (
+    <>
+      <AppBar />
+      {editing ? (
         <CrisisForm
           initial={editing === "new" ? null : editing}
           onCancel={() => setEditing(null)}
@@ -196,91 +196,89 @@ const AdminCrisesPage = () => {
             await refresh();
           }}
         />
-      </>
-    );
-  }
+      ) : (
+        <>
+          <div className={styles.container}>
+            <header className={styles.header}>
+              <h1 className={styles.title}>Crisis events</h1>
+              <button
+                type="button"
+                className={styles.primary}
+                onClick={() => setEditing("new")}
+              >
+                <Plus size={16} /> New crisis
+              </button>
+            </header>
 
-  return (
-    <>
-      <AppBar />
-      <div className={styles.container}>
-        <header className={styles.header}>
-          <h1 className={styles.title}>Crisis events</h1>
-          <button
-            type="button"
-            className={styles.primary}
-            onClick={() => setEditing("new")}
-          >
-            <Plus size={16} /> New crisis
-          </button>
-        </header>
+            {loading ? (
+              <div className={styles.empty}>Loading…</div>
+            ) : crises.length === 0 ? (
+              <div className={styles.empty}>No crisis events yet.</div>
+            ) : (
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {crises.map((c) => (
+                    <tr key={c.id}>
+                      <td>{c.name}</td>
+                      <td>{c.crisis_type}</td>
+                      <td>
+                        <span
+                          className={`${styles.badge} ${c.is_active ? styles.active : styles.inactive}`}
+                        >
+                          {c.is_active ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                      <td className={styles.actions}>
+                        <button
+                          type="button"
+                          className={styles.iconButton}
+                          onClick={() => setKitCrisis(c)}
+                          aria-label="Activation Kit"
+                          title="Community Activation Kit"
+                        >
+                          <QrCode size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.iconButton}
+                          onClick={() => setEditing(c)}
+                          aria-label="Edit"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.iconButton}
+                          onClick={() => handleDelete(c)}
+                          aria-label="Delete"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
 
-        {loading ? (
-          <div className={styles.empty}>Loading…</div>
-        ) : crises.length === 0 ? (
-          <div className={styles.empty}>No crisis events yet.</div>
-        ) : (
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {crises.map((c) => (
-                <tr key={c.id}>
-                  <td>{c.name}</td>
-                  <td>{c.crisis_type}</td>
-                  <td>
-                    <span
-                      className={`${styles.badge} ${c.is_active ? styles.active : styles.inactive}`}
-                    >
-                      {c.is_active ? "Active" : "Inactive"}
-                    </span>
-                  </td>
-                  <td className={styles.actions}>
-                    <button
-                      type="button"
-                      className={styles.iconButton}
-                      onClick={() => setKitCrisis(c)}
-                      aria-label="Activation Kit"
-                      title="Community Activation Kit"
-                    >
-                      <QrCode size={16} />
-                    </button>
-                    <button
-                      type="button"
-                      className={styles.iconButton}
-                      onClick={() => setEditing(c)}
-                      aria-label="Edit"
-                    >
-                      <Pencil size={16} />
-                    </button>
-                    <button
-                      type="button"
-                      className={styles.iconButton}
-                      onClick={() => handleDelete(c)}
-                      aria-label="Delete"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-
-      {kitCrisis && (
-        <ActivationKitModal
-          name={kitCrisis.name}
-          crisisType={kitCrisis.crisis_type}
-          onClose={() => setKitCrisis(null)}
-        />
+          {kitCrisis && (
+            <ActivationKitModal
+              name={kitCrisis.name}
+              crisisType={kitCrisis.crisis_type}
+              crisisId={kitCrisis.id}
+              onClose={() => setKitCrisis(null)}
+            />
+          )}
+        </>
       )}
     </>
   );

@@ -33,6 +33,10 @@ interface MapProps {
   latitude: number | null;
   longitude: number | null;
   accuracy: number | null;
+  // When set, the map pins to this specific crisis zone and does not recentre
+  // on the reporter's location — so a deep link lands deterministically on the
+  // affected area regardless of where the device is (#228).
+  pinnedCrisisId?: string | null;
   onBuildingSelect?: (building: SelectedBuilding | null) => void;
   onManualPin?: (coords: [number, number] | null) => void;
 }
@@ -41,6 +45,7 @@ export const Map = ({
   latitude,
   longitude,
   accuracy,
+  pinnedCrisisId,
   onBuildingSelect,
   onManualPin,
 }: MapProps) => {
@@ -349,11 +354,17 @@ export const Map = ({
     (async () => {
       try {
         const data = await api("/crisis-events");
-        if (cancelled || hasCenteredRef.current) return;
+        if (cancelled) return;
         const active = (data?.events ?? []).filter(
           (e: { is_active: boolean }) => e.is_active,
         );
-        if (active.length === 0) return;
+        // A `?crisis=` deep link fits to that one crisis; a stale/unknown id
+        // falls back to all active zones rather than the blank world view.
+        let target = pinnedCrisisId
+          ? active.filter((e: { id: string }) => e.id === pinnedCrisisId)
+          : active;
+        if (target.length === 0) target = active;
+        if (target.length === 0) return;
         const bounds = new maplibregl.LngLatBounds();
         const extend = (coords: unknown) => {
           if (!Array.isArray(coords)) return;
@@ -363,9 +374,12 @@ export const Map = ({
             for (const c of coords) extend(c);
           }
         };
-        for (const e of active) extend(e.region?.coordinates);
-        if (!bounds.isEmpty() && !hasCenteredRef.current) {
+        for (const e of target) extend(e.region?.coordinates);
+        // Always fit when pinned (overrides a GPS fix that beat the fetch);
+        // otherwise only fit if nothing has centred yet.
+        if (!bounds.isEmpty() && (!hasCenteredRef.current || pinnedCrisisId)) {
           map.fitBounds(bounds, { padding: 60, animate: false });
+          if (pinnedCrisisId) hasCenteredRef.current = true;
         }
       } catch {
         // No crisis info available — keep the default view until the
@@ -375,13 +389,16 @@ export const Map = ({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [pinnedCrisisId]);
 
   // Update user location marker and center map on first fix
   useEffect(() => {
     const map = mapRef.current;
     if (!map || latitude === null || longitude === null) return;
 
+    // Fly to the user on first GPS fix. When pinned, hasCenteredRef is set to
+    // true by the fitBounds path — so this only fires if that fetch failed,
+    // which is preferable to leaving the map on the blank world view.
     if (!hasCenteredRef.current) {
       map.flyTo({ center: [longitude, latitude], zoom: 18, speed: 4 });
       hasCenteredRef.current = true;
