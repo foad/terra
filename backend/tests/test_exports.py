@@ -21,6 +21,7 @@ def _row(**overrides):
         "thumbnail_url": "s3://terra-photos/thumbnails/abc.jpg",
         "infrastructure_type": ["Residential Infrastructure (Houses and apartments)"],
         "infrastructure_description": "Test building",
+        "infrastructure_description_en": None,
         "crisis_nature": ["Flood"],
         "debris_present": True,
         "electricity_status": "Minor damage (service disruptions but quickly repairable)",
@@ -37,6 +38,7 @@ def _row(**overrides):
         base["ai_damage_level"], base["ai_confidence"],
         base["photo_url"], base["thumbnail_url"],
         base["infrastructure_type"], base["infrastructure_description"],
+        base["infrastructure_description_en"],
         base["crisis_nature"], base["debris_present"],
         base["electricity_status"], base["health_status"],
         base["pressing_needs"], base["version_chain_id"],
@@ -107,8 +109,8 @@ class TestExportReports:
         body, _, _ = export_reports({"format": "csv"})
         row = body.strip().split("\r\n")[1]
         cells = row.split(",")
-        # debris_present is at index 9
-        assert cells[9] == "false"
+        # debris_present is at index 10
+        assert cells[10] == "false"
 
     def test_unknown_format_rejected(self):
         with pytest.raises(ValidationError):

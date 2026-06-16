@@ -9,6 +9,7 @@ from aws_lambda_powertools import Logger
 from pydantic import BaseModel, ConfigDict, Field
 
 from src.handlers.pii_filter import redact_pii
+from src.handlers.translate import translate_to_english
 from src.utils.db import get_connection
 
 logger = Logger()
@@ -171,6 +172,17 @@ def create_report(body: dict) -> dict:
                     extra={"field": _field, "entity_types": _entities, "count": len(_entities)},
                 )
 
+    # Translate user description to English. Runs on the post-PII-redacted text
+    # so [REDACTION] placeholders are preserved. Fail-open: None on any failure.
+    infrastructure_description_en: str | None = None
+    if submission.infrastructure_description:
+        infrastructure_description_en = translate_to_english(submission.infrastructure_description)
+        if infrastructure_description_en:
+            logger.info(
+                "description_translated",
+                extra={"original_length": len(submission.infrastructure_description)},
+            )
+
     # Compute H3 indexes
     h3_r12 = h3.latlng_to_cell(submission.latitude, submission.longitude, 12)
     h3_r8 = h3.latlng_to_cell(submission.latitude, submission.longitude, 8)
@@ -209,6 +221,7 @@ def create_report(body: dict) -> dict:
         "thumbnail_url": thumbnail_url,
         "infrastructure_type": submission.infrastructure_type,
         "infrastructure_description": submission.infrastructure_description,
+        "infrastructure_description_en": infrastructure_description_en,
         "crisis_nature": submission.crisis_nature,
         "debris_present": submission.debris_present,
         "electricity_status": submission.electricity_status,
@@ -232,6 +245,7 @@ def create_report(body: dict) -> dict:
                 id, location, h3_r12, h3_r8, building_id,
                 damage_level, ai_damage_level, ai_infrastructure_type, ai_confidence,
                 photo_url, thumbnail_url, infrastructure_type, infrastructure_description,
+                infrastructure_description_en,
                 crisis_nature, debris_present, electricity_status,
                 health_status, pressing_needs, version_chain_id,
                 device_id, offline_queue_id, duplicate_status, related_report_id,
@@ -242,6 +256,7 @@ def create_report(body: dict) -> dict:
                 %(h3_r12)s, %(h3_r8)s, %(building_id)s,
                 %(damage_level)s, %(ai_damage_level)s, %(ai_infrastructure_type)s, %(ai_confidence)s,
                 %(photo_url)s, %(thumbnail_url)s, %(infrastructure_type)s, %(infrastructure_description)s,
+                %(infrastructure_description_en)s,
                 %(crisis_nature)s, %(debris_present)s, %(electricity_status)s,
                 %(health_status)s, %(pressing_needs)s, %(version_chain_id)s,
                 %(device_id)s, %(offline_queue_id)s, %(duplicate_status)s, %(related_report_id)s,
@@ -346,7 +361,8 @@ def query_reports(params: dict) -> dict:
                 (SELECT COUNT(*) FROM reports r2
                  WHERE r2.version_chain_id = reports.version_chain_id) as version_count,
                 follow_up_responses,
-                damage_level, analyst_damage_level, flag_status, flag_reason
+                damage_level, analyst_damage_level, flag_status, flag_reason,
+                infrastructure_description_en
             FROM reports
             WHERE {where}
             ORDER BY submitted_at DESC
@@ -397,6 +413,7 @@ def query_reports(params: dict) -> dict:
                 "analyst_damage_level": row[25],
                 "flag_status": row[26],
                 "flag_reason": row[27],
+                "infrastructure_description_en": row[28],
             },
         })
 

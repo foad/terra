@@ -25,6 +25,7 @@ export interface ReportFeature {
     thumbnail_url: string | null;
     infrastructure_type: string[];
     infrastructure_description: string | null;
+    infrastructure_description_en: string | null;
     crisis_nature: string[];
     debris_present: boolean | null;
     electricity_status: string | null;

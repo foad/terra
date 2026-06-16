@@ -115,6 +115,17 @@
   gap: 4px;
 }
 
+.descriptionField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.originalDesc {
+  color: var(--undpds-color-gray-600);
+  font-style: italic;
+}
+
 /* --- Analyst review (#169, #170) --- */
 .review {
   border-top: 1px solid var(--undpds-color-gray-300);
