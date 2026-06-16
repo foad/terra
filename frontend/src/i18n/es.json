@@ -26,6 +26,7 @@
     "clearAll": "Borrar todo",
     "otherSpecify": "Otro, especifique:",
     "aiConfidence": "Confianza: {{confidence}}%",
+    "aiConfidenceTooltip": "Qué tan segura está la IA sobre esta evaluación basándose en la foto",
     "currentBadge": "Actual",
     "lastUsedBadge": "Último usado"
   },

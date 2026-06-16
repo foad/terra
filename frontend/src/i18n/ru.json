@@ -26,6 +26,7 @@
     "clearAll": "Очистить все",
     "otherSpecify": "Другое, укажите:",
     "aiConfidence": "Уверенность: {{confidence}}%",
+    "aiConfidenceTooltip": "Насколько уверен ИИ в данной оценке на основе фотографии",
     "currentBadge": "Текущее",
     "lastUsedBadge": "Прошлый раз"
   },

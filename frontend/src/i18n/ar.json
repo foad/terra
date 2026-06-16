@@ -26,6 +26,7 @@
     "clearAll": "مسح الكل",
     "otherSpecify": "أخرى، يرجى التحديد:",
     "aiConfidence": "الثقة: {{confidence}}%",
+    "aiConfidenceTooltip": "مدى يقين الذكاء الاصطناعي بشأن هذا التقييم استناداً إلى الصورة",
     "currentBadge": "حالي",
     "lastUsedBadge": "آخر استخدام"
   },
