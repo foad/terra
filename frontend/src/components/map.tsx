@@ -55,6 +55,9 @@ export const Map = ({
   const markerRef = useRef<maplibregl.Marker | null>(null);
   const pinMarkerRef = useRef<maplibregl.Marker | null>(null);
   const hasCenteredRef = useRef(false);
+  const hasFlownToUserRef = useRef(false);
+  const pinnedCrisisRegionRef = useRef<GeoJSON.Polygon | null>(null);
+  const gpsPositionRef = useRef<[number, number] | null>(null);
   const onBuildingSelectRef = useRef(onBuildingSelect);
   const onManualPinRef = useRef(onManualPin);
   const [coverageCount, setCoverageCount] = useState<{
@@ -340,6 +343,9 @@ export const Map = ({
       markerRef.current = null;
       pinMarkerRef.current = null;
       hasCenteredRef.current = false;
+      hasFlownToUserRef.current = false;
+      pinnedCrisisRegionRef.current = null;
+      gpsPositionRef.current = null;
     };
   }, []);
 
@@ -375,11 +381,20 @@ export const Map = ({
           }
         };
         for (const e of target) extend(e.region?.coordinates);
-        // Always fit when pinned (overrides a GPS fix that beat the fetch);
-        // otherwise only fit if nothing has centred yet.
-        if (!bounds.isEmpty() && (!hasCenteredRef.current || pinnedCrisisId)) {
+        // Store the pinned crisis polygon so the GPS effect can check whether
+        // the user is inside the zone and should override the zone-fit (#228).
+        if (pinnedCrisisId && target.length > 0) {
+          pinnedCrisisRegionRef.current =
+            (target[0].region as GeoJSON.Polygon) ?? null;
+        }
+        // Fit to the crisis zone unless GPS already placed the user inside it.
+        const gpsInZone =
+          pinnedCrisisId && gpsPositionRef.current && pinnedCrisisRegionRef.current
+            ? pointInPolygon(gpsPositionRef.current, pinnedCrisisRegionRef.current)
+            : false;
+        if (!bounds.isEmpty() && (!hasCenteredRef.current || (pinnedCrisisId && !gpsInZone))) {
           map.fitBounds(bounds, { padding: 60, animate: false });
-          if (pinnedCrisisId) hasCenteredRef.current = true;
+          if (pinnedCrisisId && !gpsInZone) hasCenteredRef.current = true;
         }
       } catch {
         // No crisis info available — keep the default view until the
@@ -396,12 +411,20 @@ export const Map = ({
     const map = mapRef.current;
     if (!map || latitude === null || longitude === null) return;
 
-    // Fly to the user on first GPS fix. When pinned, hasCenteredRef is set to
-    // true by the fitBounds path — so this only fires if that fetch failed,
-    // which is preferable to leaving the map on the blank world view.
-    if (!hasCenteredRef.current) {
+    // Keep the GPS position ref current so the crisis effect can check
+    // gps-in-zone even when GPS arrived before the crisis fetch completed.
+    gpsPositionRef.current = [longitude, latitude];
+    // Fly to user on first fix. Also fly if the user is physically inside the
+    // pinned crisis zone — overriding the zone-fit so they see their actual
+    // street-level position rather than the full region bounds (#228).
+    const inCrisisZone =
+      pinnedCrisisId && pinnedCrisisRegionRef.current
+        ? pointInPolygon([longitude, latitude], pinnedCrisisRegionRef.current)
+        : false;
+    if (!hasCenteredRef.current || (inCrisisZone && !hasFlownToUserRef.current)) {
       map.flyTo({ center: [longitude, latitude], zoom: 18, speed: 4 });
       hasCenteredRef.current = true;
+      hasFlownToUserRef.current = true;
     }
 
     if (markerRef.current) {
@@ -437,7 +460,7 @@ export const Map = ({
         BUILDINGS_LAYER,
       );
     }
-  }, [latitude, longitude, accuracy]);
+  }, [latitude, longitude, accuracy, pinnedCrisisId]);
 
   const unassessed =
     coverageCount && coverageCount.total > 0
@@ -447,6 +470,26 @@ export const Map = ({
   return (
     <div className={styles.wrapper}>
       <div ref={containerRef} className={styles.container} />
+      {latitude !== null && longitude !== null && (
+        <button
+          type="button"
+          className={styles.locateButton}
+          onClick={() => {
+            mapRef.current?.flyTo({ center: [longitude, latitude], zoom: 18, speed: 4 });
+          }}
+          title="Go to my location"
+          aria-label="Go to my location"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="8"/>
+            <line x1="12" y1="2" x2="12" y2="6"/>
+            <line x1="12" y1="18" x2="12" y2="22"/>
+            <line x1="2" y1="12" x2="6" y2="12"/>
+            <line x1="18" y1="12" x2="22" y2="12"/>
+            <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/>
+          </svg>
+        </button>
+      )}
       {unassessed !== null && (
         <div className={styles.coverageBadge}>
           {t("coverage.unassessed", { count: unassessed })}
@@ -455,6 +498,20 @@ export const Map = ({
     </div>
   );
 };
+
+function pointInPolygon(point: [number, number], polygon: GeoJSON.Polygon): boolean {
+  const [x, y] = point;
+  const ring = polygon.coordinates[0];
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i] as [number, number];
+    const [xj, yj] = ring[j] as [number, number];
+    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
 
 const createAccuracyCircle = (
   lng: number,
