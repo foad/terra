@@ -66,3 +66,32 @@
 .pinMarker:active {
   cursor: grabbing;
 }
+
+/* "Go to my location" button — mirrors MapLibre's NavigationControl style,
+   positioned below the zoom/compass controls at top-right. */
+.locateButton {
+  position: absolute;
+  top: 120px;
+  right: 10px;
+  width: 29px;
+  height: 29px;
+  background: #fff;
+  border: none;
+  border-radius: 4px;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #555;
+  padding: 0;
+  z-index: 1;
+}
+
+.locateButton:hover {
+  background: #f0f0f0;
+}
+
+.locateButton:active {
+  background: #e0e0e0;
+}
