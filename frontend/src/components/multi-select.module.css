@@ -7,12 +7,11 @@
   border: 2px solid var(--undpds-color-black);
   color: var(--undpds-color-black);
   cursor: pointer;
-  font-size: var(--undpds-font-size-16);
+  font-size: 0.8125rem;
   font-weight: 600;
-  line-height: 1.125rem;
+  line-height: 1rem;
   margin: 0;
-  padding: var(--undpds-spacing-05) var(--undpds-spacing-50)
-    var(--undpds-spacing-05) var(--undpds-spacing-05);
+  padding: 8px 34px 8px 10px;
   position: relative;
   text-transform: uppercase;
   width: 100%;
@@ -27,11 +26,11 @@
     no-repeat center center;
   content: "";
   float: right;
-  height: 13px;
+  height: 10px;
   position: absolute;
-  right: 14px;
+  right: 10px;
   top: 50%;
-  width: 20px;
+  width: 14px;
   transform: translateY(-50%);
   transition: all 200ms ease-in-out;
 }
@@ -106,8 +105,9 @@
 }
 
 .list :global(.form-check) label {
-  padding: var(--undpds-spacing-05) 0;
+  padding: 6px 0;
   width: 100%;
+  font-size: 0.8125rem;
 }
 
 .list :global(.form-check) input {

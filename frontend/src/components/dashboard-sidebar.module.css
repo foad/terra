@@ -172,6 +172,23 @@
   gap: 2px;
 }
 
+.dateField label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--undpds-color-gray-600);
+}
+
+.dateField input {
+  border: 2px solid var(--undpds-color-black);
+  background: var(--undpds-color-white);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  padding: 8px 10px;
+  color: var(--undpds-color-black);
+}
+
 /* Report detail panel */
 
 .detail {
