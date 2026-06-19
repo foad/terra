@@ -33,6 +33,15 @@
   background: var(--undpds-color-blue-600, #0468b1);
 }
 
+.barEmpty {
+  min-height: 0;
+  background: var(--undpds-color-gray-300, #e5e7eb);
+}
+
+.barEmpty.barActive {
+  background: var(--undpds-color-gray-500, #6b7280);
+}
+
 .sliderRoot {
   position: absolute;
   inset: 0;

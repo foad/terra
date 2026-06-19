@@ -48,10 +48,11 @@ export const TimeSlider = ({ reports, filteredCount, onChange }: Props) => {
       counts[i]++;
       if (counts[i] > peak) peak = counts[i];
     }
+    const logPeak = Math.log(peak + 1);
     return {
       paddedMin: padded,
       maxMs: max,
-      bars: counts.map((c) => c / peak),
+      bars: counts.map((c) => (c === 0 ? 0 : Math.log(c + 1) / logPeak)),
     };
   }, [reports]);
 
@@ -102,14 +103,15 @@ export const TimeSlider = ({ reports, filteredCount, onChange }: Props) => {
             const left = i / BUCKETS;
             const right = (i + 1) / BUCKETS;
             const inRange = left >= fromFrac && right <= toFrac;
+            const heightPct = h === 0 ? 2 : Math.max(h * 100, 6);
             return (
               <div
                 key={i}
-                className={`${styles.bar} ${inRange ? styles.barActive : ""}`}
+                className={`${styles.bar} ${inRange ? styles.barActive : ""} ${h === 0 ? styles.barEmpty : ""}`}
                 style={{
                   left: `${left * 100}%`,
                   width: `calc(${barWidthPct}% - 2px)`,
-                  height: `${Math.max(h * 100, 8)}%`,
+                  height: `${heightPct}%`,
                 }}
               />
             );
