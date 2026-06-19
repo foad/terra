@@ -5,6 +5,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { Protocol } from "pmtiles";
 import { api } from "../utils/api";
 import type { ReportFeature } from "../pages/dashboard";
+import { CoverageRing } from "./coverage-ring";
 import styles from "./map.module.css";
 
 const VIDA_BUILDINGS_URL =
@@ -468,11 +469,6 @@ export const Map = ({
     }
   }, [latitude, longitude, accuracy, pinnedCrisisId]);
 
-  const unassessed =
-    coverageCount && coverageCount.total > 0
-      ? Math.max(0, coverageCount.total - coverageCount.assessed)
-      : null;
-
   return (
     <div className={styles.wrapper}>
       <div ref={containerRef} className={styles.container} />
@@ -496,9 +492,20 @@ export const Map = ({
           </svg>
         </button>
       )}
-      {unassessed !== null && (
-        <div className={styles.coverageBadge}>
-          {t("coverage.unassessed", { count: unassessed })}
+      {coverageCount !== null && coverageCount.total > 0 && (
+        <div className={styles.coverageCard}>
+          <CoverageRing
+            assessed={coverageCount.assessed}
+            total={coverageCount.total}
+            label={
+              coverageCount.assessed >= coverageCount.total
+                ? t("coverage.allAssessed")
+                : t("coverage.ring", {
+                    assessed: coverageCount.assessed,
+                    total: coverageCount.total,
+                  })
+            }
+          />
         </div>
       )}
     </div>

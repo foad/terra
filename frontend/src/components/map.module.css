@@ -13,19 +13,10 @@
   min-height: 0;
 }
 
-.coverageBadge {
+.coverageCard {
   position: absolute;
   top: 48px;
   left: 12px;
-  background: #ffffff;
-  color: var(--undpds-color-gray-900);
-  font-size: 0.75rem;
-  font-weight: 500;
-  padding: 5px 12px;
-  border-radius: 999px;
-  pointer-events: none;
-  white-space: nowrap;
-  backdrop-filter: blur(4px);
   z-index: 10;
 }
 
