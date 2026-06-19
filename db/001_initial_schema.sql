@@ -81,6 +81,13 @@ CREATE TABLE public.crisis_events (
 );
 
 
+-- Analyst priority flag: request more photos for specific buildings
+CREATE TABLE public.priority_buildings (
+    building_id text NOT NULL,
+    flagged_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
 CREATE TABLE public.reports (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     crisis_event_id uuid,
@@ -137,6 +144,10 @@ ALTER TABLE ONLY public.building_footprints
 
 ALTER TABLE ONLY public.crisis_events
     ADD CONSTRAINT crisis_events_pkey PRIMARY KEY (id);
+
+
+ALTER TABLE ONLY public.priority_buildings
+    ADD CONSTRAINT priority_buildings_pkey PRIMARY KEY (building_id);
 
 
 ALTER TABLE ONLY public.reports

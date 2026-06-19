@@ -322,7 +322,7 @@ def build_filter_clause(q: "ReportsQueryParams | object") -> tuple[str, list]:
     # When querying by building_id, show all versions not just latest
     if q.building_id:
         conditions = [c for c in conditions if c != "is_latest = true"]
-        conditions.append("building_id = %s")
+        conditions.append("reports.building_id = %s")
         values.append(q.building_id)
 
     return " AND ".join(conditions), values
@@ -342,7 +342,7 @@ def query_reports(params: dict) -> dict:
             f"""
             SELECT
                 id, ST_X(location) as lng, ST_Y(location) as lat,
-                building_id, COALESCE(analyst_damage_level, damage_level) as damage_level,
+                reports.building_id, COALESCE(analyst_damage_level, damage_level) as damage_level,
                 ai_damage_level, ai_infrastructure_type, ai_confidence,
                 photo_url, thumbnail_url,
                 infrastructure_type, infrastructure_description,
@@ -354,8 +354,10 @@ def query_reports(params: dict) -> dict:
                  WHERE r2.version_chain_id = reports.version_chain_id) as version_count,
                 follow_up_responses,
                 damage_level, analyst_damage_level, flag_status, flag_reason,
-                infrastructure_description_en
+                infrastructure_description_en,
+                (pb.building_id IS NOT NULL) AS priority_flag
             FROM reports
+            LEFT JOIN priority_buildings pb ON reports.building_id = pb.building_id
             WHERE {where}
             ORDER BY submitted_at DESC
             LIMIT %s OFFSET %s
@@ -406,6 +408,7 @@ def query_reports(params: dict) -> dict:
                 "flag_status": row[26],
                 "flag_reason": row[27],
                 "infrastructure_description_en": row[28],
+                "priority_flag": row[29],
             },
         })
 
@@ -431,9 +434,10 @@ def query_coverage(params: dict) -> dict:
             f"""
             SELECT
                 id, ST_X(location) as lng, ST_Y(location) as lat,
-                building_id, COALESCE(analyst_damage_level, damage_level) as damage_level,
-                submitted_at
+                reports.building_id, COALESCE(analyst_damage_level, damage_level) as damage_level,
+                submitted_at, (pb.building_id IS NOT NULL) AS priority_flag
             FROM reports
+            LEFT JOIN priority_buildings pb ON reports.building_id = pb.building_id
             WHERE {where}
             ORDER BY submitted_at DESC
             LIMIT %s OFFSET %s
@@ -457,6 +461,7 @@ def query_coverage(params: dict) -> dict:
                 "building_id": row[3],
                 "damage_level": row[4],
                 "submitted_at": row[5].isoformat() if row[5] else None,
+                "priority_flag": row[6],
             },
         }
         for row in rows
@@ -571,3 +576,36 @@ def _find_version_chain(building_id: str | None, h3_r12: str) -> uuid.UUID:
 
     # New chain
     return uuid.uuid4()
+
+
+def get_priority_buildings() -> dict:
+    """Return all building IDs currently flagged for more photos."""
+    conn = get_connection()
+    with conn.cursor() as cur:
+        cur.execute("SELECT building_id FROM priority_buildings ORDER BY flagged_at DESC")
+        rows = cur.fetchall()
+    return {"building_ids": [row[0] for row in rows]}
+
+
+def set_building_priority(building_id: str, flagged: bool) -> dict:
+    """Upsert or delete a building from priority_buildings."""
+    if not building_id or len(building_id) > 64:
+        raise ValueError("building_id must be 1–64 characters")
+    conn = get_connection()
+    with conn.cursor() as cur:
+        if flagged:
+            cur.execute(
+                """
+                INSERT INTO priority_buildings (building_id)
+                VALUES (%s)
+                ON CONFLICT (building_id) DO NOTHING
+                """,
+                (building_id,),
+            )
+        else:
+            cur.execute(
+                "DELETE FROM priority_buildings WHERE building_id = %s",
+                (building_id,),
+            )
+    conn.commit()
+    return {"building_id": building_id, "priority_flag": flagged}

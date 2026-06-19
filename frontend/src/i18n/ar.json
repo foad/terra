@@ -51,7 +51,8 @@
     "existingReportsMore_two": "+ تقريران آخران",
     "existingReportsMore_few": "+ {{count}} تقارير أخرى",
     "existingReportsMore_many": "+ {{count}} تقريرًا آخر",
-    "existingReportsMore_other": "+ {{count}} تقرير آخر"
+    "existingReportsMore_other": "+ {{count}} تقرير آخر",
+    "priorityHeading": "صور مطلوبة هنا"
   },
   "photo": {
     "title": "التقاط صورة",

@@ -43,7 +43,8 @@
     "viewExisting": "View existing reports",
     "hideExisting": "Hide existing reports",
     "existingReportsMore_one": "+ {{count}} more",
-    "existingReportsMore_other": "+ {{count}} more"
+    "existingReportsMore_other": "+ {{count}} more",
+    "priorityHeading": "Photos needed here"
   },
   "photo": {
     "title": "Take a Photo",

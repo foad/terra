@@ -41,6 +41,7 @@ export interface ReportFeature {
     analyst_damage_level: string | null;
     flag_status: "suspect" | "invalid" | null;
     flag_reason: string | null;
+    priority_flag: boolean;
   };
 }
 

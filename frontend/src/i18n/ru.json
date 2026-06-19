@@ -47,7 +47,8 @@
     "existingReportsMore_one": "+ ещё {{count}}",
     "existingReportsMore_few": "+ ещё {{count}}",
     "existingReportsMore_many": "+ ещё {{count}}",
-    "existingReportsMore_other": "+ ещё {{count}}"
+    "existingReportsMore_other": "+ ещё {{count}}",
+    "priorityHeading": "Здесь нужны фотографии"
   },
   "photo": {
     "title": "Сделать фото",
