@@ -93,6 +93,12 @@ export const syncEngine = {
         await reportQueue.updateStatus(report.id, "syncing", { photoKey });
       }
 
+      const device_id =
+        typeof window !== "undefined" &&
+        (window as unknown as { __E2E__?: boolean }).__E2E__
+          ? `device-e2e-${crypto.randomUUID()}`
+          : undefined;
+
       const result = await api("/reports", {
         method: "POST",
         body: JSON.stringify({
@@ -117,6 +123,7 @@ export const syncEngine = {
           pressing_needs_other: report.surveyData.pressingNeedsOther || null,
           offline_queue_id: report.id,
           follow_up_responses: report.followUpResponses ?? null,
+          device_id,
         }),
       });
 

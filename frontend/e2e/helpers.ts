@@ -9,11 +9,12 @@ export const TEST_PHOTO = join(__dirname, "fixtures", "test-photo.jpg");
 
 /**
  * Stub everything except POST /reports so tests don't hit the real backend
- * (no Bedrock calls, no S3 photo uploads, no synthetic data in prod).
- * Tests retain control over POST /reports via their own `page.route` calls
- * registered AFTER this helper.
+ * Reports are tagged and ignored
  */
 export async function stubNonReportsApi(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    (globalThis as unknown as { __E2E__: boolean }).__E2E__ = true;
+  });
   await page.route("**/photos/upload", (route) =>
     route.fulfill({
       status: 200,

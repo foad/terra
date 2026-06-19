@@ -275,7 +275,10 @@ def create_report(body: dict) -> dict:
 
 def build_filter_clause(q: "ReportsQueryParams | object") -> tuple[str, list]:
     """Build the WHERE clause + params for any query honouring the standard report filters."""
-    conditions = ["is_latest = true"]
+    conditions = [
+        "is_latest = true",
+        "(device_id IS NULL OR device_id NOT LIKE 'device-e2e-%%')",
+    ]
     values: list = []
 
     if all(v is not None for v in (q.west, q.south, q.east, q.north)):
