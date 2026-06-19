@@ -1,6 +1,11 @@
 import { defineConfig } from "@playwright/test";
+import { existsSync } from "node:fs";
 
 const DEFAULT_BASE_URL = "http://localhost:4173";
+
+for (const f of [".env", ".env.local"]) {
+  if (existsSync(f)) process.loadEnvFile(f);
+}
 
 export default defineConfig({
   testDir: "./e2e",
