@@ -34,6 +34,14 @@ aws lambda update-function-code \
   --query 'FunctionName' \
   --output text
 
+echo "Deploying terra-exports..."
+aws lambda update-function-code \
+  --function-name terra-exports \
+  --s3-bucket "$DEPLOY_BUCKET" \
+  --s3-key "$DEPLOY_KEY" \
+  --query 'FunctionName' \
+  --output text
+
 echo "Deploying terra-photo-processor..."
 aws lambda update-function-code \
   --function-name terra-photo-processor \

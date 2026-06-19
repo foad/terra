@@ -1,9 +1,12 @@
 import csv
 import io
 import json
-from datetime import UTC, datetime
+import os
+import uuid
+from datetime import UTC, datetime, timedelta
 from typing import Literal
 
+import boto3
 from aws_lambda_powertools import Logger
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -11,8 +14,11 @@ from src.handlers.reports import build_filter_clause
 from src.utils.db import get_connection
 
 logger = Logger()
+s3 = boto3.client("s3")
 
-EXPORT_ROW_CAP = 10000
+
+EXPORT_ROW_CEILING = 1_000_000 # Beyond 1M rows we'd want multipart streaming, out of scope here
+DOWNLOAD_URL_EXPIRY_SECONDS = 3600
 
 CSV_HEADER = [
     "id",
@@ -61,8 +67,8 @@ class ExportParams(BaseModel):
     building_id: str | None = Field(None, max_length=32)
 
 
-def export_reports(params: dict) -> tuple[str, str, str]:
-    """Return (body, content_type, filename) for the requested export."""
+def export_reports(params: dict) -> dict:
+    """Build the export, write it to S3, return a presigned download URL."""
     q = ExportParams(**params)
     where, values = build_filter_clause(q)
     # Flagged reports (#170) stay visible on the dashboard but are excluded
@@ -88,14 +94,44 @@ def export_reports(params: dict) -> tuple[str, str, str]:
             ORDER BY submitted_at DESC
             LIMIT %s
             """,
-            (*values, EXPORT_ROW_CAP),
+            (*values, EXPORT_ROW_CEILING),
         )
         rows = cur.fetchall()
 
     stamp = datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
     if q.format == "csv":
-        return _to_csv(rows), "text/csv", f"terra-reports-{stamp}.csv"
-    return _to_geojson(rows), "application/geo+json", f"terra-reports-{stamp}.geojson"
+        body = _to_csv(rows)
+        content_type = "text/csv"
+        filename = f"terra-reports-{stamp}.csv"
+    else:
+        body = _to_geojson(rows)
+        content_type = "application/geo+json"
+        filename = f"terra-reports-{stamp}.geojson"
+
+    bucket = os.environ.get("EXPORTS_BUCKET", "")
+    key = f"exports/{uuid.uuid4()}/{filename}"
+    s3.put_object(
+        Bucket=bucket,
+        Key=key,
+        Body=body.encode("utf-8"),
+        ContentType=content_type,
+        ContentDisposition=f'attachment; filename="{filename}"',
+    )
+    download_url = s3.generate_presigned_url(
+        "get_object",
+        Params={"Bucket": bucket, "Key": key},
+        ExpiresIn=DOWNLOAD_URL_EXPIRY_SECONDS,
+    )
+    expires_at = (
+        datetime.now(UTC) + timedelta(seconds=DOWNLOAD_URL_EXPIRY_SECONDS)
+    ).isoformat()
+
+    return {
+        "download_url": download_url,
+        "expires_at": expires_at,
+        "total_rows": len(rows),
+        "filename": filename,
+    }
 
 
 def _to_csv(rows: list) -> str:

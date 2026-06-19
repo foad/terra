@@ -138,6 +138,39 @@ resource "aws_cloudwatch_log_group" "api" {
   retention_in_days = 14
 }
 
+resource "aws_lambda_function" "exports" {
+  function_name = "${var.project_name}-exports"
+  role          = aws_iam_role.lambda.arn
+  handler       = "src.handlers.api.handler"
+  runtime       = "python3.13"
+  timeout       = 60
+  memory_size   = 2048
+
+  filename         = data.archive_file.lambda_placeholder.output_path
+  source_code_hash = data.archive_file.lambda_placeholder.output_base64sha256
+
+  layers = [local.powertools_layer_arn]
+
+  environment {
+    variables = {
+      POWERTOOLS_SERVICE_NAME          = "${var.project_name}-exports"
+      POWERTOOLS_PARAMETERS_SSM_PREFIX = "/${var.project_name}"
+      LOG_LEVEL                        = "INFO"
+      EXPORTS_BUCKET                   = aws_s3_bucket.exports.id
+      PHOTOS_BUCKET                    = aws_s3_bucket.photos.id
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [filename, source_code_hash]
+  }
+}
+
+resource "aws_cloudwatch_log_group" "exports" {
+  name              = "/aws/lambda/${aws_lambda_function.exports.function_name}"
+  retention_in_days = 14
+}
+
 # Photo processing Lambda (S3 trigger for EXIF stripping, thumbnails)
 resource "aws_lambda_function" "photo_processor" {
   function_name = "${var.project_name}-photo-processor"

@@ -90,15 +90,9 @@ def get_reports_coverage():
 def get_reports_export():
     params = app.current_event.query_string_parameters or {}
     try:
-        body, content_type, filename = export_reports(params)
+        return export_reports(params)
     except ValidationError as e:
         raise BadRequestError(_first_validation_message(e)) from e
-    return Response(
-        status_code=200,
-        content_type=content_type,
-        body=body,
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
-    )
 
 
 @app.get("/crisis-events")
