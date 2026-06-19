@@ -176,6 +176,61 @@ class TestBuildFilterClause:
         assert "is_latest" not in where
         assert "device_id NOT LIKE 'device-e2e-%%'" in where
 
+    def test_e2e_prefix_flips_to_only_match(self):
+        from src.handlers.reports import ReportsQueryParams, build_filter_clause
+
+        q = ReportsQueryParams()
+        where, values = build_filter_clause(q, e2e_filter_prefix="device-e2e-w3-")
+        assert "device_id LIKE %s" in where
+        assert "device_id NOT LIKE" not in where
+        assert "device-e2e-w3-%" in values
+
+    def test_e2e_prefix_rejects_non_e2e_value(self):
+        """Anything not starting with `device-e2e-` falls back to the hide-e2e default."""
+        from src.handlers.reports import ReportsQueryParams, build_filter_clause
+
+        q = ReportsQueryParams()
+        where, values = build_filter_clause(q, e2e_filter_prefix="not-a-valid-prefix")
+        assert "device_id IS NULL OR device_id NOT LIKE 'device-e2e-%%'" in where
+        assert "not-a-valid-prefix%" not in values
+
+
+class TestDeleteE2eReports:
+    @patch("src.handlers.reports.get_connection")
+    def test_deletes_matching_rows(self, mock_get_conn):
+        from src.handlers.reports import delete_e2e_reports
+
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.rowcount = 4
+        mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_get_conn.return_value = mock_conn
+
+        result = delete_e2e_reports("device-e2e-w3-")
+
+        assert result == {"prefix": "device-e2e-w3-", "deleted": 4}
+        mock_cursor.execute.assert_called_once_with(
+            "DELETE FROM reports WHERE device_id LIKE %s",
+            ("device-e2e-w3-%",),
+        )
+
+    def test_rejects_non_e2e_prefix(self):
+        from src.handlers.reports import delete_e2e_reports
+
+        import pytest
+
+        with pytest.raises(ValueError, match="device-e2e-"):
+            delete_e2e_reports("device-real-")
+
+    def test_rejects_empty_prefix(self):
+        from src.handlers.reports import delete_e2e_reports
+
+        import pytest
+
+        with pytest.raises(ValueError, match="device-e2e-"):
+            delete_e2e_reports("")
+
 
 class TestQueryReports:
     @patch("src.handlers.reports.get_connection")
