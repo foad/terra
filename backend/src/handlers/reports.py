@@ -196,7 +196,7 @@ def create_report(body: dict) -> dict:
     photo_url = f"s3://{photos_bucket}/{submission.photo_key}" if submission.photo_key else None
     thumbnail_url = None
     if submission.photo_key and submission.photo_key.startswith("uploads/"):
-        stem = submission.photo_key[len("uploads/"):].rsplit(".", 1)[0]
+        stem = submission.photo_key[len("uploads/") :].rsplit(".", 1)[0]
         thumbnail_url = f"s3://{photos_bucket}/thumbnails/{stem}.jpg"
 
     # Check for duplicates/reassessments
@@ -232,11 +232,7 @@ def create_report(body: dict) -> dict:
         "offline_queue_id": submission.offline_queue_id,
         "duplicate_status": duplicate_check["duplicate_status"],
         "related_report_id": duplicate_check["related_report_id"],
-        "follow_up_responses": (
-            json.dumps(submission.follow_up_responses)
-            if submission.follow_up_responses
-            else None
-        ),
+        "follow_up_responses": (json.dumps(submission.follow_up_responses) if submission.follow_up_responses else None),
     }
     with conn.cursor() as cur:
         cur.execute(
@@ -295,9 +291,7 @@ def build_filter_clause(q: "ReportsQueryParams | object") -> tuple[str, list]:
         placeholders = ",".join(["%s"] * len(levels))
         # Filter on the effective level: an analyst override (#169) supersedes
         # the community classification everywhere downstream.
-        conditions.append(
-            f"COALESCE(analyst_damage_level, damage_level) IN ({placeholders})"
-        )
+        conditions.append(f"COALESCE(analyst_damage_level, damage_level) IN ({placeholders})")
         values.extend(levels)
 
     if q.infrastructure_type:
@@ -374,43 +368,45 @@ def query_reports(params: dict) -> dict:
 
     features = []
     for row in rows:
-        features.append({
-            "type": "Feature",
-            "geometry": {
-                "type": "Point",
-                "coordinates": [row[1], row[2]],
-            },
-            "properties": {
-                "id": str(row[0]),
-                "building_id": row[3],
-                "damage_level": row[4],
-                "ai_damage_level": row[5],
-                "ai_infrastructure_type": row[6],
-                "ai_confidence": row[7],
-                "photo_url": _presigned(row[8]),
-                "thumbnail_url": _presigned(row[9]),
-                "infrastructure_type": row[10],
-                "infrastructure_description": row[11],
-                "crisis_nature": row[12],
-                "debris_present": row[13],
-                "electricity_status": row[14],
-                "health_status": row[15],
-                "pressing_needs": row[16],
-                "version_chain_id": str(row[17]),
-                "is_latest": row[18],
-                "submitted_at": row[19].isoformat() if row[19] else None,
-                "duplicate_status": row[20],
-                "related_report_id": str(row[21]) if row[21] else None,
-                "version_count": row[22],
-                "follow_up_responses": row[23],
-                "community_damage_level": row[24],
-                "analyst_damage_level": row[25],
-                "flag_status": row[26],
-                "flag_reason": row[27],
-                "infrastructure_description_en": row[28],
-                "priority_flag": row[29],
-            },
-        })
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [row[1], row[2]],
+                },
+                "properties": {
+                    "id": str(row[0]),
+                    "building_id": row[3],
+                    "damage_level": row[4],
+                    "ai_damage_level": row[5],
+                    "ai_infrastructure_type": row[6],
+                    "ai_confidence": row[7],
+                    "photo_url": _presigned(row[8]),
+                    "thumbnail_url": _presigned(row[9]),
+                    "infrastructure_type": row[10],
+                    "infrastructure_description": row[11],
+                    "crisis_nature": row[12],
+                    "debris_present": row[13],
+                    "electricity_status": row[14],
+                    "health_status": row[15],
+                    "pressing_needs": row[16],
+                    "version_chain_id": str(row[17]),
+                    "is_latest": row[18],
+                    "submitted_at": row[19].isoformat() if row[19] else None,
+                    "duplicate_status": row[20],
+                    "related_report_id": str(row[21]) if row[21] else None,
+                    "version_count": row[22],
+                    "follow_up_responses": row[23],
+                    "community_damage_level": row[24],
+                    "analyst_damage_level": row[25],
+                    "flag_status": row[26],
+                    "flag_reason": row[27],
+                    "infrastructure_description_en": row[28],
+                    "priority_flag": row[29],
+                },
+            }
+        )
 
     return {
         "type": "FeatureCollection",
@@ -493,18 +489,14 @@ def review_report(report_id: str, body: dict) -> dict:
     if "analyst_damage_level" in body:
         level = body["analyst_damage_level"]
         if level is not None and level not in REVIEW_DAMAGE_LEVELS:
-            raise ValueError(
-                f"analyst_damage_level must be one of {sorted(REVIEW_DAMAGE_LEVELS)} or null"
-            )
+            raise ValueError(f"analyst_damage_level must be one of {sorted(REVIEW_DAMAGE_LEVELS)} or null")
         updates.append("analyst_damage_level = %s")
         values.append(level)
 
     if "flag_status" in body:
         status = body["flag_status"]
         if status is not None and status not in REVIEW_FLAG_STATUSES:
-            raise ValueError(
-                f"flag_status must be one of {sorted(REVIEW_FLAG_STATUSES)} or null"
-            )
+            raise ValueError(f"flag_status must be one of {sorted(REVIEW_FLAG_STATUSES)} or null")
         updates.append("flag_status = %s")
         values.append(status)
         if status is None:
@@ -521,9 +513,7 @@ def review_report(report_id: str, body: dict) -> dict:
         values.append(reason)
 
     if not updates:
-        raise ValueError(
-            "Provide at least one of: analyst_damage_level, flag_status, flag_reason"
-        )
+        raise ValueError("Provide at least one of: analyst_damage_level, flag_status, flag_reason")
 
     conn = get_connection()
     with conn.cursor() as cur:
