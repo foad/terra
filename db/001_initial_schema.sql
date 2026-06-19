@@ -9,8 +9,7 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
-CREATE SCHEMA IF NOT EXISTS extensions;
-CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA extensions;
+CREATE EXTENSION IF NOT EXISTS postgis;
 
 --
 -- Functions
@@ -53,7 +52,7 @@ CREATE TABLE public.admin_boundaries (
     crisis_event_id uuid,
     admin_level integer NOT NULL,
     name text NOT NULL,
-    geometry extensions.geometry(MultiPolygon,4326) NOT NULL,
+    geometry geometry(MultiPolygon,4326) NOT NULL,
     properties jsonb DEFAULT '{}'::jsonb,
     created_at timestamp with time zone DEFAULT now()
 );
@@ -62,7 +61,7 @@ CREATE TABLE public.admin_boundaries (
 CREATE TABLE public.building_footprints (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     crisis_event_id uuid,
-    geometry extensions.geometry(Polygon,4326) NOT NULL,
+    geometry geometry(Polygon,4326) NOT NULL,
     h3_r12 text,
     properties jsonb DEFAULT '{}'::jsonb,
     created_at timestamp with time zone DEFAULT now()
@@ -73,7 +72,7 @@ CREATE TABLE public.crisis_events (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     name text NOT NULL,
     crisis_type text NOT NULL,
-    region extensions.geometry(Polygon,4326),
+    region geometry(Polygon,4326),
     config jsonb DEFAULT '{}'::jsonb,
     is_active boolean DEFAULT true,
     created_at timestamp with time zone DEFAULT now(),
@@ -85,7 +84,7 @@ CREATE TABLE public.crisis_events (
 CREATE TABLE public.reports (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     crisis_event_id uuid,
-    location extensions.geometry(Point,4326) NOT NULL,
+    location geometry(Point,4326) NOT NULL,
     h3_r12 text NOT NULL,
     h3_r8 text NOT NULL,
     damage_level text NOT NULL,
