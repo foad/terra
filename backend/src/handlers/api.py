@@ -20,7 +20,14 @@ from src.handlers.crisis_events import (
 )
 from src.handlers.exports import export_reports
 from src.handlers.photos import get_upload_url
-from src.handlers.reports import create_report, query_coverage, query_reports, review_report
+from src.handlers.reports import (
+    create_report,
+    get_priority_buildings,
+    query_coverage,
+    query_reports,
+    review_report,
+    set_building_priority,
+)
 
 logger = Logger()
 tracer = Tracer()
@@ -158,6 +165,22 @@ def post_report():
         return create_report(body)
     except ValidationError as e:
         raise BadRequestError(_first_validation_message(e)) from e
+
+
+@app.get("/buildings/priority")
+@tracer.capture_method
+def get_buildings_priority():
+    return get_priority_buildings()
+
+
+@app.patch("/buildings/<building_id>/priority")
+@tracer.capture_method
+def patch_building_priority(building_id: str):
+    body = app.current_event.json_body if app.current_event.body else {}
+    try:
+        return set_building_priority(building_id, bool(body.get("flagged", True)))
+    except ValueError as e:
+        raise BadRequestError(str(e)) from e
 
 
 @app.patch("/reports/<report_id>/review")

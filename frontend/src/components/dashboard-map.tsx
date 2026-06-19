@@ -49,6 +49,8 @@ export const DashboardMap = ({
   const tooltipRef = useRef<HTMLDivElement>(null);
   const onReportSelectRef = useRef(onReportSelect);
   const reportsByIdRef = useRef<Map<string, ReportFeature>>(new Map());
+  const apiRef = useRef(api);
+  const priorityBuildingsRef = useRef<Set<string>>(new Set());
   const hasFittedRef = useRef(false);
   const mapLoadedRef = useRef(false);
   const [mapMode, setMapMode] = useState<MapMode>("clusters");
@@ -75,6 +77,10 @@ export const DashboardMap = ({
   useEffect(() => {
     onReportSelectRef.current = onReportSelect;
   }, [onReportSelect]);
+
+  useEffect(() => {
+    apiRef.current = api;
+  }, [api]);
 
   useEffect(() => {
     onPolygonFilterRef.current = onPolygonFilter;
@@ -121,6 +127,7 @@ export const DashboardMap = ({
           buildings: {
             type: "vector",
             url: `pmtiles://${VIDA_BUILDINGS_URL}`,
+            promoteId: { goog_msft_osm_building_footprints: "geohash" },
           },
         },
         layers: [
@@ -206,6 +213,25 @@ export const DashboardMap = ({
           "text-color": "#1e3a8a",
           "text-halo-color": "#ffffff",
           "text-halo-width": 2,
+        },
+      });
+
+      // Amber dashed outline for buildings the analyst has flagged for more photos (#235).
+      map.addLayer({
+        id: "building-priority-outline",
+        type: "line",
+        source: "buildings",
+        "source-layer": "goog_msft_osm_building_footprints",
+        minzoom: 14,
+        paint: {
+          "line-color": "#f59e0b",
+          "line-width": [
+            "case",
+            ["boolean", ["feature-state", "priority_flag"], false],
+            3,
+            0,
+          ],
+          "line-dasharray": [2, 1],
         },
       });
 
@@ -459,6 +485,46 @@ export const DashboardMap = ({
         }
       });
 
+      // Click unassessed building footprint to toggle priority flag.
+      // Skips when draw mode is active or when a report marker sits at the same point.
+      map.on("click", "building-footprints", (e) => {
+        if (drawModeRef.current !== "idle") return;
+        const reportFeatures = map.queryRenderedFeatures(e.point, { layers: ["report-markers"] });
+        if (reportFeatures.length > 0) return;
+        const feature = e.features?.[0];
+        const bid = feature?.properties?.geohash as string | undefined;
+        if (!bid) return;
+
+        const currentlyFlagged = priorityBuildingsRef.current.has(bid);
+        const newFlagged = !currentlyFlagged;
+        if (newFlagged) priorityBuildingsRef.current.add(bid);
+        else priorityBuildingsRef.current.delete(bid);
+        map.setFeatureState(
+          { source: "buildings", sourceLayer: "goog_msft_osm_building_footprints", id: bid },
+          { priority_flag: newFlagged },
+        );
+        apiRef.current(`/buildings/${bid}/priority`, {
+          method: "PATCH",
+          body: JSON.stringify({ flagged: newFlagged }),
+        }).catch(() => {
+          // Rollback optimistic update on failure
+          if (newFlagged) priorityBuildingsRef.current.delete(bid);
+          else priorityBuildingsRef.current.add(bid);
+          map.setFeatureState(
+            { source: "buildings", sourceLayer: "goog_msft_osm_building_footprints", id: bid },
+            { priority_flag: !newFlagged },
+          );
+        });
+      });
+
+      map.on("mouseenter", "building-footprints", () => {
+        if (drawModeRef.current !== "idle") return;
+        map.getCanvas().style.cursor = "pointer";
+      });
+      map.on("mouseleave", "building-footprints", () => {
+        map.getCanvas().style.cursor = "";
+      });
+
       // Pointer cursors + hover tooltips
       map.on("mouseenter", "clusters", (e) => {
         if (drawModeRef.current === "drawing") return;
@@ -621,6 +687,38 @@ export const DashboardMap = ({
     return () => {
       cancelled = true;
     };
+  }, [api]);
+
+  // Fetch priority buildings and apply feature-state so the amber outline appears.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    let cancelled = false;
+
+    const applyPriority = (buildingIds: string[]) => {
+      priorityBuildingsRef.current = new Set(buildingIds);
+      for (const bid of buildingIds) {
+        map.setFeatureState(
+          { source: "buildings", sourceLayer: "goog_msft_osm_building_footprints", id: bid },
+          { priority_flag: true },
+        );
+      }
+    };
+
+    const fetchAndApply = async () => {
+      try {
+        const result = await api("/buildings/priority");
+        if (cancelled) return;
+        applyPriority(result.building_ids ?? []);
+      } catch {
+        // best-effort
+      }
+    };
+
+    if (map.isStyleLoaded()) fetchAndApply();
+    else map.once("load", fetchAndApply);
+
+    return () => { cancelled = true; };
   }, [api]);
 
   useEffect(() => {

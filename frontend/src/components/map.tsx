@@ -291,16 +291,20 @@ export const Map = ({
       map.getCanvas().style.cursor = "";
     });
 
-    // Fetch reported buildings in the current viewport and apply feature-state
-    // so the damage-level fill layer colours the correct polygons.
+    // Fetch reported buildings + priority flags and apply feature-state.
+    // Two parallel requests: coverage (viewport bbox) for assessed buildings,
+    // and the full priority list for unassessed buildings the analyst has flagged.
     const fetchNearbyReports = async () => {
       if (map.getZoom() < 14) return;
       const b = map.getBounds();
       try {
-        const result = await api(
-          `/reports/coverage?west=${b.getWest()}&south=${b.getSouth()}&east=${b.getEast()}&north=${b.getNorth()}&limit=500`,
-        );
-        const features: ReportFeature[] = result?.features ?? [];
+        const [coverageResult, priorityResult] = await Promise.all([
+          api(`/reports/coverage?west=${b.getWest()}&south=${b.getSouth()}&east=${b.getEast()}&north=${b.getNorth()}&limit=500`),
+          api("/buildings/priority"),
+        ]);
+        const features: ReportFeature[] = coverageResult?.features ?? [];
+        const priorityIds: string[] = priorityResult?.building_ids ?? [];
+
         const seen = new Set<string>();
         for (const f of features) {
           const bid = f.properties?.building_id;
@@ -308,12 +312,16 @@ export const Map = ({
           if (!bid || !dl || seen.has(bid)) continue;
           seen.add(bid);
           map.setFeatureState(
-            {
-              source: "buildings",
-              sourceLayer: BUILDINGS_SOURCE_LAYER,
-              id: bid,
-            },
+            { source: "buildings", sourceLayer: BUILDINGS_SOURCE_LAYER, id: bid },
             { damage_level: dl, priority_flag: f.properties?.priority_flag ?? false },
+          );
+        }
+        // Apply priority flag to unassessed buildings not covered above
+        for (const bid of priorityIds) {
+          if (seen.has(bid)) continue;
+          map.setFeatureState(
+            { source: "buildings", sourceLayer: BUILDINGS_SOURCE_LAYER, id: bid },
+            { priority_flag: true },
           );
         }
         setCoverageCount((prev) => ({

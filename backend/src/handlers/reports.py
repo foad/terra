@@ -354,8 +354,10 @@ def query_reports(params: dict) -> dict:
                  WHERE r2.version_chain_id = reports.version_chain_id) as version_count,
                 follow_up_responses,
                 damage_level, analyst_damage_level, flag_status, flag_reason,
-                infrastructure_description_en, priority_flag
+                infrastructure_description_en,
+                (pb.building_id IS NOT NULL) AS priority_flag
             FROM reports
+            LEFT JOIN priority_buildings pb ON reports.building_id = pb.building_id
             WHERE {where}
             ORDER BY submitted_at DESC
             LIMIT %s OFFSET %s
@@ -432,9 +434,10 @@ def query_coverage(params: dict) -> dict:
             f"""
             SELECT
                 id, ST_X(location) as lng, ST_Y(location) as lat,
-                building_id, COALESCE(analyst_damage_level, damage_level) as damage_level,
-                submitted_at, priority_flag
+                reports.building_id, COALESCE(analyst_damage_level, damage_level) as damage_level,
+                submitted_at, (pb.building_id IS NOT NULL) AS priority_flag
             FROM reports
+            LEFT JOIN priority_buildings pb ON reports.building_id = pb.building_id
             WHERE {where}
             ORDER BY submitted_at DESC
             LIMIT %s OFFSET %s
@@ -517,16 +520,9 @@ def review_report(report_id: str, body: dict) -> dict:
         updates.append("flag_reason = %s")
         values.append(reason)
 
-    if "priority_flag" in body:
-        pf = body["priority_flag"]
-        if not isinstance(pf, bool):
-            raise ValueError("priority_flag must be a boolean")
-        updates.append("priority_flag = %s")
-        values.append(pf)
-
     if not updates:
         raise ValueError(
-            "Provide at least one of: analyst_damage_level, flag_status, flag_reason, priority_flag"
+            "Provide at least one of: analyst_damage_level, flag_status, flag_reason"
         )
 
     conn = get_connection()
@@ -537,7 +533,7 @@ def review_report(report_id: str, body: dict) -> dict:
             SET {", ".join(updates)}, updated_at = now()
             WHERE id = %s
             RETURNING id, COALESCE(analyst_damage_level, damage_level),
-                      damage_level, analyst_damage_level, flag_status, flag_reason, priority_flag
+                      damage_level, analyst_damage_level, flag_status, flag_reason
             """,
             (*values, report_id),
         )
@@ -553,7 +549,6 @@ def review_report(report_id: str, body: dict) -> dict:
         "analyst_damage_level": row[3],
         "flag_status": row[4],
         "flag_reason": row[5],
-        "priority_flag": row[6],
     }
 
 
@@ -581,3 +576,36 @@ def _find_version_chain(building_id: str | None, h3_r12: str) -> uuid.UUID:
 
     # New chain
     return uuid.uuid4()
+
+
+def get_priority_buildings() -> dict:
+    """Return all building IDs currently flagged for more photos."""
+    conn = get_connection()
+    with conn.cursor() as cur:
+        cur.execute("SELECT building_id FROM priority_buildings ORDER BY flagged_at DESC")
+        rows = cur.fetchall()
+    return {"building_ids": [row[0] for row in rows]}
+
+
+def set_building_priority(building_id: str, flagged: bool) -> dict:
+    """Upsert or delete a building from priority_buildings."""
+    if not building_id or len(building_id) > 64:
+        raise ValueError("building_id must be 1–64 characters")
+    conn = get_connection()
+    with conn.cursor() as cur:
+        if flagged:
+            cur.execute(
+                """
+                INSERT INTO priority_buildings (building_id)
+                VALUES (%s)
+                ON CONFLICT (building_id) DO NOTHING
+                """,
+                (building_id,),
+            )
+        else:
+            cur.execute(
+                "DELETE FROM priority_buildings WHERE building_id = %s",
+                (building_id,),
+            )
+    conn.commit()
+    return {"building_id": building_id, "priority_flag": flagged}
