@@ -38,7 +38,8 @@
     "viewExisting": "Mevcut raporları görüntüle",
     "hideExisting": "Mevcut raporları gizle",
     "existingReportsMore_one": "+ {{count}} rapor daha",
-    "existingReportsMore_other": "+ {{count}} rapor daha"
+    "existingReportsMore_other": "+ {{count}} rapor daha",
+    "priorityHeading": "Buraya fotoğraf gerekiyor"
   },
   "photo": {
     "title": "Fotoğraf Çekin",

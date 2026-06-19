@@ -41,7 +41,8 @@
     "existingReportsLatest": "最新：{{damage}}（{{date}}）",
     "viewExisting": "查看已有报告",
     "hideExisting": "隐藏已有报告",
-    "existingReportsMore_other": "+ 还有 {{count}} 份"
+    "existingReportsMore_other": "+ 还有 {{count}} 份",
+    "priorityHeading": "此处需要照片"
   },
   "photo": {
     "title": "拍摄照片",
