@@ -67,10 +67,10 @@ class ExportParams(BaseModel):
     building_id: str | None = Field(None, max_length=32)
 
 
-def export_reports(params: dict) -> dict:
+def export_reports(params: dict, e2e_filter_prefix: str | None = None) -> dict:
     """Build the export, write it to S3, return a presigned download URL."""
     q = ExportParams(**params)
-    where, values = build_filter_clause(q)
+    where, values = build_filter_clause(q, e2e_filter_prefix)
     # Flagged reports (#170) stay visible on the dashboard but are excluded
     # from exports — they must not feed downstream aid analysis.
     where += " AND flag_status IS NULL"
