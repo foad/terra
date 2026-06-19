@@ -1,5 +1,13 @@
-import { CircleCheck, TriangleAlert, CircleX, Download, X, PenLine } from "lucide-react";
-import type { ReactNode } from "react";
+import {
+  CircleCheck,
+  TriangleAlert,
+  CircleX,
+  Download,
+  Loader2,
+  X,
+  PenLine,
+} from "lucide-react";
+import { useState, type ReactNode } from "react";
 import { useAuth } from "react-oidc-context";
 import type { Filters, ReportFeature } from "../pages/dashboard";
 import { API_BASE } from "../utils/api";
@@ -7,26 +15,49 @@ import { MultiSelect } from "./multi-select";
 import styles from "./dashboard-sidebar.module.css";
 
 const CSV_HEADERS = [
-  "id", "building_id", "damage_level", "infrastructure_type", "crisis_nature",
-  "debris_present", "electricity_status", "health_status", "pressing_needs",
-  "infrastructure_description", "submitted_at", "latitude", "longitude",
-  "ai_damage_level", "ai_confidence", "version_chain_id",
+  "id",
+  "building_id",
+  "damage_level",
+  "infrastructure_type",
+  "crisis_nature",
+  "debris_present",
+  "electricity_status",
+  "health_status",
+  "pressing_needs",
+  "infrastructure_description",
+  "submitted_at",
+  "latitude",
+  "longitude",
+  "ai_damage_level",
+  "ai_confidence",
+  "version_chain_id",
 ];
 
 function toCSV(reports: ReportFeature[]): string {
-  const escape = (v: unknown) =>
-    `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const escape = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const rows = reports.map((r) => {
     const p = r.properties;
     const [lng, lat] = r.geometry.coordinates;
     return [
-      p.id, p.building_id ?? "", p.damage_level,
-      p.infrastructure_type.join("|"), p.crisis_nature.join("|"),
-      p.debris_present ?? "", p.electricity_status ?? "", p.health_status ?? "",
-      p.pressing_needs.join("|"), p.infrastructure_description ?? "",
-      p.submitted_at, lat, lng,
-      p.ai_damage_level ?? "", p.ai_confidence ?? "", p.version_chain_id,
-    ].map(escape).join(",");
+      p.id,
+      p.building_id ?? "",
+      p.damage_level,
+      p.infrastructure_type.join("|"),
+      p.crisis_nature.join("|"),
+      p.debris_present ?? "",
+      p.electricity_status ?? "",
+      p.health_status ?? "",
+      p.pressing_needs.join("|"),
+      p.infrastructure_description ?? "",
+      p.submitted_at,
+      lat,
+      lng,
+      p.ai_damage_level ?? "",
+      p.ai_confidence ?? "",
+      p.version_chain_id,
+    ]
+      .map(escape)
+      .join(",");
   });
   return [CSV_HEADERS.join(","), ...rows].join("\n");
 }
@@ -104,38 +135,35 @@ export const DashboardSidebar = ({
     filters.to !== "";
 
   const auth = useAuth();
+  const [exporting, setExporting] = useState<"csv" | "geojson" | null>(null);
 
   const downloadExport = async (format: "csv" | "geojson") => {
-    const params = new URLSearchParams({ format });
-    if (filters.damageLevel.length > 0)
-      params.set("damage_level", filters.damageLevel.join(","));
-    if (filters.infrastructureType.length > 0)
-      params.set("infrastructure_type", filters.infrastructureType.join("|"));
-    if (filters.crisisNature.length > 0)
-      params.set("crisis_nature", filters.crisisNature.join("|"));
-    if (filters.from) params.set("from", filters.from);
-    if (filters.to) params.set("to", filters.to);
+    if (exporting) return;
+    setExporting(format);
+    try {
+      const params = new URLSearchParams({ format });
+      if (filters.damageLevel.length > 0)
+        params.set("damage_level", filters.damageLevel.join(","));
+      if (filters.infrastructureType.length > 0)
+        params.set("infrastructure_type", filters.infrastructureType.join("|"));
+      if (filters.crisisNature.length > 0)
+        params.set("crisis_nature", filters.crisisNature.join("|"));
+      if (filters.from) params.set("from", filters.from);
+      if (filters.to) params.set("to", filters.to);
 
-    const token = auth.user?.access_token;
-    const res = await fetch(`${API_BASE}/reports/export?${params.toString()}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-    if (!res.ok) {
-      throw new Error(`Export failed: ${res.status}`);
+      const token = auth.user?.access_token;
+      const res = await fetch(
+        `${API_BASE}/reports/export?${params.toString()}`,
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} },
+      );
+      if (!res.ok) {
+        throw new Error(`Export failed: ${res.status}`);
+      }
+      const { download_url } = (await res.json()) as { download_url: string };
+      window.location.href = download_url;
+    } finally {
+      setExporting(null);
     }
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const filename =
-      res.headers
-        .get("Content-Disposition")
-        ?.match(/filename="?([^"]+)"?/)?.[1] ?? `terra-reports.${format}`;
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
   };
 
   return (
@@ -339,7 +367,10 @@ export const DashboardSidebar = ({
                     onClick={() =>
                       downloadBlob(
                         JSON.stringify(
-                          { type: "FeatureCollection", features: filteredReports },
+                          {
+                            type: "FeatureCollection",
+                            features: filteredReports,
+                          },
                           null,
                           2,
                         ),
@@ -358,17 +389,27 @@ export const DashboardSidebar = ({
                     type="button"
                     className={styles.exportButton}
                     onClick={() => downloadExport("csv")}
+                    disabled={exporting !== null}
                   >
-                    <Download size={14} />
-                    CSV
+                    {exporting === "csv" ? (
+                      <Loader2 size={14} className={styles.spinner} />
+                    ) : (
+                      <Download size={14} />
+                    )}
+                    {exporting === "csv" ? "Preparing..." : "CSV"}
                   </button>
                   <button
                     type="button"
                     className={styles.exportButton}
                     onClick={() => downloadExport("geojson")}
+                    disabled={exporting !== null}
                   >
-                    <Download size={14} />
-                    GeoJSON
+                    {exporting === "geojson" ? (
+                      <Loader2 size={14} className={styles.spinner} />
+                    ) : (
+                      <Download size={14} />
+                    )}
+                    {exporting === "geojson" ? "Preparing..." : "GeoJSON"}
                   </button>
                 </>
               )}

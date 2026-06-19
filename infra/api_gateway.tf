@@ -50,6 +50,15 @@ resource "aws_apigatewayv2_integration" "api" {
   payload_format_version = "2.0"
 }
 
+# Exports integration — separate Lambda with higher memory/timeout for
+# in-memory CSV/GeoJSON assembly before S3 upload.
+resource "aws_apigatewayv2_integration" "exports" {
+  api_id                 = aws_apigatewayv2_api.api.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.exports.invoke_arn
+  payload_format_version = "2.0"
+}
+
 # Cognito JWT authorizer for analyst / admin routes.
 resource "aws_apigatewayv2_authorizer" "cognito" {
   api_id           = aws_apigatewayv2_api.api.id
@@ -122,7 +131,7 @@ resource "aws_apigatewayv2_route" "get_reports" {
 resource "aws_apigatewayv2_route" "get_reports_export" {
   api_id             = aws_apigatewayv2_api.api.id
   route_key          = "GET /reports/export"
-  target             = "integrations/${aws_apigatewayv2_integration.api.id}"
+  target             = "integrations/${aws_apigatewayv2_integration.exports.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
 }
@@ -164,6 +173,14 @@ resource "aws_lambda_permission" "api_gateway" {
   statement_id  = "AllowAPIGateway"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.api.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "api_gateway_exports" {
+  statement_id  = "AllowAPIGatewayExports"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.exports.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*/*"
 }

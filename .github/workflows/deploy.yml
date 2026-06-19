@@ -132,6 +132,15 @@ jobs:
             --s3-key "$DEPLOY_KEY" \
             --query 'FunctionName' --output text
 
+      - name: Deploy terra-exports
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          aws lambda update-function-code \
+            --function-name terra-exports \
+            --s3-bucket "${{ vars.ASSETS_BUCKET }}" \
+            --s3-key "$DEPLOY_KEY" \
+            --query 'FunctionName' --output text
+
       - name: Deploy terra-photo-processor
         if: steps.changes.outputs.changed == 'true'
         run: |
