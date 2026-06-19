@@ -485,7 +485,7 @@ export const DashboardMap = ({
         }
       });
 
-      // Click unassessed building footprint to toggle priority flag.
+      // Click unassessed building footprint to show a confirmation popup.
       // Skips when draw mode is active or when a report marker sits at the same point.
       map.on("click", "building-footprints", (e) => {
         if (drawModeRef.current !== "idle") return;
@@ -496,24 +496,40 @@ export const DashboardMap = ({
         if (!bid) return;
 
         const currentlyFlagged = priorityBuildingsRef.current.has(bid);
-        const newFlagged = !currentlyFlagged;
-        if (newFlagged) priorityBuildingsRef.current.add(bid);
-        else priorityBuildingsRef.current.delete(bid);
-        map.setFeatureState(
-          { source: "buildings", sourceLayer: "goog_msft_osm_building_footprints", id: bid },
-          { priority_flag: newFlagged },
-        );
-        apiRef.current(`/buildings/${bid}/priority`, {
-          method: "PATCH",
-          body: JSON.stringify({ flagged: newFlagged }),
-        }).catch(() => {
-          // Rollback optimistic update on failure
-          if (newFlagged) priorityBuildingsRef.current.delete(bid);
-          else priorityBuildingsRef.current.add(bid);
+        const heading = currentlyFlagged ? "Priority flagged" : "Tag building as priority?";
+        const btnLabel = currentlyFlagged ? "Remove flag" : "Flag for photos";
+        const btnColor = currentlyFlagged ? "#6b7280" : "#0469a5";
+
+        const popup = new maplibregl.Popup({ offset: 10, closeButton: true, maxWidth: "200px" })
+          .setLngLat(e.lngLat)
+          .setHTML(
+            `<div class="${styles.popup}" style="padding:4px 2px">` +
+              `<div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px">${escapeHtml(heading)}</div>` +
+              `<button type="button" style="width:100%;padding:5px 10px;font-size:0.75rem;font-weight:600;background:${btnColor};color:#fff;border:none;cursor:pointer">${escapeHtml(btnLabel)}</button>` +
+            `</div>`,
+          )
+          .addTo(map);
+
+        popup.getElement().querySelector("button")?.addEventListener("click", () => {
+          popup.remove();
+          const newFlagged = !currentlyFlagged;
+          if (newFlagged) priorityBuildingsRef.current.add(bid);
+          else priorityBuildingsRef.current.delete(bid);
           map.setFeatureState(
             { source: "buildings", sourceLayer: "goog_msft_osm_building_footprints", id: bid },
-            { priority_flag: !newFlagged },
+            { priority_flag: newFlagged },
           );
+          apiRef.current(`/buildings/${bid}/priority`, {
+            method: "PATCH",
+            body: JSON.stringify({ flagged: newFlagged }),
+          }).catch(() => {
+            if (newFlagged) priorityBuildingsRef.current.delete(bid);
+            else priorityBuildingsRef.current.add(bid);
+            map.setFeatureState(
+              { source: "buildings", sourceLayer: "goog_msft_osm_building_footprints", id: bid },
+              { priority_flag: !newFlagged },
+            );
+          });
         });
       });
 
