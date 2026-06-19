@@ -321,10 +321,27 @@
   cursor: pointer;
 }
 
-.exportButton:hover {
+.exportButton:hover:not(:disabled) {
   background: var(--undpds-color-gray-100);
   border-color: var(--undpds-color-blue-600);
   color: var(--undpds-color-blue-600);
+}
+
+.exportButton:disabled {
+  background: var(--undpds-color-gray-100);
+  color: var(--undpds-color-gray-500);
+  border-color: var(--undpds-color-gray-300);
+  cursor: not-allowed;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .detailsButton {
