@@ -1,6 +1,9 @@
-# Scale test results (#200)
+# Scale Test Results
 
-500k synthetic reports against disposable RDS Postgres 17.10 + PostGIS 3.5, `db.t4g.medium` Single-AZ, 20 GB gp3, eu-west-2. Generator: `db/generate_scale_test.py` (Hatay geography, severity-zone shape, 50% of rows tap a building from a pool of 50k VIDA-style ids). Load: `\copy` from CSV, version-chain trigger disabled for the bulk load then re-enabled. Total bulk load: **36 s** for 500k rows.
+ - 500k synthetic reports against disposable RDS Postgres 17.10 + PostGIS 3.5, `db.t4g.medium` Single-AZ, 20 GB gp3, eu-west-2
+ - Generator: `db/generate_scale_test.py` (Hatay geography, severity-zone shape, 50% of rows tap a building from a pool of 50k VIDA-style ids)
+ - Load: `\copy` from CSV, version-chain trigger disabled for the bulk load then re-enabled
+ - Total bulk load: **36 s** for 500k rows
 
 ## Read-path timings
 
@@ -12,7 +15,7 @@ The four interactive dashboard paths stay sub-150 ms at every tier. The single-b
 
 ![Heavy queries](scale-test-heavy-queries.png)
 
-The two heavy queries grow roughly linearly with row count. At 500k the heatmap aggregation completes in under a second; the full export of all rows runs in ~1.5 s server-side, well inside the dedicated 2048 MB / 60 s exports Lambda.
+The two heavy queries grow roughly linearly with row count. At 500k the heatmap aggregation completes in under a second, the full export of all rows runs in ~1.5 s server-side, well inside the dedicated 2048 MB / 60 s exports Lambda.
 
 Full single-scale numbers at 500k:
 
@@ -50,14 +53,25 @@ All four index families confirmed in use by the planner for selective predicates
 
 ## Write-path timings
 
-TBD — `python db/scale_test_writepath.py --mode db-only` and `--mode full` against the deployed API once the SSM swap + redeploy is in place.
+50 sequential POSTs to `/reports` against the API Lambda pointed at the loaded 500k-row test DB. Two modes:
 
-## AI cost at scale (modelled, not measured)
+- **DB only** — empty free-text, no `photo_key`. Measures the pure DB write path: `_check_for_duplicates` against 500k rows, version-chain lookup, INSERT, version-chain trigger.
+- **DB + text AI** — realistic `infrastructure_description` (with a contact email so PII redaction has work to do). Adds two synchronous Bedrock Haiku 4.5 calls per submission: `redact_pii()` and `translate_to_english()`.
 
-500k reports × 3 AI integrations (photo classify, PII redaction, translation) would exceed default Bedrock quotas and cost ~$1500 per crisis. Modelled below; not run live.
+Photo classification (`POST /photos/classify`) is a separate endpoint the frontend calls before submission; it is not synchronously invoked by `POST /reports` and is not measured here.
 
-TBD — graphs.
+![DB-only write path](scale-test-write-db-only.png)
 
-## Summary for #66
+![DB + text AI write path](scale-test-write-text-ai.png)
 
-At 500k rows on a `db.t4g.medium` Single-AZ instance, the dashboard's hot paths stay sub-150 ms warm (count, filter, paginated viewport, bbox/coverage at viewport zoom), index-backed lookups (building, version chain) are single-digit milliseconds, and the heaviest dashboard query (full-table `GROUP BY h3_r8`) is ~900 ms. The post-#238 export of all 500k rows runs in ~1.5 s server-side, well inside the dedicated 2048 MB / 60 s exports Lambda. All four index families (btree, GIN, GIST, composite) are confirmed in use by the planner for selective predicates.
+Run #1 of each mode is tagged `cold=true` in the CSV and excluded from percentiles:
+
+| Mode | Cold start | Warm p50 | Warm p95 | Warm p99 | n |
+|---|---|---|---|---|---|
+| DB only | 61 ms | 45 ms | 61 ms | 114 ms | 49 |
+| DB + text AI | 2217 ms | 2167 ms | 3165 ms | 3457 ms | 49 |
+
+Two findings:
+
+- **The DB ingest path scales fine at 500k.** Median 45 ms, p99 114 ms, no submissions failed. The duplicate check (`building_id` + spatial neighbour) uses indexes confirmed in the read-path section, so adding more rows shouldn't materially slow this down.
+- **Text AI dominates submission latency.** The two synchronous Bedrock calls add ~2.1 s p50 / ~3.4 s p99 on top of the DB write. For interactive submission this is borderline acceptable; for the proposal's Feasibility section, the obvious follow-up is to either run PII + translation asynchronously (write the report, redact + translate after) or batch both into a single Bedrock call.
