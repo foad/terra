@@ -46,6 +46,22 @@
   font-size: 0.8125rem;
 }
 
+.expandButton {
+  background: none;
+  border: none;
+  color: var(--undpds-color-gray-600);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 2px;
+  margin-right: 4px;
+}
+
+.expandButton:hover {
+  color: var(--undpds-color-black);
+  background: var(--undpds-color-gray-200);
+}
+
 .statItem {
   display: flex;
   align-items: center;
@@ -80,6 +96,7 @@
   flex: 1;
   display: flex;
   min-height: 0;
+  position: relative;
 }
 
 .mapArea {

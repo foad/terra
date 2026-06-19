@@ -3,6 +3,40 @@
   border-inline-end: 1px solid var(--undpds-color-gray-300);
   overflow-y: auto;
   flex-shrink: 0;
+  background: var(--undpds-color-white);
+}
+
+@media (max-width: 1024px) {
+  .sidebar {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    inset-inline-start: 0;
+    z-index: 100;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--undpds-spacing-04);
+}
+
+.collapseButton {
+  background: none;
+  border: none;
+  padding: 4px;
+  color: var(--undpds-color-gray-600);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 2px;
+}
+
+.collapseButton:hover {
+  color: var(--undpds-color-black);
+  background: var(--undpds-color-gray-200);
 }
 
 .filters {
@@ -25,7 +59,7 @@
 .filtersHeader {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   margin-bottom: var(--undpds-spacing-05);
 }
 
