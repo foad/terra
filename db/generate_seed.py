@@ -1,34 +1,21 @@
-"""Generate seed SQL for demo data in Hatay, Turkey earthquake zone."""
+"""Generate seed SQL for demo data: Antakya earthquake (Türkiye) and
+Pemba cyclone (Mozambique). Both crisis_events rows + their reports,
+with reports linked to their crisis_event_id.
+
+Usage:
+    python db/generate_seed.py [--locations N --versioned M]
+"""
 
 import math
+import os
 import random
 import uuid
 from datetime import datetime, timedelta
 
 import h3
 
-# Hatay, Turkey bounding box
-BBOX = {
-    "west": 36.10,
-    "east": 36.22,
-    "south": 36.17,
-    "north": 36.25,
-}
 
 DAMAGE_LEVELS = ["minimal", "partial", "complete"]
-
-# Epicentre of the simulated earthquake (central Antakya). Reports cluster in
-# three severity zones around it so the polygon-filter demo (#178) has a
-# visibly worst-hit area to select, per #186.
-EPICENTRE = (36.16, 36.21)  # (lng, lat)
-
-ZONES = {
-    # name: (share of locations, max radius in degrees, damage weights
-    #        [minimal, partial, complete])
-    "centre": (0.40, 0.012, [0.10, 0.20, 0.70]),
-    "ring": (0.35, 0.030, [0.20, 0.60, 0.20]),
-    "periphery": (0.25, 0.055, [0.70, 0.20, 0.10]),
-}
 
 INFRASTRUCTURE_TYPES = [
     "Residential Infrastructure (Houses and apartments)",
@@ -39,17 +26,7 @@ INFRASTRUCTURE_TYPES = [
     "Community Infrastructure (Schools, hospitals, community halls, public toilets, etc.)",
     "Public spaces/Recreation Infrastructure (stadiums, playgrounds, religious buildings, etc.)",
 ]
-INFRA_WEIGHTS = [0.35, 0.15, 0.1, 0.1, 0.1, 0.1, 0.1]
-
-INFRA_NAMES = {
-    "Residential Infrastructure (Houses and apartments)": [None, None, None, "Apartment Block 14", "Hilal Residences"],
-    "Commercial Infrastructure (Markets, malls, shops, hotels, banks, industries, etc.)": ["Central Market", "Hatay Grand Hotel", "Bazaar District", None],
-    "Government Building (Administrative buildings, courthouses, police stations, fire stations, etc.)": ["District Administration Office", "Fire Station No. 3", None],
-    "Utility Infrastructure (Water pumps, power plants, waste treatment plants, etc.)": ["Water Treatment Plant", "Electricity Substation", None],
-    "Transport and Communication Infrastructure (Roads, cell towers, bridges, railway station, bus station, etc.)": ["Hatay Bus Terminal", "Cell Tower Site 7", None],
-    "Community Infrastructure (Schools, hospitals, community halls, public toilets, etc.)": ["Hatay Primary School", "Hatay General Hospital", "Community Hall", None],
-    "Public spaces/Recreation Infrastructure (stadiums, playgrounds, religious buildings, etc.)": ["Friday Mosque", "City Park", None],
-}
+INFRA_WEIGHTS = [0.35, 0.15, 0.10, 0.10, 0.10, 0.10, 0.10]
 
 ELECTRICITY_OPTIONS = [
     "No damage observed",
@@ -80,41 +57,90 @@ PRESSING_NEEDS = [
     "Support from local authorities and community organizations",
 ]
 
-BASE_TIME = datetime(2026, 4, 5, 8, 0, 0)
+
+CRISES = [
+    {
+        "id": "605bc23d-74f1-4f28-89f3-46a9ec2e5eaa",
+        "name": "Antakya Earthquake, Türkiye",
+        "crisis_type": "Earthquake",
+        "crisis_nature": "Earthquake",
+        "region_wkt": "POLYGON((36.06776903 36.240169228,36.02810922 36.215086656,35.996683869 36.184506592,36.01701792 36.109870991,36.1066726 36.077008833,36.223131256 36.087466465,36.296148985 36.117337747,36.327354076 36.166005165,36.320373638 36.254243073,36.225992296 36.278631733,36.168403681 36.284258804,36.110815065 36.266907367,36.06776903 36.240169228))",
+        "epicentre": (36.16, 36.18),
+        "bbox": {"west": 35.99, "east": 36.33, "south": 36.07, "north": 36.29},
+        "zones": {
+            "centre":    (0.40, 0.012, [0.10, 0.20, 0.70]),
+            "ring":      (0.35, 0.030, [0.20, 0.60, 0.20]),
+            "periphery": (0.25, 0.055, [0.70, 0.20, 0.10]),
+        },
+        "base_time": datetime(2026, 4, 5, 8, 0, 0),
+        "scale": 1.0,
+        "infra_names": {
+            "Residential Infrastructure (Houses and apartments)": [None, None, None, "Apartment Block 14", "Hilal Residences"],
+            "Commercial Infrastructure (Markets, malls, shops, hotels, banks, industries, etc.)": ["Central Market", "Antakya Grand Hotel", "Bazaar District", None],
+            "Government Building (Administrative buildings, courthouses, police stations, fire stations, etc.)": ["District Administration Office", "Fire Station No. 3", None],
+            "Utility Infrastructure (Water pumps, power plants, waste treatment plants, etc.)": ["Water Treatment Plant", "Electricity Substation", None],
+            "Transport and Communication Infrastructure (Roads, cell towers, bridges, railway station, bus station, etc.)": ["Antakya Bus Terminal", "Cell Tower Site 7", None],
+            "Community Infrastructure (Schools, hospitals, community halls, public toilets, etc.)": ["Antakya Primary School", "Antakya General Hospital", "Community Hall", None],
+            "Public spaces/Recreation Infrastructure (stadiums, playgrounds, religious buildings, etc.)": ["Friday Mosque", "City Park", None],
+        },
+    },
+    {
+        "id": "82c40b3d-1f96-4ff2-9a6b-1ad8f9b48a51",
+        "name": "Cyclone response — Pemba, Mozambique",
+        "crisis_type": "Hurricane/Cyclone",
+        "crisis_nature": "Hurricane/Cyclone",
+        "region_wkt": "POLYGON((40.38 -13.55, 40.65 -13.55, 40.65 -13.10, 40.38 -13.10, 40.38 -13.55))",
+        "epicentre": (40.52, -13.32),
+        "bbox": {"west": 40.38, "east": 40.65, "south": -13.55, "north": -13.10},
+        "zones": {
+            "centre":    (0.35, 0.025, [0.15, 0.30, 0.55]),
+            "ring":      (0.40, 0.075, [0.30, 0.50, 0.20]),
+            "periphery": (0.25, 0.130, [0.65, 0.25, 0.10]),
+        },
+        "base_time": datetime(2026, 4, 28, 14, 0, 0),
+        "scale": 0.2,
+        "infra_names": {
+            "Residential Infrastructure (Houses and apartments)": [None, None, "Bairro Cariacó Apartments", "Pescadores Houses"],
+            "Commercial Infrastructure (Markets, malls, shops, hotels, banks, industries, etc.)": ["Mercado Municipal", "Cariacó Market", "Praia do Wimbe Resort", None],
+            "Government Building (Administrative buildings, courthouses, police stations, fire stations, etc.)": ["Pemba District Office", "Bombeiros de Pemba (Fire Station)", None],
+            "Utility Infrastructure (Water pumps, power plants, waste treatment plants, etc.)": ["Power Substation", "Wastewater Treatment Works", None],
+            "Transport and Communication Infrastructure (Roads, cell towers, bridges, railway station, bus station, etc.)": ["Pemba Port Authority", "Pemba Airport Terminal", "Cell Tower Site 12", None],
+            "Community Infrastructure (Schools, hospitals, community halls, public toilets, etc.)": ["Pemba Central Hospital", "Community Centre — Paquitequete", None],
+            "Public spaces/Recreation Infrastructure (stadiums, playgrounds, religious buildings, etc.)": ["Catholic Cathedral of Pemba", "Praça dos Heróis Park", None],
+        },
+    },
+]
+
+
 random.seed(0xf0ad)
 
 
-def pick_zone():
-    names = list(ZONES)
-    shares = [ZONES[n][0] for n in names]
+def pick_zone(crisis):
+    names = list(crisis["zones"])
+    shares = [crisis["zones"][n][0] for n in names]
     return random.choices(names, weights=shares, k=1)[0]
 
 
-def random_point(zone):
-    """Generate a point in the given severity zone around the epicentre."""
-    zone_idx = list(ZONES).index(zone)
-    inner = 0.0 if zone_idx == 0 else ZONES[list(ZONES)[zone_idx - 1]][1]
-    outer = ZONES[zone][1]
-
+def random_point(crisis, zone):
+    zones = crisis["zones"]
+    zone_idx = list(zones).index(zone)
+    inner = 0.0 if zone_idx == 0 else zones[list(zones)[zone_idx - 1]][1]
+    outer = zones[zone][1]
     angle = random.uniform(0, 2 * math.pi)
     radius = random.uniform(inner, outer)
-    lng = EPICENTRE[0] + radius * math.cos(angle)
-    lat = EPICENTRE[1] + radius * math.sin(angle) * 0.8  # rough lat/lng aspect
-
-    lng = max(BBOX["west"], min(BBOX["east"], lng))
-    lat = max(BBOX["south"], min(BBOX["north"], lat))
+    lng = crisis["epicentre"][0] + radius * math.cos(angle)
+    lat = crisis["epicentre"][1] + radius * math.sin(angle) * 0.8
+    bbox = crisis["bbox"]
+    lng = max(bbox["west"], min(bbox["east"], lng))
+    lat = max(bbox["south"], min(bbox["north"], lat))
     return lng, lat
 
 
-def random_damage(zone):
-    return random.choices(DAMAGE_LEVELS, weights=ZONES[zone][2], k=1)[0]
+def random_damage(crisis, zone):
+    return random.choices(DAMAGE_LEVELS, weights=crisis["zones"][zone][2], k=1)[0]
 
 
-def wave_time():
-    """Crisis-wave timestamp: ~60% in the first 6h, ~30% in 6-48h, ~10% later.
-
-    Makes the time slider (#176) show the crisis unfolding as you scrub.
-    """
+def wave_time(crisis):
     r = random.random()
     if r < 0.6:
         hours = random.uniform(0, 6)
@@ -122,11 +148,10 @@ def wave_time():
         hours = random.uniform(6, 48)
     else:
         hours = random.uniform(48, 120)
-    return BASE_TIME + timedelta(hours=hours)
+    return crisis["base_time"] + timedelta(hours=hours)
 
 
 def damage_correlated_fields(damage):
-    """Generate electricity/health/needs that correlate with damage level."""
     if damage == "minimal":
         elec = random.choice(ELECTRICITY_OPTIONS[:2])
         health = random.choice(HEALTH_OPTIONS[:2])
@@ -145,9 +170,9 @@ def damage_correlated_fields(damage):
     return elec, health, needs, debris
 
 
-def random_infra():
+def random_infra(crisis):
     infra = random.choices(INFRASTRUCTURE_TYPES, weights=INFRA_WEIGHTS, k=1)[0]
-    name = random.choice(INFRA_NAMES[infra])
+    name = random.choice(crisis["infra_names"][infra])
     return infra, name
 
 
@@ -162,118 +187,93 @@ def sql_str(val):
     return "'" + val.replace("'", "''") + "'"
 
 
-def generate(
-    num_locations: int = 150,
-    num_versioned: int = 8,
-    versions_range: tuple[int, int] = (2, 3),
-):
-    """Generate seed SQL.
+def emit_crisis_insert(crisis):
+    return (
+        "INSERT INTO crisis_events (id, name, crisis_type, region, is_active, follow_up_questions) VALUES (\n"
+        f"    '{crisis['id']}',\n"
+        f"    '{crisis['name']}',\n"
+        f"    '{crisis['crisis_type']}',\n"
+        f"    ST_SetSRID(ST_GeomFromText('{crisis['region_wkt']}'), 4326),\n"
+        f"    true,\n"
+        f"    '[]'::jsonb\n"
+        ");"
+    )
 
-    Args:
-        num_locations: Total unique building locations
-        num_versioned: How many of those get multiple reports (version chains)
-        versions_range: (min, max) number of reports per versioned location
-    """
-    assert num_versioned <= num_locations, "num_versioned must be <= num_locations"
 
+def emit_reports_for_crisis(crisis, num_locations, num_versioned, versions_range):
     lines = [
-        "-- Auto-generated seed data for Hatay, Turkey demo",
-        "-- Run db/seed_teardown.sql to remove",
-        f"-- Generated by db/generate_seed.py ({num_locations} locations, {num_versioned} versioned)",
-        "",
-        "-- Second crisis zone: Pemba, Mozambique — for multi-crisis demo beat (Cyclone Kenneth 2019)",
-        "INSERT INTO crisis_events (name, crisis_type, region, is_active, follow_up_questions)",
-        "VALUES (",
-        "    'Cyclone response — Pemba, Mozambique',",
-        "    'Hurricane/Cyclone',",
-        "    ST_SetSRID(ST_GeomFromText('POLYGON((40.38 -13.55, 40.65 -13.55, 40.65 -13.10, 40.38 -13.10, 40.38 -13.55))'), 4326),",
-        "    true,",
-        "    '[]'::jsonb",
-        ");",
-        "",
+        f"-- Reports for {crisis['name']}",
         "INSERT INTO reports (",
-        "    id, location, h3_r12, h3_r8, building_id,",
+        "    id, crisis_event_id, location, h3_r12, h3_r8, building_id,",
         "    damage_level, infrastructure_type, infrastructure_description,",
         "    crisis_nature, debris_present, electricity_status,",
         "    health_status, pressing_needs, version_chain_id,",
         "    is_latest, device_id, submitted_at",
         ") VALUES",
     ]
-
     values = []
 
     locations = []
     for _ in range(num_locations):
-        zone = pick_zone()
-        lng, lat = random_point(zone)
+        zone = pick_zone(crisis)
+        lng, lat = random_point(crisis, zone)
         h3_r12 = h3.latlng_to_cell(lat, lng, 12)
         h3_r8 = h3.latlng_to_cell(lat, lng, 8)
         locations.append((lng, lat, h3_r12, h3_r8, zone))
 
-    # First num_versioned locations get version chains
-    report_idx = 0
     for loc_idx in range(num_versioned):
         lng, lat, h3_r12, h3_r8, zone = locations[loc_idx]
         chain_id = str(uuid.uuid4())
-        infra, infra_name = random_infra()
+        infra, infra_name = random_infra(crisis)
         num_versions = random.randint(versions_range[0], versions_range[1])
 
-        # Damage escalates or stays stable
         if random.random() < 0.6:
-            # Escalating
             damage_seq = sorted(
-                [random_damage(zone) for _ in range(num_versions)],
+                [random_damage(crisis, zone) for _ in range(num_versions)],
                 key=lambda d: DAMAGE_LEVELS.index(d),
             )
         else:
-            # Stable
-            d = random_damage(zone)
+            d = random_damage(crisis, zone)
             damage_seq = [d] * num_versions
 
-        first_submitted = wave_time()
+        first_submitted = wave_time(crisis)
         for v in range(num_versions):
             report_id = str(uuid.uuid4())
             damage = damage_seq[v]
             elec, health, needs, debris = damage_correlated_fields(damage)
-            submitted = first_submitted + timedelta(
-                days=v * 2, minutes=random.randint(0, 59)
-            )
+            submitted = first_submitted + timedelta(days=v * 2, minutes=random.randint(0, 59))
             device = f"device-seed-{random.randint(1, 15)}"
-
-            # Small offset for repeated reports at same building
             jitter_lng = lng + random.uniform(-0.0001, 0.0001) if v > 0 else lng
             jitter_lat = lat + random.uniform(-0.0001, 0.0001) if v > 0 else lat
 
             val = (
-                f"({sql_str(report_id)},\n"
+                f"({sql_str(report_id)}, '{crisis['id']}',\n"
                 f" ST_SetSRID(ST_MakePoint({jitter_lng:.6f}, {jitter_lat:.6f}), 4326),\n"
                 f" {sql_str(h3_r12)}, {sql_str(h3_r8)}, NULL,\n"
                 f" {sql_str(damage)}, ARRAY[{sql_str(infra)}], {sql_str(infra_name)},\n"
-                f" ARRAY['Earthquake'], {str(debris).lower()}, {sql_str(elec)},\n"
+                f" ARRAY[{sql_str(crisis['crisis_nature'])}], {str(debris).lower()}, {sql_str(elec)},\n"
                 f" {sql_str(health)}, {sql_array(needs)},\n"
                 f" {sql_str(chain_id)}, false,\n"
                 f" {sql_str(device)}, '{submitted.isoformat()}+00')"
             )
             values.append(val)
-            report_idx += 1
 
-    # Remaining locations: single reports
     for loc_idx in range(num_versioned, num_locations):
         lng, lat, h3_r12, h3_r8, zone = locations[loc_idx]
         report_id = str(uuid.uuid4())
         chain_id = str(uuid.uuid4())
-        damage = random_damage(zone)
-        infra, infra_name = random_infra()
+        damage = random_damage(crisis, zone)
+        infra, infra_name = random_infra(crisis)
         elec, health, needs, debris = damage_correlated_fields(damage)
-        submitted = wave_time() + timedelta(minutes=random.randint(0, 59))
+        submitted = wave_time(crisis) + timedelta(minutes=random.randint(0, 59))
         device = f"device-seed-{random.randint(1, 15)}"
 
         val = (
-            f"({sql_str(report_id)},\n"
+            f"({sql_str(report_id)}, '{crisis['id']}',\n"
             f" ST_SetSRID(ST_MakePoint({lng:.6f}, {lat:.6f}), 4326),\n"
             f" {sql_str(h3_r12)}, {sql_str(h3_r8)}, NULL,\n"
             f" {sql_str(damage)}, ARRAY[{sql_str(infra)}], {sql_str(infra_name)},\n"
-            f" ARRAY['Earthquake'], {str(debris).lower()}, {sql_str(elec)},\n"
+            f" ARRAY[{sql_str(crisis['crisis_nature'])}], {str(debris).lower()}, {sql_str(elec)},\n"
             f" {sql_str(health)}, {sql_array(needs)},\n"
             f" {sql_str(chain_id)}, false,\n"
             f" {sql_str(device)}, '{submitted.isoformat()}+00')"
@@ -281,9 +281,30 @@ def generate(
         values.append(val)
 
     lines.append(",\n\n".join(values) + ";")
+    return "\n".join(lines)
 
-    # Fix up is_latest: set to true for the most recent report per version chain
-    lines.append("")
+
+def generate(num_locations=150, num_versioned=8, versions_range=(2, 3)):
+    assert num_versioned <= num_locations, "num_versioned must be <= num_locations"
+
+    lines = [
+        "-- Auto-generated seed data for TERRA demo",
+        "-- Run db/seed_teardown.sql to remove",
+        f"-- Generated by db/generate_seed.py (Antakya: {num_locations} locations, {num_versioned} versioned)",
+        "",
+    ]
+    for crisis in CRISES:
+        lines.append(f"-- {crisis['name']}")
+        lines.append(emit_crisis_insert(crisis))
+        lines.append("")
+
+    for crisis in CRISES:
+        scale = crisis["scale"]
+        locs = max(num_versioned, int(num_locations * scale))
+        vers = max(1, int(num_versioned * scale))
+        lines.append(emit_reports_for_crisis(crisis, locs, vers, versions_range))
+        lines.append("")
+
     lines.append("-- Set is_latest for the most recent report in each version chain")
     lines.append(
         "UPDATE reports SET is_latest = true "
@@ -299,13 +320,12 @@ def generate(
 
 if __name__ == "__main__":
     import argparse
-    import os
 
     parser = argparse.ArgumentParser(description="Generate seed SQL for TERRA demo data")
-    parser.add_argument("--locations", type=int, default=150, help="Number of unique locations (default: 150)")
-    parser.add_argument("--versioned", type=int, default=8, help="Number of locations with version chains (default: 8)")
-    parser.add_argument("--min-versions", type=int, default=2, help="Min reports per versioned location (default: 2)")
-    parser.add_argument("--max-versions", type=int, default=3, help="Max reports per versioned location (default: 3)")
+    parser.add_argument("--locations", type=int, default=1000, help="Antakya unique locations (Pemba scales to 20%% of this)")
+    parser.add_argument("--versioned", type=int, default=50, help="Antakya locations with version chains")
+    parser.add_argument("--min-versions", type=int, default=2)
+    parser.add_argument("--max-versions", type=int, default=3)
     args = parser.parse_args()
 
     sql = generate(
@@ -316,6 +336,4 @@ if __name__ == "__main__":
     out_path = os.path.join(os.path.dirname(__file__), "seed.sql")
     with open(out_path, "w") as f:
         f.write(sql + "\n")
-
-    total_reports = args.versioned * ((args.min_versions + args.max_versions) // 2) + (args.locations - args.versioned)
-    print(f"Generated {out_path} (~{total_reports} reports, {args.locations} locations, {args.versioned} versioned)")
+    print(f"Generated {out_path}")
