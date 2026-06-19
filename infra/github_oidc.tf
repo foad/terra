@@ -90,6 +90,7 @@ resource "aws_iam_role_policy" "github_actions_lambda" {
       ]
       Resource = [
         aws_lambda_function.api.arn,
+        aws_lambda_function.exports.arn,
         aws_lambda_function.photo_processor.arn,
       ]
     }]

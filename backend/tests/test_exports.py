@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from pydantic import ValidationError
 
-from src.handlers.exports import CSV_HEADER, export_reports
+from src.handlers.exports import CSV_HEADER, _to_csv, _to_geojson, export_reports
 
 
 def _row(**overrides):
@@ -56,61 +56,54 @@ def _mock_conn(rows):
 
 
 class TestExportReports:
+    @patch("src.handlers.exports.s3")
     @patch("src.handlers.exports.get_connection")
-    def test_geojson_format(self, mock_get_conn):
-        mock_get_conn.return_value, _ = _mock_conn([_row()])
+    def test_returns_presigned_download_url(self, mock_get_conn, mock_s3):
+        mock_get_conn.return_value, _ = _mock_conn([_row(), _row(id="report-2")])
+        mock_s3.generate_presigned_url.return_value = "https://example/exports/x.geojson?sig=abc"
 
-        body, content_type, filename = export_reports({"format": "geojson"})
+        result = export_reports({"format": "geojson"})
 
-        assert content_type == "application/geo+json"
-        assert filename.startswith("terra-reports-") and filename.endswith(".geojson")
-        parsed = json.loads(body)
-        assert parsed["type"] == "FeatureCollection"
-        assert len(parsed["features"]) == 1
-        feat = parsed["features"][0]
-        assert feat["geometry"]["coordinates"] == [0.5, 51.4]
-        assert feat["properties"]["damage_level"] == "partial"
-        assert feat["properties"]["photo_key"] == "uploads/abc.jpg"
-        assert "photo_url" not in feat["properties"]
-        assert "thumbnail_url" not in feat["properties"]
+        assert result["download_url"] == "https://example/exports/x.geojson?sig=abc"
+        assert result["total_rows"] == 2
+        assert result["filename"].startswith("terra-reports-")
+        assert result["filename"].endswith(".geojson")
+        assert "expires_at" in result
 
+    @patch("src.handlers.exports.s3")
     @patch("src.handlers.exports.get_connection")
-    def test_csv_format_header_and_row(self, mock_get_conn):
+    def test_uploads_geojson_body_to_s3(self, mock_get_conn, mock_s3):
         mock_get_conn.return_value, _ = _mock_conn([_row()])
+        mock_s3.generate_presigned_url.return_value = "https://example"
 
-        body, content_type, filename = export_reports({"format": "csv"})
+        export_reports({"format": "geojson"})
 
-        assert content_type == "text/csv"
-        assert filename.startswith("terra-reports-") and filename.endswith(".csv")
+        put = mock_s3.put_object.call_args.kwargs
+        assert put["ContentType"] == "application/geo+json"
+        assert put["Key"].startswith("exports/")
+        assert put["Key"].endswith(".geojson")
+        body = json.loads(put["Body"].decode("utf-8"))
+        assert body["type"] == "FeatureCollection"
+        assert body["features"][0]["properties"]["damage_level"] == "partial"
+        assert body["features"][0]["properties"]["photo_key"] == "uploads/abc.jpg"
+        assert "photo_url" not in body["features"][0]["properties"]
+
+    @patch("src.handlers.exports.s3")
+    @patch("src.handlers.exports.get_connection")
+    def test_uploads_csv_body_to_s3(self, mock_get_conn, mock_s3):
+        mock_get_conn.return_value, _ = _mock_conn([_row()])
+        mock_s3.generate_presigned_url.return_value = "https://example"
+
+        export_reports({"format": "csv"})
+
+        put = mock_s3.put_object.call_args.kwargs
+        assert put["ContentType"] == "text/csv"
+        assert put["Key"].endswith(".csv")
+        body = put["Body"].decode("utf-8")
         lines = body.strip().split("\r\n")
         assert lines[0].split(",") == CSV_HEADER
-        assert "photo_key" in CSV_HEADER
-        assert "photo_url" not in CSV_HEADER
         assert "uploads/abc.jpg" in lines[1]
         assert "partial" in lines[1]
-        assert "u10k7d2q" in lines[1]
-
-    @patch("src.handlers.exports.get_connection")
-    def test_csv_pipe_joins_list_fields(self, mock_get_conn):
-        mock_get_conn.return_value, _ = _mock_conn([
-            _row(crisis_nature=["Earthquake", "Flood"]),
-        ])
-
-        body, _, _ = export_reports({"format": "csv"})
-
-        assert "Earthquake|Flood" in body
-
-    @patch("src.handlers.exports.get_connection")
-    def test_csv_serialises_booleans_and_nulls(self, mock_get_conn):
-        mock_get_conn.return_value, _ = _mock_conn([
-            _row(debris_present=False, ai_confidence=None),
-        ])
-
-        body, _, _ = export_reports({"format": "csv"})
-        row = body.strip().split("\r\n")[1]
-        cells = row.split(",")
-        # debris_present is at index 10
-        assert cells[10] == "false"
 
     def test_unknown_format_rejected(self):
         with pytest.raises(ValidationError):
@@ -126,13 +119,47 @@ class TestExportReports:
             export_reports({"format": "csv", "h3": "DROP TABLE"})
         mock_get_conn.assert_not_called()
 
+    @patch("src.handlers.exports.s3")
     @patch("src.handlers.exports.get_connection")
-    def test_caps_to_export_row_cap(self, mock_get_conn):
+    def test_query_caps_at_ceiling(self, mock_get_conn, mock_s3):
         mock_conn, mock_cursor = _mock_conn([])
         mock_get_conn.return_value = mock_conn
+        mock_s3.generate_presigned_url.return_value = "x"
 
         export_reports({"format": "csv"})
 
         # LIMIT is the last bound param
         params = mock_cursor.execute.call_args[0][1]
-        assert params[-1] == 10000
+        assert params[-1] == 1_000_000
+
+    @patch("src.handlers.exports.s3")
+    @patch("src.handlers.exports.get_connection")
+    def test_excludes_flagged_reports(self, mock_get_conn, mock_s3):
+        mock_conn, mock_cursor = _mock_conn([])
+        mock_get_conn.return_value = mock_conn
+        mock_s3.generate_presigned_url.return_value = "x"
+
+        export_reports({"format": "csv"})
+
+        sql = mock_cursor.execute.call_args[0][0]
+        assert "flag_status IS NULL" in sql
+
+
+class TestSerializers:
+    def test_csv_pipe_joins_list_fields(self):
+        body = _to_csv([_row(crisis_nature=["Earthquake", "Flood"])])
+        assert "Earthquake|Flood" in body
+
+    def test_csv_serialises_booleans_and_nulls(self):
+        body = _to_csv([_row(debris_present=False, ai_confidence=None)])
+        row = body.strip().split("\r\n")[1]
+        cells = row.split(",")
+        # debris_present is at index 10
+        assert cells[10] == "false"
+
+    def test_geojson_strips_photo_url_and_thumbnail_url(self):
+        body = json.loads(_to_geojson([_row()]))
+        props = body["features"][0]["properties"]
+        assert "photo_url" not in props
+        assert "thumbnail_url" not in props
+        assert props["photo_key"] == "uploads/abc.jpg"

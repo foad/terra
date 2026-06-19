@@ -120,7 +120,9 @@ The frontend treats every error as a silent drop and lets the user proceed witho
 
 ## GET /reports/export
 
-Download the filtered report set as a file. Accepts the same filter parameters as `GET /reports` plus a required `format` selector. The response includes a `Content-Disposition: attachment` header to trigger a browser download.
+Build the filtered report set as a file, upload it to S3, return a presigned download URL. Accepts the same filter parameters as `GET /reports` plus a required `format` selector.
+
+Flagged reports (`flag_status` set) are excluded.
 
 **Query Parameters**
 
@@ -133,16 +135,27 @@ Download the filtered report set as a file. Accepts the same filter parameters a
 | `infrastructure_type` | string | no | Pipe-separated infrastructure types |
 | `crisis_nature` | string | no | Pipe-separated crisis types |
 | `from` / `to` | string | no | ISO datetimes |
-| `building_id` | string | no | Single-building filter — returns every version, not just the latest |
+| `building_id` | string | no | Single-building filter, returns every version, not just the latest |
 
-The export caps at **10 000 rows** in v1. Larger result sets will be truncated; tighten filters or split by date range.
+**Response**
+
+```json
+{
+  "download_url": "https://terra-exports-*.s3.amazonaws.com/exports/<uuid>/terra-reports-20260613-153022.csv?X-Amz-...",
+  "expires_at": "2026-06-13T16:30:22+00:00",
+  "total_rows": 4327,
+  "filename": "terra-reports-20260613-153022.csv"
+}
+```
+
+Presigned URL is valid for 1 hour. The S3 object lives in the `terra-exports-...` bucket with a 7-day lifecycle expiration.
+
+Max 1,000,000 rows per export. Beyond that, multipart streaming would be required (out of scope for the demo).
 
 **Formats**
 
-- **CSV**: flat header row, list fields (`infrastructure_type`, `crisis_nature`, `pressing_needs`) joined with `|`, booleans as `true`/`false`. Photos are referenced by their stable `photo_key` (e.g. `uploads/<uuid>.jpg`); the thumbnail key follows the convention `thumbnails/<uuid>.jpg`. Look up photos via the dashboard for a fresh presigned URL.
-- **GeoJSON**: standard `FeatureCollection` (same feature shape as `GET /reports` but with `photo_key` in place of `photo_url`/`thumbnail_url`, and without the `total` field).
-
-GeoPackage and Shapefile are deferred — they require Fiona/GDAL in the Lambda zip; will follow up in Phase 3.
+- **CSV**: flat header row, list fields (`infrastructure_type`, `crisis_nature`, `pressing_needs`) joined with `|`, booleans as `true`/`false`. Photos are referenced by their stable `photo_key` (e.g. `uploads/<uuid>.jpg`); the thumbnail key follows the convention `thumbnails/<uuid>.jpg`.
+- **GeoJSON**: standard `FeatureCollection` (same feature shape as `GET /reports` but with `photo_key` in place of `photo_url` / `thumbnail_url`).
 
 ## GET /crisis-events
 
