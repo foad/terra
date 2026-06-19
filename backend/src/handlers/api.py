@@ -22,6 +22,7 @@ from src.handlers.exports import export_reports
 from src.handlers.photos import get_upload_url
 from src.handlers.reports import (
     create_report,
+    delete_e2e_reports,
     get_priority_buildings,
     query_coverage,
     query_reports,
@@ -72,12 +73,17 @@ def post_photo_classify():
         raise ServiceError(502, str(e)) from e
 
 
+def _e2e_filter_prefix() -> str | None:
+    headers = app.current_event.headers or {}
+    return headers.get("x-e2e-filter") or headers.get("X-E2E-Filter")
+
+
 @app.get("/reports")
 @tracer.capture_method
 def get_reports():
     params = app.current_event.query_string_parameters or {}
     try:
-        return query_reports(params)
+        return query_reports(params, e2e_filter_prefix=_e2e_filter_prefix())
     except ValidationError as e:
         raise BadRequestError(_first_validation_message(e)) from e
 
@@ -87,7 +93,7 @@ def get_reports():
 def get_reports_coverage():
     params = app.current_event.query_string_parameters or {}
     try:
-        return query_coverage(params)
+        return query_coverage(params, e2e_filter_prefix=_e2e_filter_prefix())
     except ValidationError as e:
         raise BadRequestError(_first_validation_message(e)) from e
 
@@ -97,7 +103,7 @@ def get_reports_coverage():
 def get_reports_export():
     params = app.current_event.query_string_parameters or {}
     try:
-        return export_reports(params)
+        return export_reports(params, e2e_filter_prefix=_e2e_filter_prefix())
     except ValidationError as e:
         raise BadRequestError(_first_validation_message(e)) from e
 
@@ -192,6 +198,16 @@ def patch_report_review(report_id: str):
     except ValueError as e:
         if str(e).startswith("No report with id"):
             raise NotFoundError(str(e)) from e
+        raise BadRequestError(str(e)) from e
+
+
+@app.delete("/reports/e2e")
+@tracer.capture_method
+def delete_e2e():
+    params = app.current_event.query_string_parameters or {}
+    try:
+        return delete_e2e_reports(params.get("prefix", ""))
+    except ValueError as e:
         raise BadRequestError(str(e)) from e
 
 
