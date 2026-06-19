@@ -139,6 +139,7 @@
     "shareTitle": "Help assess the damage in your area",
     "shareText": "I just submitted a damage report. Please help by submitting yours — it takes less than 2 minutes.",
     "shareTextWithCrisis": "I just submitted a damage report for {{crisisName}}. Please help by submitting yours — it takes less than 2 minutes.",
+    "viewMap": "See your neighbourhood",
     "submitAnother": "Submit Another Report",
     "followUpHeading": "One quick question while you're here:",
     "followUpHeading_plural": "{{count}} quick questions while you're here:",
@@ -190,7 +191,7 @@
     "layerCrisis": "Crisis boundary"
   },
   "coverage": {
-    "unassessed_one": "{{count}} building nearby not yet assessed",
-    "unassessed_other": "{{count}} buildings nearby not yet assessed"
+    "ring": "{{assessed}} of {{total}} buildings assessed",
+    "allAssessed": "All buildings assessed"
   }
 }

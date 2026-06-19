@@ -130,6 +130,7 @@
     "queued": "Rapor Kuyruğa Alındı",
     "submittedMessage": "Raporunuz için teşekkürler. Gönderiminiz, müdahale ekiplerinin bölgenizdeki toparlanma çalışmalarını önceliklendirmesine yardımcı oluyor.",
     "queuedMessage": "Raporunuz kaydedildi; bağlantı sağlandığında otomatik olarak gönderilecek.",
+    "viewMap": "Mahallenizi görün",
     "submitAnother": "Yeni Rapor Gönder",
     "followUpHeading": "Hazır buradayken kısa bir soru:",
     "followUpHeading_plural": "Hazır buradayken {{count}} kısa soru:",
@@ -174,5 +175,9 @@
     "legendLow": "Düşük",
     "legendHigh": "Yüksek",
     "last24h": "son 24 saatte"
+  },
+  "coverage": {
+    "ring": "{{total}} binadan {{assessed}} tanesi değerlendirildi",
+    "allAssessed": "Tüm binalar değerlendirildi"
   }
 }

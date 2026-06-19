@@ -204,6 +204,14 @@
   z-index: 1;
 }
 
+/* Coverage ring — sits below the draw button (~86px bottom) */
+.coverageCard {
+  position: absolute;
+  top: 96px;
+  left: 10px;
+  z-index: 1;
+}
+
 .drawButton {
   display: flex;
   align-items: center;
