@@ -3,12 +3,28 @@
   background: var(--undpds-color-blue-600);
   color: var(--undpds-color-white);
   border-bottom: 4px solid var(--undpds-color-red);
+  position: relative;
 }
 
 .inner {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.menuButton {
+  display: none;
+  background: none;
+  border: none;
+  color: inherit;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 3px;
+  align-items: center;
+}
+
+.menuButton:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .title {
@@ -74,4 +90,50 @@
 
 .signOut:hover {
   background: rgba(255, 255, 255, 0.12);
+}
+
+.menuBackdrop {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .menuButton {
+    display: inline-flex;
+  }
+
+  .nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    inset-inline-start: 0;
+    flex-direction: column;
+    gap: 0;
+    background: var(--undpds-color-blue-600);
+    border-bottom: 4px solid var(--undpds-color-red);
+    padding: var(--undpds-spacing-04);
+    min-width: 220px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    z-index: 200;
+  }
+
+  .nav.navOpen {
+    display: flex;
+  }
+
+  .navLink {
+    padding: 8px 12px;
+    font-size: 0.9375rem;
+  }
+
+  .email {
+    display: none;
+  }
+
+  .menuBackdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: transparent;
+    z-index: 150;
+  }
 }
