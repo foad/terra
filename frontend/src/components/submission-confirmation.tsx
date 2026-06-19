@@ -6,7 +6,6 @@ import {
   Check,
   Shield,
   Share2,
-  Map as MapIcon,
 } from "lucide-react";
 import { latLngToCell } from "h3-js";
 import { OpenLocationCode } from "open-location-code";
@@ -181,15 +180,6 @@ export const SubmissionConfirmation = ({
             : t("confirmation.areaCount", { count: areaCount })}
         </p>
       )}
-
-      <button
-        type="button"
-        className={styles.viewMapButton}
-        onClick={handleComplete}
-      >
-        <MapIcon size={16} />
-        {t("confirmation.viewMap")}
-      </button>
 
       {plusCode && (
         <div className={styles.plusCode}>
