@@ -70,21 +70,21 @@ export const DamageClassification = ({
                 <div className={styles.cardDescription}>
                   {t(option.descKey)}
                 </div>
+                {isAiSuggested && aiConfidence != null && (
+                  <div className={styles.aiBadge}>
+                    {t("common.aiConfidence", {
+                      confidence: Math.round(aiConfidence * 100),
+                    })}
+                    <span
+                      className={styles.aiInfoIcon}
+                      title={t("common.aiConfidenceTooltip")}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Info size={10} />
+                    </span>
+                  </div>
+                )}
               </div>
-              {isAiSuggested && aiConfidence != null && (
-                <div className={styles.aiBadge}>
-                  {t("common.aiConfidence", {
-                    confidence: Math.round(aiConfidence * 100),
-                  })}
-                  <span
-                    className={styles.aiInfoIcon}
-                    title={t("common.aiConfidenceTooltip")}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Info size={10} />
-                  </span>
-                </div>
-              )}
             </button>
           );
         })}
