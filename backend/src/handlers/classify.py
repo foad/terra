@@ -46,7 +46,16 @@ Infrastructure types (one or more may apply):
 - community: schools, hospitals, community halls, public toilets
 - publicSpaces: stadiums, playgrounds, religious buildings
 
-Provide confidence scores from 0.0 (uncertain) to 1.0 (certain). Always call the tool — do not respond in plain text."""
+Confidence calibration — use the full 0.0-1.0 range based on what the photo actually
+shows. Treat each axis (damage_level, infrastructure_type) independently, because
+one can be obvious while the other is not.
+
+- 0.90+ when the answer is visually unambiguous and the relevant features are clearly framed.
+- 0.60-0.85 when the answer is visible but partially obscured, distant, taken at a poor angle, or shows only a fragment.
+- 0.30-0.55 when you are inferring from limited evidence (e.g. only a wall fragment is visible, building type can only be guessed from context).
+- Below 0.30 when the photo does not show what is being asked about — for example, a portrait or face, an interior shot with no structural cues, a landscape with no buildings, a blurred or empty image, or a building so intact and ordinary that no damage state can be inferred. Pick the most plausible enum value but mark confidence accordingly low so the human reporter overrides.
+
+Always call the tool — do not respond in plain text."""
 
 CLASSIFY_TOOL = {
     "toolSpec": {
@@ -148,6 +157,7 @@ def classify_photo(body: dict | None) -> dict:
         logger.error("bedrock returned invalid classification", extra={"input": result})
         raise BedrockFailedError("Invalid classification structure")
 
+    logger.info("classification", extra={"input": result, "stop_reason": response.get("stopReason")})
     return result
 
 
