@@ -210,7 +210,8 @@ class TestDeleteE2eReports:
         result = delete_e2e_reports("device-e2e-w3-")
 
         assert result == {"prefix": "device-e2e-w3-", "deleted": 4}
-        mock_cursor.execute.assert_called_once_with(
+        assert mock_cursor.execute.call_count == 2
+        mock_cursor.execute.assert_any_call(
             "DELETE FROM reports WHERE device_id LIKE %s",
             ("device-e2e-w3-%",),
         )
