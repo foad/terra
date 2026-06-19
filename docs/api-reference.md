@@ -349,12 +349,13 @@ Submit a damage assessment report.
 {
   "id": "59a7cb76-0b9f-4f45-a91d-e237a3760a31",
   "status": "created",
-  "area_report_count": 12,
   "version_chain_id": "a34b724b-c715-4e37-a81c-8b5ca7ef4d25",
   "duplicate_status": null,
   "related_report_id": null
 }
 ```
+
+The area-count (reports near this location) is fetched separately by the confirmation screen via `GET /reports/coverage?h3=...&limit=1` -> `total`.
 
 `duplicate_status` is one of `null`, `"possible_duplicate"` (another report exists within 15 m and 2 min), or `"reassessment"` (an earlier report exists for the same `building_id`). `related_report_id` references the matched earlier report when `duplicate_status` is non-null.
 

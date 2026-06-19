@@ -266,19 +266,11 @@ def create_report(body: dict) -> dict:
             insert_data,
         )
 
-        # Get area report count
-        cur.execute(
-            "SELECT COUNT(*) FROM reports WHERE h3_r8 = %s",
-            (h3_r8,),
-        )
-        area_count = cur.fetchone()[0]
-
     conn.commit()
 
     return {
         "id": report_id,
         "status": "created",
-        "area_report_count": area_count,
         "version_chain_id": str(version_chain_id),
         "duplicate_status": duplicate_check["duplicate_status"],
         "related_report_id": duplicate_check["related_report_id"],
