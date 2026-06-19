@@ -89,8 +89,8 @@ function TerraMark({ size = 36 }: { size?: number }) {
   );
 }
 
-// Same mark as a static string for the printed poster (no React there).
-const MARK_SVG = `<svg width="52" height="52" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="32" cy="32" r="29" stroke="#0468b1" stroke-width="3" stroke-dasharray="4 5" opacity="0.55"/><path d="${PIN_PATH}" fill="#0468b1"/><circle cx="32" cy="27" r="5" fill="#fff"/></svg>`;
+// White-on-blue variant of the mark for the poster's solid header band.
+const MARK_SVG_LIGHT = `<svg width="52" height="52" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="32" cy="32" r="29" stroke="#fff" stroke-width="3" stroke-dasharray="4 5" opacity="0.7"/><path d="${PIN_PATH}" fill="#fff"/><circle cx="32" cy="27" r="5" fill="#0468b1"/></svg>`;
 
 // Trust signals + the three-step flow for the printed poster. English on the
 // poster body; the multilingual scan line below carries all 7 languages.
@@ -207,9 +207,13 @@ export function ActivationKitModal({
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 3px solid #0468b1;
-    padding-bottom: 18px;
-    margin-bottom: 28px;
+    background: #0468b1;
+    color: #fff;
+    /* Bleed the band to the page edges over the body padding. */
+    margin: -48px -56px 30px;
+    padding: 26px 56px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   .brand { display: flex; align-items: center; gap: 14px; }
   .brand svg { display: block; flex: none; }
@@ -217,7 +221,7 @@ export function ActivationKitModal({
     font-size: 2rem;
     font-weight: 900;
     letter-spacing: 0.10em;
-    color: #0468b1;
+    color: #fff;
     line-height: 1;
   }
   .wordmark small {
@@ -225,13 +229,13 @@ export function ActivationKitModal({
     font-size: 0.62rem;
     font-weight: 600;
     letter-spacing: 0.03em;
-    color: #666;
+    color: rgba(255, 255, 255, 0.82);
     margin-top: 4px;
   }
   .attribution {
     text-align: right;
     font-size: 0.72rem;
-    color: #777;
+    color: rgba(255, 255, 255, 0.85);
     line-height: 1.5;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -350,7 +354,7 @@ export function ActivationKitModal({
 <body>
   <div class="top-bar">
     <div class="brand">
-      ${MARK_SVG}
+      ${MARK_SVG_LIGHT}
       <span class="wordmark">TERRA<small>Tool for Early Reporting &amp; Rapid Assessment</small></span>
     </div>
     <span class="attribution">Crisis damage<br/>assessment<br/>· Built for UNDP RAPIDA ·</span>
