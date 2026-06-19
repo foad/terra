@@ -191,7 +191,6 @@
   },
   "coverage": {
     "ring": "{{assessed}} of {{total}} buildings assessed",
-    "ringArea": "{{assessed}} of {{total}} in selected area",
     "allAssessed": "All buildings assessed"
   }
 }

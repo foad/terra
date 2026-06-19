@@ -136,6 +136,7 @@
     "shareTitle": "帮助评估您所在地区的损失",
     "shareText": "我刚刚提交了一份损失报告。请通过提交您的报告来提供帮助——只需不到2分钟。",
     "shareTextWithCrisis": "我刚刚为{{crisisName}}提交了一份损失报告。请通过提交您的报告来提供帮助——只需不到2分钟。",
+    "viewMap": "查看您的社区",
     "submitAnother": "提交另一份报告",
     "followUpHeading": "您在这里时有一个快速问题：",
     "followUpHeading_plural": "您在这里时有 {{count}} 个快速问题：",
@@ -185,6 +186,7 @@
     "layerCrisis": "危机区域"
   },
   "coverage": {
-    "unassessed_other": "附近 {{count}} 栋建筑尚未评估"
+    "ring": "已评估 {{assessed}}/{{total}} 栋建筑",
+    "allAssessed": "所有建筑已评估"
   }
 }

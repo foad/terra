@@ -817,7 +817,7 @@ export const DashboardMap = ({
         style={{ display: "none" }}
       />
 
-      {footprintCount !== null && footprintCount > 0 && (
+      {footprintCount !== null && footprintCount > 0 && drawMode === "idle" && (
         <div className={styles.coverageCard}>
           <CoverageRing
             assessed={assessedCount}
@@ -825,15 +825,10 @@ export const DashboardMap = ({
             label={
               assessedCount >= footprintCount
                 ? t("coverage.allAssessed")
-                : drawMode === "active"
-                  ? t("coverage.ringArea", {
-                      assessed: assessedCount,
-                      total: footprintCount,
-                    })
-                  : t("coverage.ring", {
-                      assessed: assessedCount,
-                      total: footprintCount,
-                    })
+                : t("coverage.ring", {
+                    assessed: assessedCount,
+                    total: footprintCount,
+                  })
             }
           />
         </div>

@@ -138,6 +138,7 @@
     "shareTitle": "Ayude a evaluar los daños en su área",
     "shareText": "Acabo de enviar un informe de daños. Por favor ayude enviando el suyo — toma menos de 2 minutos.",
     "shareTextWithCrisis": "Acabo de enviar un informe de daños para {{crisisName}}. Por favor ayude enviando el suyo — toma menos de 2 minutos.",
+    "viewMap": "Ver tu barrio",
     "submitAnother": "Enviar otro informe",
     "followUpHeading": "Una pregunta rápida mientras está aquí:",
     "followUpHeading_plural": "{{count}} preguntas rápidas mientras está aquí:",
@@ -189,7 +190,7 @@
     "layerCrisis": "Zona de crisis"
   },
   "coverage": {
-    "unassessed_one": "{{count}} edificio cercano sin evaluar",
-    "unassessed_other": "{{count}} edificios cercanos sin evaluar"
+    "ring": "{{assessed}} de {{total}} edificios evaluados",
+    "allAssessed": "Todos los edificios evaluados"
   }
 }
