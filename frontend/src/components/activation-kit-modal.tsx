@@ -58,6 +58,64 @@ const POSTER_INSTRUCTIONS: Record<Lang, string> = {
   TR: "Bölgenizdeki hasarı bildirmek için tarayın",
 };
 
+// Coverage-ring + map-pin mark (echoes the #234 coverage-ring identity).
+// Kept as inline SVG so the kit carries no external logo asset dependency,
+// and we deliberately avoid the UN/UNDP emblem (protected; implies an
+// endorsement we don't have) — see #252.
+const PIN_PATH =
+  "M32 14c-7.2 0-13 5.7-13 12.8 0 9.1 11.4 20.4 12.3 21.3a1 1 0 0 0 1.4 0c.9-.9 12.3-12.2 12.3-21.3C45 19.7 39.2 14 32 14z";
+
+function TerraMark({ size = 36 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 64 64"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle
+        cx="32"
+        cy="32"
+        r="29"
+        stroke="#0468b1"
+        strokeWidth="3"
+        strokeDasharray="4 5"
+        opacity="0.55"
+      />
+      <path d={PIN_PATH} fill="#0468b1" />
+      <circle cx="32" cy="27" r="5" fill="#fff" />
+    </svg>
+  );
+}
+
+// Same mark as a static string for the printed poster (no React there).
+const MARK_SVG = `<svg width="52" height="52" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="32" cy="32" r="29" stroke="#0468b1" stroke-width="3" stroke-dasharray="4 5" opacity="0.55"/><path d="${PIN_PATH}" fill="#0468b1"/><circle cx="32" cy="27" r="5" fill="#fff"/></svg>`;
+
+// Trust signals + the three-step flow for the printed poster. English on the
+// poster body; the multilingual scan line below carries all 7 languages.
+const TRUST_ITEMS = [
+  ["✓", "Free"],
+  ["📲", "No app needed"],
+  ["🕶️", "Anonymous"],
+  ["✈️", "Works offline"],
+];
+
+const STEP_ITEMS = [
+  [
+    `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0468b1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="4"/></svg>`,
+    "Take a photo of the damage",
+  ],
+  [
+    `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0468b1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
+    "Pick the building on the map",
+  ],
+  [
+    `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0468b1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+    "Answer a few quick questions",
+  ],
+];
+
 function escapeHtml(str: string): string {
   return str
     .replace(/&/g, "&amp;")
@@ -118,9 +176,19 @@ export function ActivationKitModal({
     const instructions = (Object.entries(POSTER_INSTRUCTIONS) as [Lang, string][])
       .map(([lang, text]) => {
         const { bcp47, dir } = LANG_META[lang];
-        return `<p lang="${bcp47}" dir="${dir}">${escapeHtml(text)}</p>`;
+        return `<span lang="${bcp47}" dir="${dir}">${escapeHtml(text)}</span>`;
       })
       .join("");
+
+    const trust = TRUST_ITEMS.map(
+      ([icon, label]) =>
+        `<div><span>${icon}</span>${escapeHtml(label)}</div>`,
+    ).join("");
+
+    const steps = STEP_ITEMS.map(
+      ([icon, label], i) =>
+        `<div class="step"><div class="ico">${icon}</div><div class="n">STEP ${i + 1}</div><div class="t">${escapeHtml(label)}</div></div>`,
+    ).join('<div class="step-arrow">&rarr;</div>');
 
     const html = `<!DOCTYPE html>
 <html lang="en">
@@ -140,24 +208,37 @@ export function ActivationKitModal({
     align-items: center;
     justify-content: space-between;
     border-bottom: 3px solid #0468b1;
-    padding-bottom: 16px;
+    padding-bottom: 18px;
     margin-bottom: 28px;
   }
-  .terra-name {
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand svg { display: block; flex: none; }
+  .wordmark {
     font-size: 2rem;
     font-weight: 900;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.10em;
     color: #0468b1;
+    line-height: 1;
   }
-  .undp-label {
-    font-size: 0.75rem;
+  .wordmark small {
+    display: block;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
     color: #666;
+    margin-top: 4px;
+  }
+  .attribution {
+    text-align: right;
+    font-size: 0.72rem;
+    color: #777;
+    line-height: 1.5;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
   }
   .crisis-name {
     font-size: 1.75rem;
-    font-weight: 700;
+    font-weight: 800;
     margin-bottom: 4px;
   }
   .crisis-type {
@@ -165,39 +246,100 @@ export function ActivationKitModal({
     color: #555;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin-bottom: 36px;
   }
+  .trust {
+    display: flex;
+    margin: 24px 0 30px;
+    border: 1px solid #e3e3e3;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .trust div {
+    flex: 1;
+    text-align: center;
+    padding: 12px 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #2c2c2c;
+    border-right: 1px solid #e3e3e3;
+  }
+  .trust div:last-child { border-right: none; }
+  .trust div span { display: block; font-size: 1.05rem; margin-bottom: 3px; }
   .qr-section {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 0 auto 32px;
+    margin: 0 auto;
     width: fit-content;
   }
-  .qr-section svg {
+  .qr-frame {
+    border: 3px solid #0468b1;
+    border-radius: 16px;
+    padding: 14px;
+  }
+  .qr-frame svg {
     display: block;
     width: 200px !important;
     height: 200px !important;
   }
-  .instructions {
-    margin-top: 16px;
-    text-align: center;
-    font-size: 0.8rem;
-    color: #444;
-    line-height: 1.6;
+  .scan-cta {
+    margin-top: 14px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111;
   }
+  .steps {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 30px auto 26px;
+    max-width: 540px;
+  }
+  .step { flex: 1; text-align: center; }
+  .step .ico {
+    width: 54px;
+    height: 54px;
+    margin: 0 auto 10px;
+    border-radius: 50%;
+    background: #eef5fb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step .n {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #0468b1;
+    letter-spacing: 0.08em;
+  }
+  .step .t { font-size: 0.82rem; color: #333; margin-top: 3px; line-height: 1.35; }
+  .step-arrow { color: #bcd3e6; align-self: center; }
+  .instructions {
+    text-align: center;
+    font-size: 0.78rem;
+    color: #666;
+    line-height: 1.9;
+    border-top: 1px solid #e3e3e3;
+    padding-top: 18px;
+  }
+  .instructions span { white-space: nowrap; }
+  .instructions span::after { content: "  •  "; color: #ccc; }
+  .instructions span:last-child::after { content: ""; }
   .url-box {
-    margin-top: 24px;
-    border: 1px solid #ccc;
+    margin: 18px auto 0;
+    max-width: 440px;
+    border: 1px dashed #bbb;
+    border-radius: 8px;
     padding: 10px 16px;
     font-size: 0.85rem;
-    color: #333;
+    color: #444;
     text-align: center;
     word-break: break-all;
   }
   .footer {
-    margin-top: 48px;
-    border-top: 1px solid #ddd;
+    margin-top: 32px;
+    border-top: 1px solid #e3e3e3;
     padding-top: 14px;
     font-size: 0.7rem;
     color: #999;
@@ -207,17 +349,23 @@ export function ActivationKitModal({
 </head>
 <body>
   <div class="top-bar">
-    <span class="terra-name">TERRA</span>
-    <span class="undp-label">Crisis Damage Assessment · UNDP</span>
+    <div class="brand">
+      ${MARK_SVG}
+      <span class="wordmark">TERRA<small>Tool for Early Reporting &amp; Rapid Assessment</small></span>
+    </div>
+    <span class="attribution">Crisis damage<br/>assessment<br/>· Built for UNDP RAPIDA ·</span>
   </div>
   <div class="crisis-name">${escapeHtml(name)}</div>
   <div class="crisis-type">${escapeHtml(crisisType)}</div>
+  <div class="trust">${trust}</div>
   <div class="qr-section">
-    ${svgString}
-    <div class="instructions">${instructions}</div>
+    <div class="qr-frame">${svgString}</div>
+    <div class="scan-cta">Scan to report damage near you</div>
   </div>
+  <div class="steps">${steps}</div>
+  <div class="instructions">${instructions}</div>
   <div class="url-box">${url}</div>
-  <div class="footer">TERRA · Tool for Early Reporting and Rapid Assessment</div>
+  <div class="footer">TERRA · Tool for Early Reporting and Rapid Assessment · Less than 2 minutes per report</div>
   <script>window.addEventListener('load', function() { window.print(); });</script>
 </body>
 </html>`;
@@ -242,11 +390,14 @@ export function ActivationKitModal({
         aria-labelledby={titleId}
       >
         <div className={styles.modalHeader}>
-          <div>
-            <h2 id={titleId} className={styles.modalTitle}>Community Activation Kit</h2>
-            <p className={styles.modalSubtitle}>
-              {name} · {crisisType}
-            </p>
+          <div className={styles.titleBlock}>
+            <TerraMark size={36} />
+            <div>
+              <h2 id={titleId} className={styles.modalTitle}>Community Activation Kit</h2>
+              <p className={styles.modalSubtitle}>
+                {name} · {crisisType}
+              </p>
+            </div>
           </div>
           <button
             type="button"

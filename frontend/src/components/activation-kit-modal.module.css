@@ -28,6 +28,16 @@
   gap: var(--undpds-spacing-04);
 }
 
+.titleBlock {
+  display: flex;
+  align-items: center;
+  gap: var(--undpds-spacing-03);
+}
+
+.titleBlock svg {
+  flex: none;
+}
+
 .modalTitle {
   font-size: 1.125rem;
   font-weight: 700;
