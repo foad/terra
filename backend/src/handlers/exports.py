@@ -17,7 +17,7 @@ logger = Logger()
 s3 = boto3.client("s3")
 
 
-EXPORT_ROW_CEILING = 1_000_000 # Beyond 1M rows we'd want multipart streaming, out of scope here
+EXPORT_ROW_CEILING = 1_000_000  # Beyond 1M rows we'd want multipart streaming, out of scope here
 DOWNLOAD_URL_EXPIRY_SECONDS = 3600
 
 CSV_HEADER = [
@@ -122,9 +122,7 @@ def export_reports(params: dict) -> dict:
         Params={"Bucket": bucket, "Key": key},
         ExpiresIn=DOWNLOAD_URL_EXPIRY_SECONDS,
     )
-    expires_at = (
-        datetime.now(UTC) + timedelta(seconds=DOWNLOAD_URL_EXPIRY_SECONDS)
-    ).isoformat()
+    expires_at = (datetime.now(UTC) + timedelta(seconds=DOWNLOAD_URL_EXPIRY_SECONDS)).isoformat()
 
     return {
         "download_url": download_url,
@@ -139,27 +137,29 @@ def _to_csv(rows: list) -> str:
     writer = csv.writer(buf)
     writer.writerow(CSV_HEADER)
     for r in rows:
-        writer.writerow([
-            str(r[0]),
-            r[19].isoformat() if r[19] else "",
-            r[2],
-            r[1],
-            r[3] or "",
-            r[4],
-            "|".join(r[9] or []),
-            r[10] or "",
-            r[11] or "",
-            "|".join(r[12] or []),
-            "" if r[13] is None else ("true" if r[13] else "false"),
-            r[14] or "",
-            r[15] or "",
-            "|".join(r[16] or []),
-            r[5] or "",
-            "" if r[6] is None else r[6],
-            _s3_key(r[7]) or "",
-            str(r[17]),
-            "true" if r[18] else "false",
-        ])
+        writer.writerow(
+            [
+                str(r[0]),
+                r[19].isoformat() if r[19] else "",
+                r[2],
+                r[1],
+                r[3] or "",
+                r[4],
+                "|".join(r[9] or []),
+                r[10] or "",
+                r[11] or "",
+                "|".join(r[12] or []),
+                "" if r[13] is None else ("true" if r[13] else "false"),
+                r[14] or "",
+                r[15] or "",
+                "|".join(r[16] or []),
+                r[5] or "",
+                "" if r[6] is None else r[6],
+                _s3_key(r[7]) or "",
+                str(r[17]),
+                "true" if r[18] else "false",
+            ]
+        )
     return buf.getvalue()
 
 
