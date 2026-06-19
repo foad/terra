@@ -239,7 +239,7 @@ const DashboardPage = () => {
             className={styles.statDot}
             style={{ background: DAMAGE_COLORS.complete }}
           />
-          <span className={styles.statValue}>
+          <span className={styles.statValue} data-testid="stat-complete">
             {loading ? "—" : stats.complete}
           </span>
           <span className={styles.statLabel}>
@@ -251,7 +251,7 @@ const DashboardPage = () => {
             className={styles.statDot}
             style={{ background: DAMAGE_COLORS.partial }}
           />
-          <span className={styles.statValue}>
+          <span className={styles.statValue} data-testid="stat-partial">
             {loading ? "—" : stats.partial}
           </span>
           <span className={styles.statLabel}>
@@ -263,7 +263,7 @@ const DashboardPage = () => {
             className={styles.statDot}
             style={{ background: DAMAGE_COLORS.minimal }}
           />
-          <span className={styles.statValue}>
+          <span className={styles.statValue} data-testid="stat-minimal">
             {loading ? "—" : stats.minimal}
           </span>
           <span className={styles.statLabel}>
