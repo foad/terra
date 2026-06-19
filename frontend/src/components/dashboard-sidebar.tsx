@@ -6,6 +6,7 @@ import {
   Loader2,
   X,
   PenLine,
+  PanelLeftClose,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useAuth } from "react-oidc-context";
@@ -108,6 +109,7 @@ interface DashboardSidebarProps {
   onClearSelection: () => void;
   polygonActive?: boolean;
   filteredReports?: ReportFeature[];
+  onCollapse: () => void;
 }
 
 export const DashboardSidebar = ({
@@ -119,6 +121,7 @@ export const DashboardSidebar = ({
   onClearSelection,
   polygonActive = false,
   filteredReports = [],
+  onCollapse,
 }: DashboardSidebarProps) => {
   const toggleDamageLevel = (level: string) => {
     const updated = filters.damageLevel.includes(level)
@@ -247,23 +250,33 @@ export const DashboardSidebar = ({
           )}
           <div className={styles.filtersHeader}>
             <h2 className={styles.filtersTitle}>Filters</h2>
-            {hasActiveFilters && (
+            <div className={styles.headerActions}>
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  className={styles.clearButton}
+                  onClick={() =>
+                    onFiltersChange({
+                      damageLevel: [],
+                      infrastructureType: [],
+                      crisisNature: [],
+                      from: "",
+                      to: "",
+                    })
+                  }
+                >
+                  Clear all
+                </button>
+              )}
               <button
                 type="button"
-                className={styles.clearButton}
-                onClick={() =>
-                  onFiltersChange({
-                    damageLevel: [],
-                    infrastructureType: [],
-                    crisisNature: [],
-                    from: "",
-                    to: "",
-                  })
-                }
+                className={styles.collapseButton}
+                onClick={onCollapse}
+                aria-label="Collapse sidebar"
               >
-                Clear all
+                <PanelLeftClose size={18} />
               </button>
-            )}
+            </div>
           </div>
 
           <div className={styles.filterGroup}>
