@@ -38,7 +38,7 @@ resource "aws_db_instance" "main" {
   identifier                  = "${var.project_name}-db"
   engine                      = "postgres"
   engine_version              = "17.10"
-  instance_class              = "db.t4g.medium"
+  instance_class              = "db.t4g.micro"
   allocated_storage           = 20
   storage_type                = "gp3"
   storage_encrypted           = true

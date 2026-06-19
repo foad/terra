@@ -6,7 +6,7 @@ sequenceDiagram
     participant API as Lambda API
     participant S3 as S3 (Photos)
     participant AI as Bedrock (AI)
-    participant DB as Supabase (PostGIS)
+    participant DB as RDS (PostGIS)
     participant IDB as IndexedDB
     participant LS as localStorage
 

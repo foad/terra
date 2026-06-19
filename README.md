@@ -63,7 +63,7 @@ terraform plan
 terraform apply
 ```
 
-Terraform manages AWS resources (Lambda, API Gateway, S3, CloudFront, IAM, Cognito). Database is managed separately via Supabase.
+Terraform manages AWS resources (Lambda, API Gateway, S3, CloudFront, IAM, Cognito, RDS).
 
 **Note:** `terraform apply` is manual only — CI runs `terraform validate` on PRs but does not apply changes.
 
@@ -79,7 +79,7 @@ Terraform manages AWS resources (Lambda, API Gateway, S3, CloudFront, IAM, Cogni
 | Maps | MapLibre GL JS + PMTiles |
 | Building footprints | VIDA combined dataset (Google+Microsoft+OSM) |
 | Backend | Python + AWS Lambda Powertools |
-| Database | Supabase (PostgreSQL + PostGIS) |
+| Database | AWS RDS (PostgreSQL + PostGIS) |
 | Storage | AWS S3 |
 | CDN | AWS CloudFront |
 | AI | AWS Bedrock |
