@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -8,6 +8,7 @@ import { TerraDrawMapLibreGLAdapter } from "terra-draw-maplibre-gl-adapter";
 import type { ReportFeature } from "../pages/dashboard";
 import { useApi } from "../hooks/use-api";
 import { DAMAGE_COLORS } from "./damage-colors";
+import { CoverageRing } from "./coverage-ring";
 import styles from "./dashboard-map.module.css";
 
 function escapeHtml(str: string): string {
@@ -60,6 +61,16 @@ export const DashboardMap = ({
   const [showBuildings, setShowBuildings] = useState(true);
   const [showCrisis, setShowCrisis] = useState(true);
   const [basemap, setBasemap] = useState<"street" | "satellite">("street");
+  const [footprintCount, setFootprintCount] = useState<number | null>(null);
+
+  const assessedCount = useMemo(() => {
+    const seen = new Set<string>();
+    for (const r of reports) {
+      const bid = r.properties.building_id;
+      if (bid) seen.add(bid);
+    }
+    return seen.size;
+  }, [reports]);
 
   useEffect(() => {
     onReportSelectRef.current = onReportSelect;
@@ -502,9 +513,31 @@ export const DashboardMap = ({
       btn?.click();
     });
 
+    // Count visible building footprints on settle to derive the coverage denominator.
+    let footprintTimer: ReturnType<typeof setTimeout> | null = null;
+    map.on("idle", () => {
+      if (map.getZoom() < 14) {
+        setFootprintCount(null);
+        return;
+      }
+      if (footprintTimer) clearTimeout(footprintTimer);
+      footprintTimer = setTimeout(() => {
+        const rendered = map.queryRenderedFeatures(undefined, {
+          layers: ["building-footprints"],
+        });
+        const unique = new Set(
+          rendered
+            .map((f) => f.properties?.geohash as string | undefined)
+            .filter(Boolean),
+        );
+        setFootprintCount(unique.size > 0 ? unique.size : null);
+      }, 200);
+    });
+
     mapRef.current = map;
 
     return () => {
+      if (footprintTimer) clearTimeout(footprintTimer);
       map.remove();
       maplibregl.removeProtocol("pmtiles");
       mapRef.current = null;
@@ -783,6 +816,23 @@ export const DashboardMap = ({
         className={styles.tooltip}
         style={{ display: "none" }}
       />
+
+      {footprintCount !== null && footprintCount > 0 && drawMode === "idle" && (
+        <div className={styles.coverageCard}>
+          <CoverageRing
+            assessed={assessedCount}
+            total={footprintCount}
+            label={
+              assessedCount >= footprintCount
+                ? t("coverage.allAssessed")
+                : t("coverage.ring", {
+                    assessed: assessedCount,
+                    total: footprintCount,
+                  })
+            }
+          />
+        </div>
+      )}
 
       <div className={styles.basemapToggle}>
         {(["street", "satellite"] as const).map((mode) => (
