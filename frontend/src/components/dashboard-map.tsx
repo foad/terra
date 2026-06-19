@@ -862,9 +862,8 @@ export const DashboardMap = ({
     });
 
     if ((globalThis as { __E2E_PREFIX__?: string }).__E2E_PREFIX__) {
-      (
-        globalThis as { __APPLY_POLYGON__?: (p: GeoJSON.Polygon) => void }
-      ).__APPLY_POLYGON__ = applyPolygon;
+      // eslint-disable-next-line react-hooks/immutability
+      (globalThis as { __APPLY_POLYGON__?: (p: GeoJSON.Polygon) => void }).__APPLY_POLYGON__ = applyPolygon;
     }
   };
 

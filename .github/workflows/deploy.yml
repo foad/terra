@@ -175,6 +175,8 @@ jobs:
         run: npx playwright test
         env:
           E2E_BASE_URL: https://terra.foad.dev
+          E2E_USERNAME: ${{ secrets.E2E_USERNAME }}
+          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
 
       - name: Upload test report
         if: always()
