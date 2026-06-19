@@ -102,11 +102,10 @@ class TestCreateReport:
     def test_creates_report(self, mock_get_conn):
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
-        # _find_version_chain (building lookup) → None (new chain)
-        # duplicate building check → None (no reassessment)
-        # duplicate location check → None (no duplicate)
-        # area count → 1
-        mock_cursor.fetchone.side_effect = [None, None, None, (1,)]
+        # _find_version_chain (building lookup) -> None (new chain)
+        # duplicate building check -> None (no reassessment)
+        # duplicate location check -> None (no duplicate)
+        mock_cursor.fetchone.side_effect = [None, None, None]
         mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
         mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
         mock_get_conn.return_value = mock_conn
@@ -115,7 +114,6 @@ class TestCreateReport:
 
         assert result["status"] == "created"
         assert "id" in result
-        assert "area_report_count" in result
         assert "version_chain_id" in result
         mock_conn.commit.assert_called_once()
 
@@ -138,11 +136,10 @@ class TestCreateReport:
     def test_includes_photo_url_when_key_provided(self, mock_get_conn):
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
-        # _find_version_chain (building lookup) → None (new chain)
-        # duplicate building check → None (no reassessment)
-        # duplicate location check → None (no duplicate)
-        # area count → 1
-        mock_cursor.fetchone.side_effect = [None, None, None, (1,)]
+        # _find_version_chain (building lookup) -> None (new chain)
+        # duplicate building check -> None (no reassessment)
+        # duplicate location check -> None (no duplicate)
+        mock_cursor.fetchone.side_effect = [None, None, None]
         mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
         mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
         mock_get_conn.return_value = mock_conn
@@ -153,7 +150,7 @@ class TestCreateReport:
         assert result["status"] == "created"
         # Verify the INSERT was called with photo_url containing the key.
         # Named placeholders mean params is now a dict, not a tuple.
-        insert_call = mock_cursor.execute.call_args_list[-2]
+        insert_call = mock_cursor.execute.call_args_list[-1]
         params = insert_call[0][1]
         assert photo_key in params["photo_url"]
 

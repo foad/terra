@@ -41,7 +41,7 @@ sequenceDiagram
     API->>DB: Find or create version chain (by building_id, fallback H3 r12)
     API->>DB: INSERT report (trigger flips previous versions to is_latest=false)
     API->>DB: SELECT area report count
-    API-->>U: { id, status: created \| duplicate, area_report_count, version_chain_id }
+    API-->>U: { id, status: created \| duplicate, version_chain_id }
     U->>IDB: Mark report synced
     U->>LS: Save survey answers for pre-seeding next report
 
