@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, type Page, type TestInfo } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -7,14 +7,60 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 export const TEST_PHOTO = join(__dirname, "fixtures", "test-photo.jpg");
 
+export function e2ePrefix(testInfo: TestInfo): string {
+  return `device-e2e-w${testInfo.workerIndex}-`;
+}
+
+const API_BASE = (process.env.VITE_API_URL ?? "").replace(/\/+$/, "");
+
+type ReportFixture = {
+  latitude: number;
+  longitude: number;
+  damage_level: "minimal" | "partial" | "complete";
+  infrastructure_type: string[];
+  crisis_nature: string[];
+  pressing_needs?: string[];
+};
+
+export async function postE2EReport(
+  prefix: string,
+  report: ReportFixture,
+): Promise<string> {
+  const res = await fetch(`${API_BASE}/reports`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      ...report,
+      device_id: `${prefix}${randomUUID()}`,
+    }),
+  });
+  if (!res.ok) throw new Error(`postE2EReport: ${res.status} ${await res.text()}`);
+  const body = (await res.json()) as { id: string };
+  return body.id;
+}
+
+export async function deleteE2EReports(prefix: string, token: string): Promise<number> {
+  const res = await fetch(
+    `${API_BASE}/reports/e2e?prefix=${encodeURIComponent(prefix)}`,
+    {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  );
+  if (!res.ok) throw new Error(`deleteE2EReports: ${res.status} ${await res.text()}`);
+  const body = (await res.json()) as { deleted: number };
+  return body.deleted;
+}
+
 /**
  * Stub everything except POST /reports so tests don't hit the real backend
  * Reports are tagged and ignored
  */
-export async function stubNonReportsApi(page: Page): Promise<void> {
-  await page.addInitScript(() => {
-    (globalThis as unknown as { __E2E__: boolean }).__E2E__ = true;
-  });
+export async function stubNonReportsApi(page: Page, testInfo: TestInfo): Promise<void> {
+  const prefix = e2ePrefix(testInfo);
+  await page.addInitScript((p) => {
+    (globalThis as unknown as { __E2E_PREFIX__: string }).__E2E_PREFIX__ = p;
+  }, prefix);
   await page.route("**/photos/upload", (route) =>
     route.fulfill({
       status: 200,
