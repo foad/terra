@@ -47,7 +47,8 @@
     "existingReportsMore_one": "+ ещё {{count}}",
     "existingReportsMore_few": "+ ещё {{count}}",
     "existingReportsMore_many": "+ ещё {{count}}",
-    "existingReportsMore_other": "+ ещё {{count}}"
+    "existingReportsMore_other": "+ ещё {{count}}",
+    "priorityHeading": "Здесь нужны фотографии"
   },
   "photo": {
     "title": "Сделать фото",
@@ -143,7 +144,6 @@
     "shareTitle": "Помогите оценить ущерб в вашем районе",
     "shareText": "Я только что отправил отчёт об ущербе. Пожалуйста, помогите, отправив свой — это займёт менее 2 минут.",
     "shareTextWithCrisis": "Я только что отправил отчёт об ущербе для {{crisisName}}. Пожалуйста, помогите, отправив свой — это займёт менее 2 минут.",
-    "viewMap": "Посмотреть свой район",
     "submitAnother": "Отправить ещё один отчёт",
     "followUpHeading": "Один быстрый вопрос, пока вы здесь:",
     "followUpHeading_plural": "{{count}} быстрых вопроса, пока вы здесь:",

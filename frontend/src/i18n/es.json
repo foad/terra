@@ -43,7 +43,8 @@
     "viewExisting": "Ver informes existentes",
     "hideExisting": "Ocultar informes existentes",
     "existingReportsMore_one": "+ {{count}} más",
-    "existingReportsMore_other": "+ {{count}} más"
+    "existingReportsMore_other": "+ {{count}} más",
+    "priorityHeading": "Fotos requeridas aquí"
   },
   "photo": {
     "title": "Tomar una foto",
@@ -139,7 +140,6 @@
     "shareTitle": "Ayude a evaluar los daños en su área",
     "shareText": "Acabo de enviar un informe de daños. Por favor ayude enviando el suyo — toma menos de 2 minutos.",
     "shareTextWithCrisis": "Acabo de enviar un informe de daños para {{crisisName}}. Por favor ayude enviando el suyo — toma menos de 2 minutos.",
-    "viewMap": "Ver tu barrio",
     "submitAnother": "Enviar otro informe",
     "followUpHeading": "Una pregunta rápida mientras está aquí:",
     "followUpHeading_plural": "{{count}} preguntas rápidas mientras está aquí:",

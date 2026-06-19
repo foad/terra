@@ -176,6 +176,7 @@ class TestQueryReports:
                 None,  # follow_up_responses
                 "partial", None, None, None,  # community_damage_level, analyst_damage_level, flag_status, flag_reason
                 None,  # infrastructure_description_en
+                False,  # priority_flag
             )
         ]
         mock_cursor.fetchone.return_value = (1,)
@@ -425,7 +426,7 @@ class TestQueryCoverage:
         from datetime import datetime, timezone
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
-        # SELECT id, lng, lat, building_id, damage_level, submitted_at
+        # SELECT id, lng, lat, building_id, damage_level, submitted_at, priority_flag
         mock_cursor.fetchall.return_value = [
             (
                 "report-id-1",
@@ -434,6 +435,7 @@ class TestQueryCoverage:
                 "u10k7d2q",
                 "partial",
                 datetime(2026, 4, 17, tzinfo=timezone.utc),
+                False,  # priority_flag
             )
         ]
         mock_cursor.fetchone.return_value = (1,)
@@ -464,6 +466,7 @@ class TestQueryCoverage:
             (
                 "report-id-1", 36.16, 36.2, "u10k7d2q", "partial",
                 datetime(2026, 4, 17, tzinfo=timezone.utc),
+                False,  # priority_flag
             )
         ]
         mock_cursor.fetchone.return_value = (1,)

@@ -103,9 +103,8 @@
 }
 
 .aiBadge {
-  position: absolute;
-  top: var(--undpds-spacing-03);
-  inset-inline-end: var(--undpds-spacing-03);
+  align-self: flex-start;
+  margin-top: var(--undpds-spacing-03);
   background: var(--undpds-color-blue-600);
   color: var(--undpds-color-white);
   font-size: 0.6875rem;

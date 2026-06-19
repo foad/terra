@@ -11,6 +11,13 @@
   animation: ringFadeIn 0.25s ease;
 }
 
+.ring_container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 @keyframes ringFadeIn {
   from {
     opacity: 0;
@@ -36,4 +43,16 @@
   color: #374151;
   line-height: 1.35;
   max-width: 110px;
+}
+
+.icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #94a3b8;
+}
+
+.icon_complete {
+  color: #14b8a6;
 }

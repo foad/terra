@@ -28,6 +28,7 @@ export interface SelectedBuilding {
   areaM2: number;
   source: string;
   geometry: GeoJSON.Geometry;
+  isPriority: boolean;
 }
 
 interface MapProps {
@@ -61,6 +62,7 @@ export const Map = ({
   const gpsPositionRef = useRef<[number, number] | null>(null);
   const onBuildingSelectRef = useRef(onBuildingSelect);
   const onManualPinRef = useRef(onManualPin);
+  const priorityBuildingIdsRef = useRef<Set<string>>(new Set());
   const [coverageCount, setCoverageCount] = useState<{
     assessed: number;
     total: number;
@@ -73,6 +75,7 @@ export const Map = ({
   useEffect(() => {
     onManualPinRef.current = onManualPin;
   }, [onManualPin]);
+
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -134,7 +137,7 @@ export const Map = ({
     map.on("load", () => {
       // Damage-level fill driven by feature-state set from /reports bbox fetch.
       // minzoom 16: buildings are too small to read fills at lower zoom.
-      // Outline is left at default for now — reserved for analyst priority flag (#46).
+      // Outline left at default — priority-flag amber border handled by building-priority-outline layer (#235).
       map.addLayer({
         id: "building-damage",
         type: "fill",
@@ -153,6 +156,27 @@ export const Map = ({
             "transparent",
           ],
           "fill-opacity": 0.7,
+        },
+      });
+
+      // Purple dashed outline for buildings the analyst has flagged as needing
+      // more photos (#235). Line width is 0 for unflagged buildings so the
+      // layer is effectively invisible without a separate filter.
+      map.addLayer({
+        id: "building-priority-outline",
+        type: "line",
+        source: "buildings",
+        "source-layer": BUILDINGS_SOURCE_LAYER,
+        minzoom: 16,
+        paint: {
+          "line-color": "#7c3aed",
+          "line-width": [
+            "case",
+            ["boolean", ["feature-state", "priority_flag"], false],
+            3,
+            0,
+          ],
+          "line-dasharray": [2, 1],
         },
       });
 
@@ -207,13 +231,15 @@ export const Map = ({
         features: [{ type: "Feature", geometry, properties: {} }],
       });
 
-      onBuildingSelectRef.current?.({
+      const buildingData = {
         buildingId: props.geohash,
         center,
         areaM2: props.area_in_meters ?? 0,
         source: props.bf_source ?? "",
         geometry,
-      });
+        isPriority: priorityBuildingIdsRef.current.has(props.geohash),
+      };
+      onBuildingSelectRef.current?.(buildingData);
     });
 
     // Drop a manual pin when clicking off any building — covers no-GPS and
@@ -270,16 +296,20 @@ export const Map = ({
       map.getCanvas().style.cursor = "";
     });
 
-    // Fetch reported buildings in the current viewport and apply feature-state
-    // so the damage-level fill layer colours the correct polygons.
+    // Fetch reported buildings + priority flags and apply feature-state.
+    // Two parallel requests: coverage (viewport bbox) for assessed buildings,
+    // and the full priority list for unassessed buildings the analyst has flagged.
     const fetchNearbyReports = async () => {
       if (map.getZoom() < 14) return;
       const b = map.getBounds();
       try {
-        const result = await api(
-          `/reports/coverage?west=${b.getWest()}&south=${b.getSouth()}&east=${b.getEast()}&north=${b.getNorth()}&limit=500`,
-        );
-        const features: ReportFeature[] = result?.features ?? [];
+        const [coverageResult, priorityResult] = await Promise.all([
+          api(`/reports/coverage?west=${b.getWest()}&south=${b.getSouth()}&east=${b.getEast()}&north=${b.getNorth()}&limit=500`),
+          api("/buildings/priority"),
+        ]);
+        const features: ReportFeature[] = coverageResult?.features ?? [];
+        const priorityIds: string[] = priorityResult?.building_ids ?? [];
+
         const seen = new Set<string>();
         for (const f of features) {
           const bid = f.properties?.building_id;
@@ -287,12 +317,17 @@ export const Map = ({
           if (!bid || !dl || seen.has(bid)) continue;
           seen.add(bid);
           map.setFeatureState(
-            {
-              source: "buildings",
-              sourceLayer: BUILDINGS_SOURCE_LAYER,
-              id: bid,
-            },
-            { damage_level: dl },
+            { source: "buildings", sourceLayer: BUILDINGS_SOURCE_LAYER, id: bid },
+            { damage_level: dl, priority_flag: f.properties?.priority_flag ?? false },
+          );
+        }
+        // Apply priority flag to unassessed buildings not covered above
+        priorityBuildingIdsRef.current = new Set(priorityIds);
+        for (const bid of priorityIds) {
+          if (seen.has(bid)) continue;
+          map.setFeatureState(
+            { source: "buildings", sourceLayer: BUILDINGS_SOURCE_LAYER, id: bid },
+            { priority_flag: true },
           );
         }
         setCoverageCount((prev) => ({
@@ -392,14 +427,23 @@ export const Map = ({
         for (const e of target) extend(e.region?.coordinates);
         // Store only the exact match — if the id was stale, leave ref null so
         // the gps-in-zone check returns false rather than testing a random zone.
-        pinnedCrisisRegionRef.current =
-          exactMatch ? (exactMatch.region as GeoJSON.Polygon) ?? null : null;
+        pinnedCrisisRegionRef.current = exactMatch
+          ? ((exactMatch.region as GeoJSON.Polygon) ?? null)
+          : null;
         // Fit to the crisis zone unless GPS already placed the user inside it.
         const gpsInZone =
-          pinnedCrisisId && gpsPositionRef.current && pinnedCrisisRegionRef.current
-            ? pointInPolygon(gpsPositionRef.current, pinnedCrisisRegionRef.current)
+          pinnedCrisisId &&
+          gpsPositionRef.current &&
+          pinnedCrisisRegionRef.current
+            ? pointInPolygon(
+                gpsPositionRef.current,
+                pinnedCrisisRegionRef.current,
+              )
             : false;
-        if (!bounds.isEmpty() && (!hasCenteredRef.current || (pinnedCrisisId && !gpsInZone))) {
+        if (
+          !bounds.isEmpty() &&
+          (!hasCenteredRef.current || (pinnedCrisisId && !gpsInZone))
+        ) {
           map.fitBounds(bounds, { padding: 60, animate: false });
           if (pinnedCrisisId && !gpsInZone) hasCenteredRef.current = true;
         }
@@ -428,7 +472,10 @@ export const Map = ({
       pinnedCrisisId && pinnedCrisisRegionRef.current
         ? pointInPolygon([longitude, latitude], pinnedCrisisRegionRef.current)
         : false;
-    if (!hasCenteredRef.current || (inCrisisZone && !hasFlownToUserRef.current)) {
+    if (
+      !hasCenteredRef.current ||
+      (inCrisisZone && !hasFlownToUserRef.current)
+    ) {
       map.flyTo({ center: [longitude, latitude], zoom: 18, speed: 4 });
       hasCenteredRef.current = true;
       hasFlownToUserRef.current = true;
@@ -477,18 +524,31 @@ export const Map = ({
           type="button"
           className={styles.locateButton}
           onClick={() => {
-            mapRef.current?.flyTo({ center: [longitude, latitude], zoom: 18, speed: 4 });
+            mapRef.current?.flyTo({
+              center: [longitude, latitude],
+              zoom: 18,
+              speed: 4,
+            });
           }}
           title="Go to my location"
           aria-label="Go to my location"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="8"/>
-            <line x1="12" y1="2" x2="12" y2="6"/>
-            <line x1="12" y1="18" x2="12" y2="22"/>
-            <line x1="2" y1="12" x2="6" y2="12"/>
-            <line x1="18" y1="12" x2="22" y2="12"/>
-            <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="8" />
+            <line x1="12" y1="2" x2="12" y2="6" />
+            <line x1="12" y1="18" x2="12" y2="22" />
+            <line x1="2" y1="12" x2="6" y2="12" />
+            <line x1="18" y1="12" x2="22" y2="12" />
+            <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
           </svg>
         </button>
       )}
@@ -512,7 +572,10 @@ export const Map = ({
   );
 };
 
-function pointInPolygon(point: [number, number], polygon: GeoJSON.Polygon): boolean {
+function pointInPolygon(
+  point: [number, number],
+  polygon: GeoJSON.Polygon,
+): boolean {
   const [x, y] = point;
   const ring = polygon.coordinates[0];
   if (!ring || ring.length < 3) return false;
@@ -520,7 +583,7 @@ function pointInPolygon(point: [number, number], polygon: GeoJSON.Polygon): bool
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
     const [xi, yi] = ring[i] as [number, number];
     const [xj, yj] = ring[j] as [number, number];
-    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
       inside = !inside;
     }
   }

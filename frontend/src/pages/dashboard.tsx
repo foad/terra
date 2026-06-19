@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { PanelLeftOpen } from "lucide-react";
 import { AppBar } from "../components/app-bar";
 import { DashboardMap } from "../components/dashboard-map";
 import { DAMAGE_COLORS } from "../components/damage-colors";
@@ -40,6 +41,7 @@ export interface ReportFeature {
     analyst_damage_level: string | null;
     flag_status: "suspect" | "invalid" | null;
     flag_reason: string | null;
+    priority_flag: boolean;
   };
 }
 
@@ -102,6 +104,7 @@ const DashboardPage = () => {
   const [polygonFilter, setPolygonFilter] = useState<GeoJSON.Polygon | null>(
     null,
   );
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), STATS_REFRESH_MS);
@@ -221,6 +224,16 @@ const DashboardPage = () => {
     <div className={styles.container}>
       <AppBar />
       <div className={styles.statsBar}>
+        {isSidebarCollapsed && (
+          <button
+            type="button"
+            className={styles.expandButton}
+            onClick={() => setIsSidebarCollapsed(false)}
+            aria-label="Expand sidebar"
+          >
+            <PanelLeftOpen size={18} />
+          </button>
+        )}
         <div className={styles.statItem}>
           <span
             className={styles.statDot}
@@ -266,16 +279,19 @@ const DashboardPage = () => {
         </div>
       </div>
       <div className={styles.body}>
-        <DashboardSidebar
-          filters={filters}
-          onFiltersChange={setFilters}
-          selectedReport={selectedReport}
-          history={history}
-          onShowDetails={setDetailsReport}
-          onClearSelection={() => setSelectedReport(null)}
-          polygonActive={polygonFilter !== null}
-          filteredReports={filteredReports}
-        />
+        {!isSidebarCollapsed && (
+          <DashboardSidebar
+            filters={filters}
+            onFiltersChange={setFilters}
+            selectedReport={selectedReport}
+            history={history}
+            onShowDetails={setDetailsReport}
+            onClearSelection={() => setSelectedReport(null)}
+            polygonActive={polygonFilter !== null}
+            filteredReports={filteredReports}
+            onCollapse={() => setIsSidebarCollapsed(true)}
+          />
+        )}
         <div className={styles.mapArea}>
           <div className={styles.mapWrapper}>
             <DashboardMap
@@ -299,7 +315,9 @@ const DashboardPage = () => {
           onClose={() => setDetailsReport(null)}
           onReportUpdated={(updated) => {
             setReports((prev) =>
-              prev.map((r) => (r.properties.id === updated.properties.id ? updated : r)),
+              prev.map((r) =>
+                r.properties.id === updated.properties.id ? updated : r,
+              ),
             );
             setDetailsReport(updated);
             setSelectedReport((prev) =>

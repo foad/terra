@@ -43,7 +43,8 @@
     "viewExisting": "View existing reports",
     "hideExisting": "Hide existing reports",
     "existingReportsMore_one": "+ {{count}} more",
-    "existingReportsMore_other": "+ {{count}} more"
+    "existingReportsMore_other": "+ {{count}} more",
+    "priorityHeading": "Photos needed here"
   },
   "photo": {
     "title": "Take a Photo",
@@ -139,7 +140,6 @@
     "shareTitle": "Help assess the damage in your area",
     "shareText": "I just submitted a damage report. Please help by submitting yours — it takes less than 2 minutes.",
     "shareTextWithCrisis": "I just submitted a damage report for {{crisisName}}. Please help by submitting yours — it takes less than 2 minutes.",
-    "viewMap": "See your neighbourhood",
     "submitAnother": "Submit Another Report",
     "followUpHeading": "One quick question while you're here:",
     "followUpHeading_plural": "{{count}} quick questions while you're here:",

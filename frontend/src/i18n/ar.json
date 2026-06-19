@@ -51,7 +51,8 @@
     "existingReportsMore_two": "+ تقريران آخران",
     "existingReportsMore_few": "+ {{count}} تقارير أخرى",
     "existingReportsMore_many": "+ {{count}} تقريرًا آخر",
-    "existingReportsMore_other": "+ {{count}} تقرير آخر"
+    "existingReportsMore_other": "+ {{count}} تقرير آخر",
+    "priorityHeading": "صور مطلوبة هنا"
   },
   "photo": {
     "title": "التقاط صورة",
@@ -147,7 +148,6 @@
     "shareTitle": "ساعد في تقييم الأضرار في منطقتك",
     "shareText": "لقد أرسلت للتو تقرير أضرار. يرجى المساعدة بإرسال تقريرك — يستغرق أقل من دقيقتين.",
     "shareTextWithCrisis": "لقد أرسلت للتو تقرير أضرار لـ{{crisisName}}. يرجى المساعدة بإرسال تقريرك — يستغرق أقل من دقيقتين.",
-    "viewMap": "شاهد حيّك",
     "submitAnother": "إرسال تقرير آخر",
     "followUpHeading": "سؤال سريع بينما أنت هنا:",
     "followUpHeading_plural": "{{count}} أسئلة سريعة بينما أنت هنا:",
