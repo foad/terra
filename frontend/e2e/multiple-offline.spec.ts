@@ -1,14 +1,14 @@
 import { expect, test } from "@playwright/test";
 import { completeReportFlow, stubNonReportsApi } from "./helpers";
 
-test("three offline reports all sync after reconnect", async ({ browser }) => {
+test("three offline reports all sync after reconnect", async ({ browser }, testInfo) => {
   const context = await browser.newContext({
     geolocation: { latitude: 36.2, longitude: 36.16 },
     permissions: ["geolocation"],
   });
   const page = await context.newPage();
 
-  await stubNonReportsApi(page);
+  await stubNonReportsApi(page, testInfo);
 
   let postCount = 0;
   await page.route("**/reports", async (route) => {

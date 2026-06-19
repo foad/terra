@@ -3,8 +3,8 @@ import { completeReportFlow, stubNonReportsApi } from "./helpers";
 
 test("POST /reports failure is retried until it succeeds", async ({
   page,
-}) => {
-  await stubNonReportsApi(page);
+}, testInfo) => {
+  await stubNonReportsApi(page, testInfo);
 
   // First POST /reports fails (network error). Subsequent ones succeed.
   let postCount = 0;

@@ -93,11 +93,10 @@ export const syncEngine = {
         await reportQueue.updateStatus(report.id, "syncing", { photoKey });
       }
 
-      const device_id =
-        typeof window !== "undefined" &&
-        (window as unknown as { __E2E__?: boolean }).__E2E__
-          ? `device-e2e-${crypto.randomUUID()}`
-          : undefined;
+      const e2ePrefix = (globalThis as { __E2E_PREFIX__?: string }).__E2E_PREFIX__;
+      const device_id = e2ePrefix
+        ? `${e2ePrefix}${crypto.randomUUID()}`
+        : undefined;
 
       const result = await api("/reports", {
         method: "POST",

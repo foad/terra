@@ -3,8 +3,8 @@ import { completeReportFlow, stubNonReportsApi } from "./helpers";
 
 test("response lost mid-flight, retry returns duplicate, no double-insert", async ({
   page,
-}) => {
-  await stubNonReportsApi(page);
+}, testInfo) => {
+  await stubNonReportsApi(page, testInfo);
 
   // Backend processed the first request but the response never reached the
   // client (simulated as an aborted connection). Subsequent retry with the
