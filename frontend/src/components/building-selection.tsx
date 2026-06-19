@@ -27,6 +27,11 @@ export const BuildingSelection = ({
             {building.center[1].toFixed(5)}, {building.center[0].toFixed(5)}
           </span>
         </div>
+        {building.isPriority && (
+          <div className={styles.priorityNotice}>
+            {t("location.priorityHeading")}
+          </div>
+        )}
       </div>
     );
   }
