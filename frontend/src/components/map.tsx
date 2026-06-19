@@ -61,6 +61,9 @@ export const Map = ({
   const gpsPositionRef = useRef<[number, number] | null>(null);
   const onBuildingSelectRef = useRef(onBuildingSelect);
   const onManualPinRef = useRef(onManualPin);
+  const priorityBuildingIdsRef = useRef<Set<string>>(new Set());
+  const priorityHeadingRef = useRef(t("location.priorityHeading"));
+  const prioritySubmitRef = useRef(t("common.submit"));
   const [coverageCount, setCoverageCount] = useState<{
     assessed: number;
     total: number;
@@ -73,6 +76,11 @@ export const Map = ({
   useEffect(() => {
     onManualPinRef.current = onManualPin;
   }, [onManualPin]);
+
+  useEffect(() => {
+    priorityHeadingRef.current = t("location.priorityHeading");
+    prioritySubmitRef.current = t("common.submit");
+  }, [t]);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -134,7 +142,7 @@ export const Map = ({
     map.on("load", () => {
       // Damage-level fill driven by feature-state set from /reports bbox fetch.
       // minzoom 16: buildings are too small to read fills at lower zoom.
-      // Outline is left at default for now — reserved for analyst priority flag (#46).
+      // Outline left at default — priority-flag amber border handled by building-priority-outline layer (#235).
       map.addLayer({
         id: "building-damage",
         type: "fill",
@@ -153,6 +161,27 @@ export const Map = ({
             "transparent",
           ],
           "fill-opacity": 0.7,
+        },
+      });
+
+      // Purple dashed outline for buildings the analyst has flagged as needing
+      // more photos (#235). Line width is 0 for unflagged buildings so the
+      // layer is effectively invisible without a separate filter.
+      map.addLayer({
+        id: "building-priority-outline",
+        type: "line",
+        source: "buildings",
+        "source-layer": BUILDINGS_SOURCE_LAYER,
+        minzoom: 16,
+        paint: {
+          "line-color": "#7c3aed",
+          "line-width": [
+            "case",
+            ["boolean", ["feature-state", "priority_flag"], false],
+            3,
+            0,
+          ],
+          "line-dasharray": [2, 1],
         },
       });
 
@@ -207,13 +236,31 @@ export const Map = ({
         features: [{ type: "Feature", geometry, properties: {} }],
       });
 
-      onBuildingSelectRef.current?.({
+      const buildingData = {
         buildingId: props.geohash,
         center,
         areaM2: props.area_in_meters ?? 0,
         source: props.bf_source ?? "",
         geometry,
-      });
+      };
+
+      if (priorityBuildingIdsRef.current.has(props.geohash)) {
+        const popup = new maplibregl.Popup({ offset: 10, closeButton: true, maxWidth: "220px" })
+          .setLngLat(e.lngLat)
+          .setHTML(
+            `<div style="padding:4px 2px">` +
+              `<div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px">${priorityHeadingRef.current}</div>` +
+              `<button type="button" style="width:100%;padding:5px 10px;font-size:0.75rem;font-weight:600;background:#7c3aed;color:#fff;border:none;cursor:pointer;border-radius:2px">${prioritySubmitRef.current}</button>` +
+            `</div>`,
+          )
+          .addTo(map);
+        popup.getElement().querySelector("button")?.addEventListener("click", () => {
+          popup.remove();
+          onBuildingSelectRef.current?.(buildingData);
+        });
+      } else {
+        onBuildingSelectRef.current?.(buildingData);
+      }
     });
 
     // Drop a manual pin when clicking off any building — covers no-GPS and
@@ -270,16 +317,20 @@ export const Map = ({
       map.getCanvas().style.cursor = "";
     });
 
-    // Fetch reported buildings in the current viewport and apply feature-state
-    // so the damage-level fill layer colours the correct polygons.
+    // Fetch reported buildings + priority flags and apply feature-state.
+    // Two parallel requests: coverage (viewport bbox) for assessed buildings,
+    // and the full priority list for unassessed buildings the analyst has flagged.
     const fetchNearbyReports = async () => {
       if (map.getZoom() < 14) return;
       const b = map.getBounds();
       try {
-        const result = await api(
-          `/reports/coverage?west=${b.getWest()}&south=${b.getSouth()}&east=${b.getEast()}&north=${b.getNorth()}&limit=500`,
-        );
-        const features: ReportFeature[] = result?.features ?? [];
+        const [coverageResult, priorityResult] = await Promise.all([
+          api(`/reports/coverage?west=${b.getWest()}&south=${b.getSouth()}&east=${b.getEast()}&north=${b.getNorth()}&limit=500`),
+          api("/buildings/priority"),
+        ]);
+        const features: ReportFeature[] = coverageResult?.features ?? [];
+        const priorityIds: string[] = priorityResult?.building_ids ?? [];
+
         const seen = new Set<string>();
         for (const f of features) {
           const bid = f.properties?.building_id;
@@ -287,12 +338,17 @@ export const Map = ({
           if (!bid || !dl || seen.has(bid)) continue;
           seen.add(bid);
           map.setFeatureState(
-            {
-              source: "buildings",
-              sourceLayer: BUILDINGS_SOURCE_LAYER,
-              id: bid,
-            },
-            { damage_level: dl },
+            { source: "buildings", sourceLayer: BUILDINGS_SOURCE_LAYER, id: bid },
+            { damage_level: dl, priority_flag: f.properties?.priority_flag ?? false },
+          );
+        }
+        // Apply priority flag to unassessed buildings not covered above
+        priorityBuildingIdsRef.current = new Set(priorityIds);
+        for (const bid of priorityIds) {
+          if (seen.has(bid)) continue;
+          map.setFeatureState(
+            { source: "buildings", sourceLayer: BUILDINGS_SOURCE_LAYER, id: bid },
+            { priority_flag: true },
           );
         }
         setCoverageCount((prev) => ({
