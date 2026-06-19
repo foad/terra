@@ -134,7 +134,7 @@ export const Map = ({
     map.on("load", () => {
       // Damage-level fill driven by feature-state set from /reports bbox fetch.
       // minzoom 16: buildings are too small to read fills at lower zoom.
-      // Outline is left at default for now — reserved for analyst priority flag (#46).
+      // Outline left at default — priority-flag amber border handled by building-priority-outline layer (#235).
       map.addLayer({
         id: "building-damage",
         type: "fill",
@@ -153,6 +153,27 @@ export const Map = ({
             "transparent",
           ],
           "fill-opacity": 0.7,
+        },
+      });
+
+      // Amber dashed outline for buildings the analyst has flagged as needing
+      // more photos (#235). Line width is 0 for unflagged buildings so the
+      // layer is effectively invisible without a separate filter.
+      map.addLayer({
+        id: "building-priority-outline",
+        type: "line",
+        source: "buildings",
+        "source-layer": BUILDINGS_SOURCE_LAYER,
+        minzoom: 16,
+        paint: {
+          "line-color": "#f59e0b",
+          "line-width": [
+            "case",
+            ["boolean", ["feature-state", "priority_flag"], false],
+            3,
+            0,
+          ],
+          "line-dasharray": [2, 1],
         },
       });
 
@@ -292,7 +313,7 @@ export const Map = ({
               sourceLayer: BUILDINGS_SOURCE_LAYER,
               id: bid,
             },
-            { damage_level: dl },
+            { damage_level: dl, priority_flag: f.properties?.priority_flag ?? false },
           );
         }
         setCoverageCount((prev) => ({

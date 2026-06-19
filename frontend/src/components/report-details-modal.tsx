@@ -24,7 +24,7 @@ export const ReportDetailsModal = ({
   const [showOriginalDesc, setShowOriginalDesc] = useState(false);
   const api = useApi();
 
-  const sendReview = async (patch: Record<string, string | null>) => {
+  const sendReview = async (patch: Record<string, string | boolean | null>) => {
     setSaving(true);
     setReviewError(null);
     try {
@@ -41,6 +41,7 @@ export const ReportDetailsModal = ({
           analyst_damage_level: result.analyst_damage_level,
           flag_status: result.flag_status,
           flag_reason: result.flag_reason,
+          priority_flag: result.priority_flag,
         },
       });
     } catch (err) {
@@ -185,6 +186,20 @@ export const ReportDetailsModal = ({
                 </button>
               </div>
             )}
+
+            <div className={styles.reviewRow}>
+              <span className={styles.reviewLabel}>Photo request</span>
+              <div className={styles.reviewButtons}>
+                <button
+                  type="button"
+                  disabled={saving}
+                  className={`${styles.reviewBtn} ${p.priority_flag ? styles.reviewBtnActive : ""}`}
+                  onClick={() => sendReview({ priority_flag: !p.priority_flag })}
+                >
+                  {p.priority_flag ? "Requested" : "Request photo"}
+                </button>
+              </div>
+            </div>
 
             <div className={styles.reviewRow}>
               <span className={styles.reviewLabel}>Flag</span>
