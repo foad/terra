@@ -155,6 +155,28 @@ class TestCreateReport:
         assert photo_key in params["photo_url"]
 
 
+class TestBuildFilterClause:
+    """The shared WHERE-clause builder used by query_reports, query_coverage, and exports."""
+
+    def test_excludes_e2e_tagged_reports(self):
+        from src.handlers.reports import ReportsQueryParams, build_filter_clause
+
+        q = ReportsQueryParams()
+        where, _ = build_filter_clause(q)
+        assert "device_id IS NULL OR device_id NOT LIKE 'device-e2e-%%'" in where  # %% so psycopg2 doesn't treat it as a placeholder
+
+    def test_e2e_filter_survives_building_id_branch(self):
+        """When filtering by building_id we drop is_latest but the E2E
+        filter must stay — otherwise analyst building-history lookups
+        would include synthetic test rows."""
+        from src.handlers.reports import ReportsQueryParams, build_filter_clause
+
+        q = ReportsQueryParams(building_id="vida-42")
+        where, _ = build_filter_clause(q)
+        assert "is_latest" not in where
+        assert "device_id NOT LIKE 'device-e2e-%%'" in where
+
+
 class TestQueryReports:
     @patch("src.handlers.reports.get_connection")
     def test_returns_geojson(self, mock_get_conn):
