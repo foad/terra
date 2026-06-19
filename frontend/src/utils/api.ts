@@ -15,6 +15,8 @@ export const api = async (
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
 
+  const e2ePrefix = (globalThis as { __E2E_PREFIX__?: string }).__E2E_PREFIX__;
+
   try {
     const res = await fetch(url, {
       ...fetchOptions,
@@ -22,6 +24,7 @@ export const api = async (
       headers: {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(e2ePrefix ? { "X-E2E-Filter": e2ePrefix } : {}),
         ...fetchOptions.headers,
       },
     });

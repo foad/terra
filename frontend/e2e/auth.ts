@@ -43,7 +43,7 @@ function decodeJwtPayload(token: string): Record<string, unknown> {
   return JSON.parse(Buffer.from(b64, "base64").toString("utf-8"));
 }
 
-export async function signInAsAnalyst(page: Page): Promise<void> {
+export async function signInAsAnalyst(page: Page): Promise<{ accessToken: string }> {
   const authority = process.env.VITE_COGNITO_AUTHORITY;
   const clientId = process.env.VITE_COGNITO_CLIENT_ID;
   const username = process.env.E2E_USERNAME;
@@ -77,4 +77,6 @@ export async function signInAsAnalyst(page: Page): Promise<void> {
     },
     { key: storageKey, value: userJson },
   );
+
+  return { accessToken: tokens.AccessToken };
 }
