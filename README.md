@@ -92,6 +92,6 @@ terra/
 ├── frontend/          React PWA (Vite + TypeScript)
 ├── backend/           Lambda functions (Python)
 ├── infra/             Terraform (AWS)
-├── db/                SQL migrations (Supabase)
+├── db/                SQL baseline + migrations (Postgres/PostGIS)
 └── .github/workflows/ CI/CD (GitHub Actions)
 ```
