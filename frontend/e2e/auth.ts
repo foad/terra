@@ -44,15 +44,17 @@ function decodeJwtPayload(token: string): Record<string, unknown> {
 }
 
 export async function signInAsAnalyst(page: Page): Promise<{ accessToken: string }> {
-  const authority = process.env.VITE_COGNITO_AUTHORITY;
-  const clientId = process.env.VITE_COGNITO_CLIENT_ID;
-  const username = process.env.E2E_USERNAME;
-  const password = process.env.E2E_PASSWORD;
-  if (!authority || !clientId || !username || !password) {
-    throw new Error(
-      "signInAsAnalyst: VITE_COGNITO_AUTHORITY, VITE_COGNITO_CLIENT_ID, E2E_USERNAME, E2E_PASSWORD all required",
-    );
+  const env = {
+    VITE_COGNITO_AUTHORITY: process.env.VITE_COGNITO_AUTHORITY,
+    VITE_COGNITO_CLIENT_ID: process.env.VITE_COGNITO_CLIENT_ID,
+    E2E_USERNAME: process.env.E2E_USERNAME,
+    E2E_PASSWORD: process.env.E2E_PASSWORD,
+  };
+  const missing = Object.entries(env).filter(([, v]) => !v).map(([k]) => k);
+  if (missing.length) {
+    throw new Error(`signInAsAnalyst: missing env vars: ${missing.join(", ")}`);
   }
+  const { VITE_COGNITO_AUTHORITY: authority, VITE_COGNITO_CLIENT_ID: clientId, E2E_USERNAME: username, E2E_PASSWORD: password } = env as Record<string, string>;
 
   const tokens = await cognitoInitiateAuth(clientId, username, password);
   const profile = decodeJwtPayload(tokens.IdToken);

@@ -52,6 +52,26 @@ export async function deleteE2EReports(prefix: string, token: string): Promise<n
   return body.deleted;
 }
 
+export async function setupDashboard(
+  page: Page,
+  testInfo: TestInfo,
+): Promise<{ prefix: string; cleanup: () => Promise<void> }> {
+  const { signInAsAnalyst } = await import("./auth");
+  const prefix = e2ePrefix(testInfo);
+  const { accessToken } = await signInAsAnalyst(page);
+
+  await page.addInitScript((p) => {
+    (globalThis as unknown as { __E2E_PREFIX__: string }).__E2E_PREFIX__ = p;
+  }, prefix);
+
+  return {
+    prefix,
+    cleanup: async () => {
+      await deleteE2EReports(prefix, accessToken);
+    },
+  };
+}
+
 /**
  * Stub everything except POST /reports so tests don't hit the real backend
  * Reports are tagged and ignored
