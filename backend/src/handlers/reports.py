@@ -273,13 +273,21 @@ def create_report(body: dict) -> dict:
     }
 
 
-def build_filter_clause(q: "ReportsQueryParams | object") -> tuple[str, list]:
+E2E_PREFIX_GUARD = "device-e2e-"
+
+
+def build_filter_clause(
+    q: "ReportsQueryParams | object",
+    e2e_filter_prefix: str | None = None,
+) -> tuple[str, list]:
     """Build the WHERE clause + params for any query honouring the standard report filters."""
-    conditions = [
-        "is_latest = true",
-        "(device_id IS NULL OR device_id NOT LIKE 'device-e2e-%%')",
-    ]
     values: list = []
+    if e2e_filter_prefix and e2e_filter_prefix.startswith(E2E_PREFIX_GUARD):
+        device_clause = "device_id LIKE %s"
+        values.append(f"{e2e_filter_prefix}%")
+    else:
+        device_clause = "(device_id IS NULL OR device_id NOT LIKE 'device-e2e-%%')"
+    conditions = ["is_latest = true", device_clause]
 
     if all(v is not None for v in (q.west, q.south, q.east, q.north)):
         conditions.append("ST_Intersects(location, ST_MakeEnvelope(%s, %s, %s, %s, 4326))")
@@ -325,11 +333,11 @@ def build_filter_clause(q: "ReportsQueryParams | object") -> tuple[str, list]:
     return " AND ".join(conditions), values
 
 
-def query_reports(params: dict) -> dict:
+def query_reports(params: dict, e2e_filter_prefix: str | None = None) -> dict:
     """Query reports with spatial, temporal, and attribute filters. Returns GeoJSON."""
     q = ReportsQueryParams(**params)
     conn = get_connection()
-    where, values = build_filter_clause(q)
+    where, values = build_filter_clause(q, e2e_filter_prefix)
 
     limit = q.limit
     offset = q.offset
@@ -418,14 +426,14 @@ def query_reports(params: dict) -> dict:
     }
 
 
-def query_coverage(params: dict) -> dict:
+def query_coverage(params: dict, e2e_filter_prefix: str | None = None) -> dict:
     """Public minimal-payload view for the community PWA
 
     Returns a FeatureCollection with only (id, building_id, damage_level,
     submitted_at) per row
     """
     q = ReportsQueryParams(**params)
-    where, values = build_filter_clause(q)
+    where, values = build_filter_clause(q, e2e_filter_prefix)
 
     conn = get_connection()
     with conn.cursor() as cur:
@@ -602,3 +610,17 @@ def set_building_priority(building_id: str, flagged: bool) -> dict:
             )
     conn.commit()
     return {"building_id": building_id, "priority_flag": flagged}
+
+
+def delete_e2e_reports(prefix: str) -> dict:
+    if not prefix or not prefix.startswith(E2E_PREFIX_GUARD):
+        raise ValueError(f"prefix must start with '{E2E_PREFIX_GUARD}'")
+    conn = get_connection()
+    with conn.cursor() as cur:
+        cur.execute(
+            "DELETE FROM reports WHERE device_id LIKE %s",
+            (f"{prefix}%",),
+        )
+        deleted = cur.rowcount
+    conn.commit()
+    return {"prefix": prefix, "deleted": deleted}
