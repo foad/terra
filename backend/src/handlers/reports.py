@@ -322,7 +322,7 @@ def build_filter_clause(q: "ReportsQueryParams | object") -> tuple[str, list]:
     # When querying by building_id, show all versions not just latest
     if q.building_id:
         conditions = [c for c in conditions if c != "is_latest = true"]
-        conditions.append("building_id = %s")
+        conditions.append("reports.building_id = %s")
         values.append(q.building_id)
 
     return " AND ".join(conditions), values
@@ -342,7 +342,7 @@ def query_reports(params: dict) -> dict:
             f"""
             SELECT
                 id, ST_X(location) as lng, ST_Y(location) as lat,
-                building_id, COALESCE(analyst_damage_level, damage_level) as damage_level,
+                reports.building_id, COALESCE(analyst_damage_level, damage_level) as damage_level,
                 ai_damage_level, ai_infrastructure_type, ai_confidence,
                 photo_url, thumbnail_url,
                 infrastructure_type, infrastructure_description,
