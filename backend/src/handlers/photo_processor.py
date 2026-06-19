@@ -112,7 +112,7 @@ def process_photo(bucket: str, key: str) -> None:
 
 def _thumbnail_key(upload_key: str) -> str:
     """uploads/<uuid>.<ext> -> thumbnails/<uuid>.jpg"""
-    rest = upload_key[len(UPLOADS_PREFIX):]
+    rest = upload_key[len(UPLOADS_PREFIX) :]
     stem = rest.rsplit(".", 1)[0]
     return f"{THUMBNAILS_PREFIX}{stem}.jpg"
 
