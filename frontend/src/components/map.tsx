@@ -76,7 +76,6 @@ export const Map = ({
     onManualPinRef.current = onManualPin;
   }, [onManualPin]);
 
-
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
@@ -304,7 +303,9 @@ export const Map = ({
       const b = map.getBounds();
       try {
         const [coverageResult, priorityResult] = await Promise.all([
-          api(`/reports/coverage?west=${b.getWest()}&south=${b.getSouth()}&east=${b.getEast()}&north=${b.getNorth()}&limit=500`),
+          api(
+            `/reports/coverage?west=${b.getWest()}&south=${b.getSouth()}&east=${b.getEast()}&north=${b.getNorth()}&limit=500`,
+          ),
           api("/buildings/priority"),
         ]);
         const features: ReportFeature[] = coverageResult?.features ?? [];
@@ -317,8 +318,15 @@ export const Map = ({
           if (!bid || !dl || seen.has(bid)) continue;
           seen.add(bid);
           map.setFeatureState(
-            { source: "buildings", sourceLayer: BUILDINGS_SOURCE_LAYER, id: bid },
-            { damage_level: dl, priority_flag: f.properties?.priority_flag ?? false },
+            {
+              source: "buildings",
+              sourceLayer: BUILDINGS_SOURCE_LAYER,
+              id: bid,
+            },
+            {
+              damage_level: dl,
+              priority_flag: f.properties?.priority_flag ?? false,
+            },
           );
         }
         // Apply priority flag to unassessed buildings not covered above
@@ -326,7 +334,11 @@ export const Map = ({
         for (const bid of priorityIds) {
           if (seen.has(bid)) continue;
           map.setFeatureState(
-            { source: "buildings", sourceLayer: BUILDINGS_SOURCE_LAYER, id: bid },
+            {
+              source: "buildings",
+              sourceLayer: BUILDINGS_SOURCE_LAYER,
+              id: bid,
+            },
             { priority_flag: true },
           );
         }

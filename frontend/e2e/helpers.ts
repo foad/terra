@@ -34,12 +34,16 @@ export async function postE2EReport(
       device_id: `${prefix}${randomUUID()}`,
     }),
   });
-  if (!res.ok) throw new Error(`postE2EReport: ${res.status} ${await res.text()}`);
+  if (!res.ok)
+    throw new Error(`postE2EReport: ${res.status} ${await res.text()}`);
   const body = (await res.json()) as { id: string };
   return body.id;
 }
 
-export async function deleteE2EReports(prefix: string, token: string): Promise<number> {
+export async function deleteE2EReports(
+  prefix: string,
+  token: string,
+): Promise<number> {
   const res = await fetch(
     `${API_BASE}/reports/e2e?prefix=${encodeURIComponent(prefix)}`,
     {
@@ -47,7 +51,8 @@ export async function deleteE2EReports(prefix: string, token: string): Promise<n
       headers: { Authorization: `Bearer ${token}` },
     },
   );
-  if (!res.ok) throw new Error(`deleteE2EReports: ${res.status} ${await res.text()}`);
+  if (!res.ok)
+    throw new Error(`deleteE2EReports: ${res.status} ${await res.text()}`);
   const body = (await res.json()) as { deleted: number };
   return body.deleted;
 }
@@ -76,7 +81,10 @@ export async function setupDashboard(
  * Stub everything except POST /reports so tests don't hit the real backend
  * Reports are tagged and ignored
  */
-export async function stubNonReportsApi(page: Page, testInfo: TestInfo): Promise<void> {
+export async function stubNonReportsApi(
+  page: Page,
+  testInfo: TestInfo,
+): Promise<void> {
   const prefix = e2ePrefix(testInfo);
   await page.addInitScript((p) => {
     (globalThis as unknown as { __E2E_PREFIX__: string }).__E2E_PREFIX__ = p;

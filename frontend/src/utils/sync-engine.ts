@@ -93,7 +93,8 @@ export const syncEngine = {
         await reportQueue.updateStatus(report.id, "syncing", { photoKey });
       }
 
-      const e2ePrefix = (globalThis as { __E2E_PREFIX__?: string }).__E2E_PREFIX__;
+      const e2ePrefix = (globalThis as { __E2E_PREFIX__?: string })
+        .__E2E_PREFIX__;
       const device_id = e2ePrefix
         ? `${e2ePrefix}${crypto.randomUUID()}`
         : undefined;

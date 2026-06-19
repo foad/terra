@@ -10,12 +10,16 @@ test("tablet width: hamburger menu opens, sidebar floats over map", async ({
   try {
     await page.goto("/dashboard");
 
-    const hamburger = page.getByRole("button", { name: "Toggle navigation menu" });
+    const hamburger = page.getByRole("button", {
+      name: "Toggle navigation menu",
+    });
     await expect(hamburger).toBeVisible();
 
     await hamburger.click();
     await expect(page.getByRole("link", { name: "Dashboard" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Crisis Management" })).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Crisis Management" }),
+    ).toBeVisible();
 
     const sidebar = page.locator("aside");
     const box = await sidebar.boundingBox();

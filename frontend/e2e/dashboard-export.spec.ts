@@ -5,10 +5,12 @@ test("CSV and GeoJSON exports both download", async ({ page }, testInfo) => {
   const { prefix, cleanup } = await setupDashboard(page, testInfo);
   try {
     await postE2EReport(prefix, {
-      latitude: 36.20,
+      latitude: 36.2,
       longitude: 36.15,
       damage_level: "complete",
-      infrastructure_type: ["Residential Infrastructure (Houses and apartments)"],
+      infrastructure_type: [
+        "Residential Infrastructure (Houses and apartments)",
+      ],
       crisis_nature: ["Earthquake"],
     });
 
