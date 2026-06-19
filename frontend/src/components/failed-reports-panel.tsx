@@ -19,7 +19,10 @@ export const FailedReportsPanel = ({ onClose }: Props) => {
   }, []);
 
   const handleRetry = async (id: string) => {
-    await reportQueue.updateStatus(id, "pending", { retryCount: 0, error: null });
+    await reportQueue.updateStatus(id, "pending", {
+      retryCount: 0,
+      error: null,
+    });
     setReports((prev) => prev.filter((r) => r.id !== id));
     syncEngine.processQueue();
   };
@@ -32,7 +35,10 @@ export const FailedReportsPanel = ({ onClose }: Props) => {
 
   const handleRetryAll = async () => {
     for (const r of reports) {
-      await reportQueue.updateStatus(r.id, "pending", { retryCount: 0, error: null });
+      await reportQueue.updateStatus(r.id, "pending", {
+        retryCount: 0,
+        error: null,
+      });
     }
     setReports([]);
     syncEngine.processQueue();
@@ -45,11 +51,17 @@ export const FailedReportsPanel = ({ onClose }: Props) => {
           <span className={styles.title}>{t("app.failedPanelTitle")}</span>
           <div className={styles.headerActions}>
             {reports.length > 1 && (
-              <button type="button" className={styles.retryAllBtn} onClick={handleRetryAll}>
+              <button
+                type="button"
+                className={styles.retryAllBtn}
+                onClick={handleRetryAll}
+              >
                 {t("app.failedPanelRetryAll")}
               </button>
             )}
-            <button type="button" className={styles.closeBtn} onClick={onClose}>×</button>
+            <button type="button" className={styles.closeBtn} onClick={onClose}>
+              ×
+            </button>
           </div>
         </div>
 
@@ -62,7 +74,9 @@ export const FailedReportsPanel = ({ onClose }: Props) => {
                 <div className={styles.cardMeta}>
                   <span
                     className={styles.damageChip}
-                    style={{ background: DAMAGE_COLORS[report.damageLevel] ?? "#888" }}
+                    style={{
+                      background: DAMAGE_COLORS[report.damageLevel] ?? "#888",
+                    }}
                   >
                     {report.damageLevel}
                   </span>
@@ -70,9 +84,7 @@ export const FailedReportsPanel = ({ onClose }: Props) => {
                     {new Date(report.createdAt).toLocaleString()}
                   </span>
                 </div>
-                {report.error && (
-                  <p className={styles.error}>{report.error}</p>
-                )}
+                {report.error && <p className={styles.error}>{report.error}</p>}
                 <div className={styles.cardActions}>
                   <a
                     role="button"

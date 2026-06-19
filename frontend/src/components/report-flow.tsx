@@ -65,7 +65,9 @@ export const ReportFlow = ({
     useState<SelectedBuilding | null>(null);
   const [manualPin, setManualPin] = useState<[number, number] | null>(null);
   const [locationDescription, setLocationDescription] = useState("");
-  const [followUpAnswers, setFollowUpAnswers] = useState<Record<string, string>>({});
+  const [followUpAnswers, setFollowUpAnswers] = useState<
+    Record<string, string>
+  >({});
   const [photo, setPhoto] = useState<PhotoResult | null>(null);
   const [damageLevel, setDamageLevel] = useState<DamageLevel | null>(null);
   const [survey, setSurvey] = useState<SurveyData>(EMPTY_SURVEY);
@@ -382,7 +384,6 @@ export const ReportFlow = ({
     setReportLocation(null);
     classifiedKeyRef.current = null;
     setPreSeeded({});
-
   };
 
   const hasLocation = selectedBuilding !== null || manualPin !== null;
@@ -499,7 +500,8 @@ export const ReportFlow = ({
     // The crisis-questions step is optional by design — the core report is
     // never blocked on configured extras.
     const canAdvance =
-      surveyStep >= SURVEY_STEP_COUNT || isSurveyStepComplete(surveyStep, survey);
+      surveyStep >= SURVEY_STEP_COUNT ||
+      isSurveyStepComplete(surveyStep, survey);
     const isSubmitting = step === "submitting";
 
     const handleNext = () => {

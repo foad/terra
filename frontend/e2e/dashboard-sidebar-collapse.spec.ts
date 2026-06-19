@@ -1,7 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { setupDashboard } from "./helpers";
 
-test("collapse hides sidebar, statsBar expand restores", async ({ page }, testInfo) => {
+test("collapse hides sidebar, statsBar expand restores", async ({
+  page,
+}, testInfo) => {
   const { cleanup } = await setupDashboard(page, testInfo);
   try {
     await page.goto("/dashboard");

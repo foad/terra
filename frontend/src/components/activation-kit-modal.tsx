@@ -115,7 +115,9 @@ export function ActivationKitModal({
     const svgEl = qrRef.current?.querySelector("svg");
     const svgString = svgEl ? svgEl.outerHTML : "";
 
-    const instructions = (Object.entries(POSTER_INSTRUCTIONS) as [Lang, string][])
+    const instructions = (
+      Object.entries(POSTER_INSTRUCTIONS) as [Lang, string][]
+    )
       .map(([lang, text]) => {
         const { bcp47, dir } = LANG_META[lang];
         return `<p lang="${bcp47}" dir="${dir}">${escapeHtml(text)}</p>`;
@@ -243,7 +245,9 @@ export function ActivationKitModal({
       >
         <div className={styles.modalHeader}>
           <div>
-            <h2 id={titleId} className={styles.modalTitle}>Community Activation Kit</h2>
+            <h2 id={titleId} className={styles.modalTitle}>
+              Community Activation Kit
+            </h2>
             <p className={styles.modalSubtitle}>
               {name} · {crisisType}
             </p>
@@ -292,7 +296,9 @@ export function ActivationKitModal({
               className={styles.templateText}
               lang={LANG_META[activeLang].bcp47}
               dir={LANG_META[activeLang].dir}
-            >{templates[activeLang]}</pre>
+            >
+              {templates[activeLang]}
+            </pre>
             <CopyButton text={templates[activeLang]} />
           </div>
         </div>

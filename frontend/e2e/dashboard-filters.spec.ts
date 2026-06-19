@@ -7,24 +7,30 @@ test("damage, infrastructure type, crisis nature, date range, clear-all", async 
   const { prefix, cleanup } = await setupDashboard(page, testInfo);
   try {
     await postE2EReport(prefix, {
-      latitude: 36.20,
+      latitude: 36.2,
       longitude: 36.15,
       damage_level: "complete",
-      infrastructure_type: ["Residential Infrastructure (Houses and apartments)"],
+      infrastructure_type: [
+        "Residential Infrastructure (Houses and apartments)",
+      ],
       crisis_nature: ["Earthquake"],
     });
     await postE2EReport(prefix, {
       latitude: 36.21,
       longitude: 36.16,
       damage_level: "partial",
-      infrastructure_type: ["Commercial Infrastructure (Markets, malls, shops, hotels, banks, industries, etc.)"],
+      infrastructure_type: [
+        "Commercial Infrastructure (Markets, malls, shops, hotels, banks, industries, etc.)",
+      ],
       crisis_nature: ["Earthquake"],
     });
     await postE2EReport(prefix, {
       latitude: 36.22,
       longitude: 36.17,
       damage_level: "minimal",
-      infrastructure_type: ["Residential Infrastructure (Houses and apartments)"],
+      infrastructure_type: [
+        "Residential Infrastructure (Houses and apartments)",
+      ],
       crisis_nature: ["Hurricane/Cyclone"],
     });
 

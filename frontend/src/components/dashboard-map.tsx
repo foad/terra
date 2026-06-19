@@ -489,48 +489,69 @@ export const DashboardMap = ({
       // Skips when draw mode is active or when a report marker sits at the same point.
       map.on("click", "building-footprints", (e) => {
         if (drawModeRef.current !== "idle") return;
-        const reportFeatures = map.queryRenderedFeatures(e.point, { layers: ["report-markers"] });
+        const reportFeatures = map.queryRenderedFeatures(e.point, {
+          layers: ["report-markers"],
+        });
         if (reportFeatures.length > 0) return;
         const feature = e.features?.[0];
         const bid = feature?.properties?.geohash as string | undefined;
         if (!bid) return;
 
         const currentlyFlagged = priorityBuildingsRef.current.has(bid);
-        const heading = currentlyFlagged ? "Priority flagged" : "Tag building as priority?";
+        const heading = currentlyFlagged
+          ? "Priority flagged"
+          : "Tag building as priority?";
         const btnLabel = currentlyFlagged ? "Remove flag" : "Flag for photos";
         const btnColor = currentlyFlagged ? "#6b7280" : "#0469a5";
 
-        const popup = new maplibregl.Popup({ offset: 10, closeButton: true, maxWidth: "200px" })
+        const popup = new maplibregl.Popup({
+          offset: 10,
+          closeButton: true,
+          maxWidth: "200px",
+        })
           .setLngLat(e.lngLat)
           .setHTML(
             `<div class="${styles.popup}" style="padding:4px 2px">` +
               `<div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px">${escapeHtml(heading)}</div>` +
               `<button type="button" style="width:100%;padding:5px 10px;font-size:0.75rem;font-weight:600;background:${btnColor};color:#fff;border:none;cursor:pointer">${escapeHtml(btnLabel)}</button>` +
-            `</div>`,
+              `</div>`,
           )
           .addTo(map);
 
-        popup.getElement().querySelector("button")?.addEventListener("click", () => {
-          popup.remove();
-          const newFlagged = !currentlyFlagged;
-          if (newFlagged) priorityBuildingsRef.current.add(bid);
-          else priorityBuildingsRef.current.delete(bid);
-          map.setFeatureState(
-            { source: "buildings", sourceLayer: "goog_msft_osm_building_footprints", id: bid },
-            { priority_flag: newFlagged },
-          );
-          apiRef.current(`/buildings/${bid}/priority`, {
-            method: "PATCH",
-            body: JSON.stringify({ flagged: newFlagged }),
-          }).catch(() => {
-            if (newFlagged) priorityBuildingsRef.current.delete(bid);
-            else priorityBuildingsRef.current.add(bid);
+        popup
+          .getElement()
+          .querySelector("button")
+          ?.addEventListener("click", () => {
+            popup.remove();
+            const newFlagged = !currentlyFlagged;
+            if (newFlagged) priorityBuildingsRef.current.add(bid);
+            else priorityBuildingsRef.current.delete(bid);
             map.setFeatureState(
-              { source: "buildings", sourceLayer: "goog_msft_osm_building_footprints", id: bid },
-              { priority_flag: !newFlagged },
+              {
+                source: "buildings",
+                sourceLayer: "goog_msft_osm_building_footprints",
+                id: bid,
+              },
+              { priority_flag: newFlagged },
             );
+            apiRef
+              .current(`/buildings/${bid}/priority`, {
+                method: "PATCH",
+                body: JSON.stringify({ flagged: newFlagged }),
+              })
+              .catch(() => {
+                if (newFlagged) priorityBuildingsRef.current.delete(bid);
+                else priorityBuildingsRef.current.add(bid);
+                map.setFeatureState(
+                  {
+                    source: "buildings",
+                    sourceLayer: "goog_msft_osm_building_footprints",
+                    id: bid,
+                  },
+                  { priority_flag: !newFlagged },
+                );
+              });
           });
-        });
       });
 
       map.on("mouseenter", "building-footprints", () => {
@@ -718,7 +739,11 @@ export const DashboardMap = ({
       priorityBuildingsRef.current = new Set(buildingIds);
       for (const bid of buildingIds) {
         map.setFeatureState(
-          { source: "buildings", sourceLayer: "goog_msft_osm_building_footprints", id: bid },
+          {
+            source: "buildings",
+            sourceLayer: "goog_msft_osm_building_footprints",
+            id: bid,
+          },
           { priority_flag: true },
         );
       }
@@ -737,7 +762,9 @@ export const DashboardMap = ({
     if (map.isStyleLoaded()) fetchAndApply();
     else map.once("load", fetchAndApply);
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [api]);
 
   useEffect(() => {
@@ -835,7 +862,9 @@ export const DashboardMap = ({
     });
 
     if ((globalThis as { __E2E_PREFIX__?: string }).__E2E_PREFIX__) {
-      (globalThis as { __APPLY_POLYGON__?: (p: GeoJSON.Polygon) => void }).__APPLY_POLYGON__ = applyPolygon;
+      (
+        globalThis as { __APPLY_POLYGON__?: (p: GeoJSON.Polygon) => void }
+      ).__APPLY_POLYGON__ = applyPolygon;
     }
   };
 

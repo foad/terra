@@ -32,7 +32,7 @@ test("POST /reports failure is retried until it succeeds", async ({
 
   // Sync engine retries on transient failure with exponential backoff
   // (starting at 2 s). Poll until we've seen the second (successful) POST.
-  await expect.poll(() => postCount, { timeout: 30000 }).toBeGreaterThanOrEqual(
-    2,
-  );
+  await expect
+    .poll(() => postCount, { timeout: 30000 })
+    .toBeGreaterThanOrEqual(2);
 });

@@ -25,7 +25,11 @@
 .bar {
   position: absolute;
   bottom: 0;
-  background: color-mix(in srgb, var(--undpds-color-blue-600, #0468b1) 22%, white);
+  background: color-mix(
+    in srgb,
+    var(--undpds-color-blue-600, #0468b1) 22%,
+    white
+  );
   min-height: 3px;
 }
 
