@@ -1,6 +1,6 @@
 # Database Schema
 
-PostGIS (PostgreSQL 15) `db/001_initial_schema.sql`
+PostGIS (PostgreSQL 17) `db/001_initial_schema.sql`
 
 The design follows two principles from the challenge brief: **scale to 500k reports per crisis** (national-level event) and **modularity** (crisis-specific form configuration without schema changes).
 
