@@ -63,13 +63,6 @@ python db/scale_test_writepath.py --mode db-only --url https://api.terra.foad.de
 python db/scale_test_writepath.py --mode full --url https://api.terra.foad.dev --photo-key uploads/<existing-uuid>.jpg
 ```
 
-Restore Supabase:
-
-```bash
-aws ssm put-parameter --name /terra/database_url --value "$SUPABASE_URL" --overwrite --type SecureString
-cd backend && ./deploy.sh
-```
-
 ## Teardown
 
 ```bash
