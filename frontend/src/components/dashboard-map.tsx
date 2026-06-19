@@ -216,7 +216,7 @@ export const DashboardMap = ({
         },
       });
 
-      // Amber dashed outline for buildings the analyst has flagged for more photos (#235).
+      // Purple dashed outline for buildings the analyst has flagged for more photos (#235).
       map.addLayer({
         id: "building-priority-outline",
         type: "line",
@@ -224,7 +224,7 @@ export const DashboardMap = ({
         "source-layer": "goog_msft_osm_building_footprints",
         minzoom: 14,
         paint: {
-          "line-color": "#f59e0b",
+          "line-color": "#7c3aed",
           "line-width": [
             "case",
             ["boolean", ["feature-state", "priority_flag"], false],

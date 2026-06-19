@@ -43,7 +43,8 @@
     "viewExisting": "Ver informes existentes",
     "hideExisting": "Ocultar informes existentes",
     "existingReportsMore_one": "+ {{count}} más",
-    "existingReportsMore_other": "+ {{count}} más"
+    "existingReportsMore_other": "+ {{count}} más",
+    "priorityHeading": "Fotos requeridas aquí"
   },
   "photo": {
     "title": "Tomar una foto",
