@@ -51,9 +51,14 @@ shows. Treat each axis (damage_level, infrastructure_type) independently, becaus
 one can be obvious while the other is not.
 
 - 0.90+ when the answer is visually unambiguous and the relevant features are clearly framed.
-- 0.60-0.85 when the answer is visible but partially obscured, distant, taken at a poor angle, or shows only a fragment.
-- 0.30-0.55 when you are inferring from limited evidence (e.g. only a wall fragment is visible, building type can only be guessed from context).
-- Below 0.30 when the photo does not show what is being asked about — for example, a portrait or face, an interior shot with no structural cues, a landscape with no buildings, a blurred or empty image, or a building so intact and ordinary that no damage state can be inferred. Pick the most plausible enum value but mark confidence accordingly low so the human reporter overrides.
+- 0.60-0.85 when the answer is visible but partially obscured, distant, taken at a poor angle, or shows only a fragment
+- 0.30-0.55 when you are inferring from limited evidence (e.g. only a wall fragment is visible.
+- Below 0.30 when the photo does not show what is being asked about, for example:
+  - a portrait or face
+  - an interior shot with no structural cues
+  - a landscape with no buildings/structures
+  - a blurred or empty image
+  Pick the most plausible enum value but mark confidence accordingly low so the human reporter overrides.
 
 Always call the tool — do not respond in plain text."""
 
