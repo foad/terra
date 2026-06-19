@@ -392,14 +392,23 @@ export const Map = ({
         for (const e of target) extend(e.region?.coordinates);
         // Store only the exact match — if the id was stale, leave ref null so
         // the gps-in-zone check returns false rather than testing a random zone.
-        pinnedCrisisRegionRef.current =
-          exactMatch ? (exactMatch.region as GeoJSON.Polygon) ?? null : null;
+        pinnedCrisisRegionRef.current = exactMatch
+          ? ((exactMatch.region as GeoJSON.Polygon) ?? null)
+          : null;
         // Fit to the crisis zone unless GPS already placed the user inside it.
         const gpsInZone =
-          pinnedCrisisId && gpsPositionRef.current && pinnedCrisisRegionRef.current
-            ? pointInPolygon(gpsPositionRef.current, pinnedCrisisRegionRef.current)
+          pinnedCrisisId &&
+          gpsPositionRef.current &&
+          pinnedCrisisRegionRef.current
+            ? pointInPolygon(
+                gpsPositionRef.current,
+                pinnedCrisisRegionRef.current,
+              )
             : false;
-        if (!bounds.isEmpty() && (!hasCenteredRef.current || (pinnedCrisisId && !gpsInZone))) {
+        if (
+          !bounds.isEmpty() &&
+          (!hasCenteredRef.current || (pinnedCrisisId && !gpsInZone))
+        ) {
           map.fitBounds(bounds, { padding: 60, animate: false });
           if (pinnedCrisisId && !gpsInZone) hasCenteredRef.current = true;
         }
@@ -428,7 +437,10 @@ export const Map = ({
       pinnedCrisisId && pinnedCrisisRegionRef.current
         ? pointInPolygon([longitude, latitude], pinnedCrisisRegionRef.current)
         : false;
-    if (!hasCenteredRef.current || (inCrisisZone && !hasFlownToUserRef.current)) {
+    if (
+      !hasCenteredRef.current ||
+      (inCrisisZone && !hasFlownToUserRef.current)
+    ) {
       map.flyTo({ center: [longitude, latitude], zoom: 18, speed: 4 });
       hasCenteredRef.current = true;
       hasFlownToUserRef.current = true;
@@ -477,18 +489,31 @@ export const Map = ({
           type="button"
           className={styles.locateButton}
           onClick={() => {
-            mapRef.current?.flyTo({ center: [longitude, latitude], zoom: 18, speed: 4 });
+            mapRef.current?.flyTo({
+              center: [longitude, latitude],
+              zoom: 18,
+              speed: 4,
+            });
           }}
           title="Go to my location"
           aria-label="Go to my location"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="8"/>
-            <line x1="12" y1="2" x2="12" y2="6"/>
-            <line x1="12" y1="18" x2="12" y2="22"/>
-            <line x1="2" y1="12" x2="6" y2="12"/>
-            <line x1="18" y1="12" x2="22" y2="12"/>
-            <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="8" />
+            <line x1="12" y1="2" x2="12" y2="6" />
+            <line x1="12" y1="18" x2="12" y2="22" />
+            <line x1="2" y1="12" x2="6" y2="12" />
+            <line x1="18" y1="12" x2="22" y2="12" />
+            <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
           </svg>
         </button>
       )}
@@ -512,7 +537,10 @@ export const Map = ({
   );
 };
 
-function pointInPolygon(point: [number, number], polygon: GeoJSON.Polygon): boolean {
+function pointInPolygon(
+  point: [number, number],
+  polygon: GeoJSON.Polygon,
+): boolean {
   const [x, y] = point;
   const ring = polygon.coordinates[0];
   if (!ring || ring.length < 3) return false;
@@ -520,7 +548,7 @@ function pointInPolygon(point: [number, number], polygon: GeoJSON.Polygon): bool
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
     const [xi, yi] = ring[i] as [number, number];
     const [xj, yj] = ring[j] as [number, number];
-    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) {
       inside = !inside;
     }
   }
