@@ -28,6 +28,7 @@ export interface SelectedBuilding {
   areaM2: number;
   source: string;
   geometry: GeoJSON.Geometry;
+  isPriority: boolean;
 }
 
 interface MapProps {
@@ -62,8 +63,6 @@ export const Map = ({
   const onBuildingSelectRef = useRef(onBuildingSelect);
   const onManualPinRef = useRef(onManualPin);
   const priorityBuildingIdsRef = useRef<Set<string>>(new Set());
-  const priorityHeadingRef = useRef(t("location.priorityHeading"));
-  const prioritySubmitRef = useRef(t("common.submit"));
   const [coverageCount, setCoverageCount] = useState<{
     assessed: number;
     total: number;
@@ -77,10 +76,6 @@ export const Map = ({
     onManualPinRef.current = onManualPin;
   }, [onManualPin]);
 
-  useEffect(() => {
-    priorityHeadingRef.current = t("location.priorityHeading");
-    prioritySubmitRef.current = t("common.submit");
-  }, [t]);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -242,25 +237,9 @@ export const Map = ({
         areaM2: props.area_in_meters ?? 0,
         source: props.bf_source ?? "",
         geometry,
+        isPriority: priorityBuildingIdsRef.current.has(props.geohash),
       };
-
-      if (priorityBuildingIdsRef.current.has(props.geohash)) {
-        const popup = new maplibregl.Popup({ offset: 10, closeButton: true, maxWidth: "220px" })
-          .setLngLat(e.lngLat)
-          .setHTML(
-            `<div style="padding:4px 2px">` +
-              `<div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px">${priorityHeadingRef.current}</div>` +
-              `<button type="button" style="width:100%;padding:5px 10px;font-size:0.75rem;font-weight:600;background:#7c3aed;color:#fff;border:none;cursor:pointer;border-radius:2px">${prioritySubmitRef.current}</button>` +
-            `</div>`,
-          )
-          .addTo(map);
-        popup.getElement().querySelector("button")?.addEventListener("click", () => {
-          popup.remove();
-          onBuildingSelectRef.current?.(buildingData);
-        });
-      } else {
-        onBuildingSelectRef.current?.(buildingData);
-      }
+      onBuildingSelectRef.current?.(buildingData);
     });
 
     // Drop a manual pin when clicking off any building — covers no-GPS and
