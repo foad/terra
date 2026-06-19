@@ -617,6 +617,13 @@ def delete_e2e_reports(prefix: str) -> dict:
         raise ValueError(f"prefix must start with '{E2E_PREFIX_GUARD}'")
     conn = get_connection()
     with conn.cursor() as cur:
+        # Null any related_report_id pointing into the about-to-be-deleted set
+        # so the self-referencing FK doesn't block the DELETE.
+        cur.execute(
+            "UPDATE reports SET related_report_id = NULL "
+            "WHERE related_report_id IN (SELECT id FROM reports WHERE device_id LIKE %s)",
+            (f"{prefix}%",),
+        )
         cur.execute(
             "DELETE FROM reports WHERE device_id LIKE %s",
             (f"{prefix}%",),
