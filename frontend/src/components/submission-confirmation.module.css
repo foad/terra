@@ -203,27 +203,3 @@
   align-items: center;
   gap: 0.5rem;
 }
-
-.viewMapButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  max-width: 280px;
-  padding: 11px 20px;
-  background: #14b8a6;
-  border: none;
-  border-radius: 6px;
-  color: #fff;
-  font-family: inherit;
-  font-size: 0.9375rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.15s;
-  letter-spacing: 0.01em;
-}
-
-.viewMapButton:hover {
-  background: #0d9488;
-}
