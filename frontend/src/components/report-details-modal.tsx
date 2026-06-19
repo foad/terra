@@ -22,9 +22,10 @@ export const ReportDetailsModal = ({
   const [saving, setSaving] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [showOriginalDesc, setShowOriginalDesc] = useState(false);
+  const [priorityFlag, setPriorityFlag] = useState(p.priority_flag ?? false);
   const api = useApi();
 
-  const sendReview = async (patch: Record<string, string | boolean | null>) => {
+  const sendReview = async (patch: Record<string, string | null>) => {
     setSaving(true);
     setReviewError(null);
     try {
@@ -41,12 +42,30 @@ export const ReportDetailsModal = ({
           analyst_damage_level: result.analyst_damage_level,
           flag_status: result.flag_status,
           flag_reason: result.flag_reason,
-          priority_flag: result.priority_flag,
         },
       });
     } catch (err) {
       setReviewError(
         err instanceof Error ? err.message : "Failed to save review",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const togglePriority = async () => {
+    if (!p.building_id) return;
+    setSaving(true);
+    setReviewError(null);
+    try {
+      await api(`/buildings/${p.building_id}/priority`, {
+        method: "PATCH",
+        body: JSON.stringify({ flagged: !priorityFlag }),
+      });
+      setPriorityFlag(!priorityFlag);
+    } catch (err) {
+      setReviewError(
+        err instanceof Error ? err.message : "Failed to save",
       );
     } finally {
       setSaving(false);
@@ -187,19 +206,21 @@ export const ReportDetailsModal = ({
               </div>
             )}
 
-            <div className={styles.reviewRow}>
-              <span className={styles.reviewLabel}>Photo request</span>
-              <div className={styles.reviewButtons}>
-                <button
-                  type="button"
-                  disabled={saving}
-                  className={`${styles.reviewBtn} ${p.priority_flag ? styles.reviewBtnActive : ""}`}
-                  onClick={() => sendReview({ priority_flag: !p.priority_flag })}
-                >
-                  {p.priority_flag ? "Requested" : "Request photo"}
-                </button>
+            {p.building_id && (
+              <div className={styles.reviewRow}>
+                <span className={styles.reviewLabel}>Photo request</span>
+                <div className={styles.reviewButtons}>
+                  <button
+                    type="button"
+                    disabled={saving}
+                    className={`${styles.reviewBtn} ${priorityFlag ? styles.reviewBtnActive : ""}`}
+                    onClick={togglePriority}
+                  >
+                    {priorityFlag ? "Requested" : "Request photo"}
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
             <div className={styles.reviewRow}>
               <span className={styles.reviewLabel}>Flag</span>
