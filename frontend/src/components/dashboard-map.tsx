@@ -617,6 +617,9 @@ export const DashboardMap = ({
     });
 
     mapRef.current = map;
+    if ((globalThis as { __E2E_PREFIX__?: string }).__E2E_PREFIX__) {
+      (globalThis as { __MAP__?: maplibregl.Map }).__MAP__ = map;
+    }
 
     return () => {
       if (footprintTimer) clearTimeout(footprintTimer);
@@ -809,12 +812,7 @@ export const DashboardMap = ({
     draw.setMode("polygon");
     setDrawMode("drawing");
 
-    const onFinish = () => {
-      const features = draw.getSnapshot();
-      const poly = features.find((f) => f.geometry.type === "Polygon");
-      if (!poly) return;
-
-      const polygon = poly.geometry as GeoJSON.Polygon;
+    const applyPolygon = (polygon: GeoJSON.Polygon) => {
       draw.stop();
       drawRef.current = null;
 
@@ -830,7 +828,15 @@ export const DashboardMap = ({
       setDrawMode("active");
     };
 
-    draw.on("finish", onFinish);
+    draw.on("finish", () => {
+      const features = draw.getSnapshot();
+      const poly = features.find((f) => f.geometry.type === "Polygon");
+      if (poly) applyPolygon(poly.geometry as GeoJSON.Polygon);
+    });
+
+    if ((globalThis as { __E2E_PREFIX__?: string }).__E2E_PREFIX__) {
+      (globalThis as { __APPLY_POLYGON__?: (p: GeoJSON.Polygon) => void }).__APPLY_POLYGON__ = applyPolygon;
+    }
   };
 
   const handleClearPolygon = () => {
