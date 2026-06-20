@@ -7,12 +7,16 @@
 import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { readdirSync } from 'fs';
 
 const require = createRequire(import.meta.url);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const en = require(join(__dirname, '../src/i18n/en.json'));
-const languages = ['ar', 'zh', 'fr', 'ru', 'es', 'tr'];
+const i18nDir = join(__dirname, '../src/i18n');
+const en = require(join(i18nDir, 'en.json'));
+const languages = readdirSync(i18nDir)
+  .filter(f => f.endsWith('.json') && f !== 'en.json')
+  .map(f => f.replace('.json', ''));
 
 const PLURAL_SUFFIXES = /_(zero|one|two|few|many|other)$/;
 
@@ -38,7 +42,7 @@ const enBases = requiredBases(enKeys);
 let failed = false;
 
 for (const lang of languages) {
-  const translation = require(join(__dirname, `../src/i18n/${lang}.json`));
+  const translation = require(join(i18nDir, `${lang}.json`));
   const trKeys = getKeys(translation);
   // For each key in the target, record both the key itself and its base.
   const trPresent = new Set(trKeys.flatMap(k => [k, k.replace(PLURAL_SUFFIXES, '')]));
