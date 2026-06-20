@@ -7,7 +7,12 @@
     "syncing": "{{count}} rapor gönderiliyor...",
     "syncing_plural": "{{count}} rapor gönderiliyor...",
     "syncFailed": "{{count}} rapor gönderilemedi.",
-    "syncFailed_plural": "{{count}} rapor gönderilemedi."
+    "syncFailed_plural": "{{count}} rapor gönderilemedi.",
+    "failedPanelTitle": "Başarısız raporlar",
+    "failedPanelRetry": "Yeniden dene",
+    "failedPanelDiscard": "Sil",
+    "failedPanelRetryAll": "Tümünü yeniden dene",
+    "failedPanelEmpty": "Başarısız rapor yok"
   },
   "common": {
     "next": "İleri",
@@ -142,7 +147,11 @@
     "areaMilestone_one": "Bölgeniz aktif olarak izleniyor — {{count}} topluluk raporu ve artıyor",
     "areaMilestone_other": "Bölgeniz aktif olarak izleniyor — {{count}} topluluk raporu ve artıyor",
     "plusCodeLabel": "Konum kodu",
-    "copyPlusCode": "Konum kodunu kopyala"
+    "copyPlusCode": "Konum kodunu kopyala",
+    "shareButton": "Komşularınızla paylaşın",
+    "shareTitle": "Bölgenizdeki hasarı değerlendirmeye yardım edin",
+    "shareText": "Az önce bir hasar raporu gönderdim. Sizin de raporunuzu göndererek yardımcı olun — 2 dakikadan az sürer.",
+    "shareTextWithCrisis": "{{crisisName}} için az önce bir hasar raporu gönderdim. Sizin de raporunuzu göndererek yardımcı olun — 2 dakikadan az sürer."
   },
   "dashboard": {
     "title": "Gösterge Paneli",
@@ -174,7 +183,12 @@
     "legendSeverity": "Şiddet yoğunluğu",
     "legendLow": "Düşük",
     "legendHigh": "Yüksek",
-    "last24h": "son 24 saatte"
+    "last24h": "son 24 saatte",
+    "basemapStreet": "Sokak",
+    "basemapSatellite": "Uydu",
+    "layersPanel": "Katmanlar",
+    "layerBuildings": "Binalar",
+    "layerCrisis": "Kriz sınırı"
   },
   "coverage": {
     "ring": "{{total}} binadan {{assessed}} tanesi değerlendirildi",
