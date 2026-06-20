@@ -60,7 +60,11 @@ export async function deleteE2EReports(
 export async function setupDashboard(
   page: Page,
   testInfo: TestInfo,
-): Promise<{ prefix: string; cleanup: () => Promise<void> }> {
+): Promise<{
+  prefix: string;
+  cleanup: () => Promise<void>;
+  coord: (lat: number, lng: number) => { latitude: number; longitude: number };
+}> {
   const { signInAsAnalyst } = await import("./auth");
   const prefix = e2ePrefix(testInfo);
   const { accessToken } = await signInAsAnalyst(page);
@@ -69,8 +73,16 @@ export async function setupDashboard(
     (globalThis as unknown as { __E2E_PREFIX__: string }).__E2E_PREFIX__ = p;
   }, prefix);
 
+  // Per-worker offset to prevent data leakage to other parallel tests
+  const offsetDeg = 0.002 * (testInfo.workerIndex + 1);
+  const coord = (lat: number, lng: number) => ({
+    latitude: lat + offsetDeg,
+    longitude: lng + offsetDeg,
+  });
+
   return {
     prefix,
+    coord,
     cleanup: async () => {
       await deleteE2EReports(prefix, accessToken);
     },

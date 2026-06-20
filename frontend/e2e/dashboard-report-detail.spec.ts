@@ -4,13 +4,11 @@ import { postE2EReport, setupDashboard } from "./helpers";
 test("click marker, detail panel opens, modal shows report", async ({
   page,
 }, testInfo) => {
-  const { prefix, cleanup } = await setupDashboard(page, testInfo);
+  const { prefix, coord, cleanup } = await setupDashboard(page, testInfo);
   try {
-    const lng = 36.16;
-    const lat = 36.21;
+    const c = coord(36.21, 36.16);
     await postE2EReport(prefix, {
-      latitude: lat,
-      longitude: lng,
+      ...c,
       damage_level: "complete",
       infrastructure_type: [
         "Residential Infrastructure (Houses and apartments)",
@@ -55,7 +53,7 @@ test("click marker, detail panel opens, modal shows report", async ({
         if (!map) throw new Error("__MAP__ not exposed");
         return map.project([lng, lat]);
       },
-      [lng, lat],
+      [c.longitude, c.latitude],
     );
     await canvas.click({ position: { x: point.x, y: point.y } });
 

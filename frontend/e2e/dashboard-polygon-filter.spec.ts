@@ -4,11 +4,12 @@ import { postE2EReport, setupDashboard } from "./helpers";
 test("draw polygon, filter count drops, clear via map", async ({
   page,
 }, testInfo) => {
-  const { prefix, cleanup } = await setupDashboard(page, testInfo);
+  const { prefix, coord, cleanup } = await setupDashboard(page, testInfo);
   try {
+    const inside = coord(36.21, 36.16);
+    const outside = coord(36.3, 36.3);
     await postE2EReport(prefix, {
-      latitude: 36.21,
-      longitude: 36.16,
+      ...inside,
       damage_level: "complete",
       infrastructure_type: [
         "Residential Infrastructure (Houses and apartments)",
@@ -16,8 +17,7 @@ test("draw polygon, filter count drops, clear via map", async ({
       crisis_nature: ["Earthquake"],
     });
     await postE2EReport(prefix, {
-      latitude: 36.3,
-      longitude: 36.3,
+      ...outside,
       damage_level: "partial",
       infrastructure_type: [
         "Residential Infrastructure (Houses and apartments)",
@@ -38,22 +38,28 @@ test("draw polygon, filter count drops, clear via map", async ({
       { timeout: 5000 },
     );
 
-    await page.evaluate(() => {
-      const apply = (globalThis as { __APPLY_POLYGON__?: (p: unknown) => void })
-        .__APPLY_POLYGON__;
-      apply!({
-        type: "Polygon",
-        coordinates: [
-          [
-            [36.14, 36.19],
-            [36.18, 36.19],
-            [36.18, 36.23],
-            [36.14, 36.23],
-            [36.14, 36.19],
+    // Polygon that contains `inside` but not `outside`.
+    const halo = 0.02;
+    await page.evaluate(
+      ({ lng, lat, halo }) => {
+        const apply = (
+          globalThis as { __APPLY_POLYGON__?: (p: unknown) => void }
+        ).__APPLY_POLYGON__;
+        apply!({
+          type: "Polygon",
+          coordinates: [
+            [
+              [lng - halo, lat - halo],
+              [lng + halo, lat - halo],
+              [lng + halo, lat + halo],
+              [lng - halo, lat + halo],
+              [lng - halo, lat - halo],
+            ],
           ],
-        ],
-      });
-    });
+        });
+      },
+      { lng: inside.longitude, lat: inside.latitude, halo },
+    );
 
     await expect(page.getByText(/Area filter active/i)).toBeVisible();
     await expect(page.getByText("1 of 2")).toBeVisible();
