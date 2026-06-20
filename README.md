@@ -1,5 +1,10 @@
 # TERRA
 
+[![Frontend](https://img.shields.io/github/check-runs/foad/terra/main?nameFilter=frontend&label=frontend)](https://github.com/foad/terra/actions/workflows/deploy.yml)
+[![Backend](https://img.shields.io/github/check-runs/foad/terra/main?nameFilter=backend&label=backend)](https://github.com/foad/terra/actions/workflows/deploy.yml)
+[![E2E](https://img.shields.io/github/check-runs/foad/terra/main?nameFilter=e2e&label=e2e)](https://github.com/foad/terra/actions/workflows/deploy.yml)
+[![Deploy](https://github.com/foad/terra/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/foad/terra/actions/workflows/deploy.yml)
+
 **Tool for Early Reporting and Rapid Assessment**
 
 Community-facing PWA for crowdsourced damage assessment in the aftermath of sudden-onset crises. Built for UNDP's RAPIDA methodology.
