@@ -195,6 +195,78 @@ class TestBuildFilterClause:
         assert "not-a-valid-prefix%" not in values
 
 
+class TestPriorityBuildings:
+    @patch("src.handlers.reports.get_connection")
+    def test_get_returns_flagged_ids_newest_first(self, mock_get_conn):
+        from src.handlers.reports import get_priority_buildings
+
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchall.return_value = [("vida-42",), ("vida-17",)]
+        mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_get_conn.return_value = mock_conn
+
+        result = get_priority_buildings()
+
+        assert result == {"building_ids": ["vida-42", "vida-17"]}
+        mock_cursor.execute.assert_called_once_with(
+            "SELECT building_id FROM priority_buildings ORDER BY flagged_at DESC",
+        )
+
+    @patch("src.handlers.reports.get_connection")
+    def test_set_flagged_true_upserts(self, mock_get_conn):
+        from src.handlers.reports import set_building_priority
+
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_get_conn.return_value = mock_conn
+
+        result = set_building_priority("vida-42", flagged=True)
+
+        assert result == {"building_id": "vida-42", "priority_flag": True}
+        sql, params = mock_cursor.execute.call_args[0]
+        assert "INSERT INTO priority_buildings" in sql
+        assert "ON CONFLICT" in sql
+        assert params == ("vida-42",)
+
+    @patch("src.handlers.reports.get_connection")
+    def test_set_flagged_false_deletes(self, mock_get_conn):
+        from src.handlers.reports import set_building_priority
+
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_conn.cursor.return_value.__enter__ = lambda _: mock_cursor
+        mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+        mock_get_conn.return_value = mock_conn
+
+        result = set_building_priority("vida-42", flagged=False)
+
+        assert result == {"building_id": "vida-42", "priority_flag": False}
+        mock_cursor.execute.assert_called_once_with(
+            "DELETE FROM priority_buildings WHERE building_id = %s",
+            ("vida-42",),
+        )
+
+    def test_set_rejects_empty_building_id(self):
+        from src.handlers.reports import set_building_priority
+
+        import pytest
+
+        with pytest.raises(ValueError, match="1–64 characters"):
+            set_building_priority("", flagged=True)
+
+    def test_set_rejects_overlong_building_id(self):
+        from src.handlers.reports import set_building_priority
+
+        import pytest
+
+        with pytest.raises(ValueError, match="1–64 characters"):
+            set_building_priority("x" * 65, flagged=True)
+
+
 class TestDeleteE2eReports:
     @patch("src.handlers.reports.get_connection")
     def test_deletes_matching_rows(self, mock_get_conn):
@@ -210,7 +282,8 @@ class TestDeleteE2eReports:
         result = delete_e2e_reports("device-e2e-w3-")
 
         assert result == {"prefix": "device-e2e-w3-", "deleted": 4}
-        mock_cursor.execute.assert_called_once_with(
+        assert mock_cursor.execute.call_count == 2
+        mock_cursor.execute.assert_any_call(
             "DELETE FROM reports WHERE device_id LIKE %s",
             ("device-e2e-w3-%",),
         )

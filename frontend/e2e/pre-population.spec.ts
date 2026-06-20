@@ -137,9 +137,7 @@ test("survey pre-populates from AI, active crisis, and prior submission", async 
 
   // Survey step 5 — health from prior submission prefs.
   await expect(page.getByTestId("survey-step-5")).toBeVisible();
-  await expect(
-    page.locator("#health-Partially\\ functional"),
-  ).toBeChecked();
+  await expect(page.locator("#health-Partially\\ functional")).toBeChecked();
   await page.getByTestId("btn-next").click();
 
   // Survey step 6 — pressing needs from prior submission prefs.

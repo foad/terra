@@ -64,9 +64,7 @@ export const ReportDetailsModal = ({
       });
       setPriorityFlag(!priorityFlag);
     } catch (err) {
-      setReviewError(
-        err instanceof Error ? err.message : "Failed to save",
-      );
+      setReviewError(err instanceof Error ? err.message : "Failed to save");
     } finally {
       setSaving(false);
     }
@@ -97,11 +95,13 @@ export const ReportDetailsModal = ({
             <Field label="Infrastructure">
               {p.infrastructure_type.join(", ")}
             </Field>
-            {(p.infrastructure_description_en ?? p.infrastructure_description) && (
+            {(p.infrastructure_description_en ??
+              p.infrastructure_description) && (
               <Field label="Description">
                 <div className={styles.descriptionField}>
                   <span>
-                    {p.infrastructure_description_en ?? p.infrastructure_description}
+                    {p.infrastructure_description_en ??
+                      p.infrastructure_description}
                   </span>
                   {p.infrastructure_description_en && (
                     <>

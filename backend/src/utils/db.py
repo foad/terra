@@ -13,6 +13,7 @@ def get_connection():
     global _connection
     if _connection is None or _connection.closed:
         _connection = psycopg2.connect(get_database_url())
+        _connection.autocommit = True
         return _connection
     if _connection.info.transaction_status == TRANSACTION_STATUS_INERROR:
         try:
@@ -23,4 +24,5 @@ def get_connection():
             except psycopg2.Error:
                 pass
             _connection = psycopg2.connect(get_database_url())
+            _connection.autocommit = True
     return _connection

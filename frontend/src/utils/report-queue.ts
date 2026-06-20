@@ -9,7 +9,12 @@ export interface FollowUpQuestion {
   allow_other: boolean;
 }
 
-export type ReportStatus = "pending" | "awaiting-follow-up" | "syncing" | "synced" | "failed";
+export type ReportStatus =
+  | "pending"
+  | "awaiting-follow-up"
+  | "syncing"
+  | "synced"
+  | "failed";
 
 export interface QueuedReport {
   id: string; // offline_queue_id
@@ -81,7 +86,12 @@ export const reportQueue = {
   async add(
     report: Omit<
       QueuedReport,
-      "status" | "error" | "retryCount" | "lastAttempt" | "syncedAt" | "followUpResponses"
+      | "status"
+      | "error"
+      | "retryCount"
+      | "lastAttempt"
+      | "syncedAt"
+      | "followUpResponses"
     > &
       Partial<Pick<QueuedReport, "followUpResponses">>,
     initialStatus: ReportStatus = "pending",
@@ -170,7 +180,10 @@ export const reportQueue = {
     await withStore("readwrite", (store) =>
       store.put({
         ...report,
-        followUpResponses: { ...(report.followUpResponses ?? {}), ...responses },
+        followUpResponses: {
+          ...(report.followUpResponses ?? {}),
+          ...responses,
+        },
       }),
     );
   },
