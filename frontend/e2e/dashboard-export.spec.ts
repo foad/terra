@@ -2,11 +2,10 @@ import { expect, test } from "@playwright/test";
 import { postE2EReport, setupDashboard } from "./helpers";
 
 test("CSV and GeoJSON exports both download", async ({ page }, testInfo) => {
-  const { prefix, cleanup } = await setupDashboard(page, testInfo);
+  const { prefix, coord, cleanup } = await setupDashboard(page, testInfo);
   try {
     await postE2EReport(prefix, {
-      latitude: 36.2,
-      longitude: 36.15,
+      ...coord(36.2, 36.15),
       damage_level: "complete",
       infrastructure_type: [
         "Residential Infrastructure (Houses and apartments)",

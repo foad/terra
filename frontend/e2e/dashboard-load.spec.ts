@@ -4,12 +4,11 @@ import { postE2EReport, setupDashboard } from "./helpers";
 test("write tagged report, dashboard read returns it, delete cleans up", async ({
   page,
 }, testInfo) => {
-  const { prefix, cleanup } = await setupDashboard(page, testInfo);
+  const { prefix, coord, cleanup } = await setupDashboard(page, testInfo);
 
   try {
     await postE2EReport(prefix, {
-      latitude: 36.21,
-      longitude: 36.16,
+      ...coord(36.21, 36.16),
       damage_level: "complete",
       infrastructure_type: [
         "Residential Infrastructure (Houses and apartments)",
@@ -17,8 +16,7 @@ test("write tagged report, dashboard read returns it, delete cleans up", async (
       crisis_nature: ["Earthquake"],
     });
     await postE2EReport(prefix, {
-      latitude: 36.21,
-      longitude: 36.17,
+      ...coord(36.21, 36.17),
       damage_level: "partial",
       infrastructure_type: [
         "Commercial Infrastructure (Markets, malls, shops, hotels, banks, industries, etc.)",
