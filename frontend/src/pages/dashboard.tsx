@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { PanelLeftOpen } from "lucide-react";
+import { Loader2, PanelLeftOpen, TriangleAlert } from "lucide-react";
 import { AppBar } from "../components/app-bar";
 import { DashboardMap } from "../components/dashboard-map";
 import { DAMAGE_COLORS } from "../components/damage-colors";
@@ -105,6 +105,11 @@ const DashboardPage = () => {
     null,
   );
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [retryNonce, setRetryNonce] = useState(0);
+  // Cold-start can run several seconds; only surface the loading pill if it
+  // takes long enough to be noticeable, otherwise it just flashes.
+  const [loadingVisible, setLoadingVisible] = useState(false);
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), STATS_REFRESH_MS);
@@ -127,7 +132,10 @@ const DashboardPage = () => {
     let cancelled = false;
 
     const fetchReports = async (silent: boolean) => {
-      if (!silent) setLoading(true);
+      if (!silent) {
+        setLoading(true);
+        setLoadError(false);
+      }
       const params = new URLSearchParams();
       if (filters.damageLevel.length > 0)
         params.set("damage_level", filters.damageLevel.join(","));
@@ -154,11 +162,13 @@ const DashboardPage = () => {
 
         if (!cancelled) {
           setReports(allFeatures);
+          setLoadError(false);
         }
       } catch (err) {
         // A failed background poll keeps the last good data; the next tick
         // retries. Only surface failures on the initial/filter-change load.
-        if (!silent) throw err;
+        if (!silent && !cancelled) setLoadError(true);
+        if (!silent) console.error("dashboard fetch failed:", err);
       } finally {
         if (!cancelled && !silent) setLoading(false);
       }
@@ -178,7 +188,17 @@ const DashboardPage = () => {
       window.removeEventListener("online", refresh);
       document.removeEventListener("visibilitychange", refresh);
     };
-  }, [filters, api]);
+  }, [filters, api, retryNonce]);
+
+  // Show the loading pill only after a delay so fast loads don't flash it.
+  useEffect(() => {
+    if (!loading) {
+      setLoadingVisible(false);
+      return;
+    }
+    const id = setTimeout(() => setLoadingVisible(true), 500);
+    return () => clearTimeout(id);
+  }, [loading]);
 
   useEffect(() => {
     const buildingId = selectedReport?.properties.building_id;
@@ -277,6 +297,25 @@ const DashboardPage = () => {
           </span>
           <span className={styles.statLabel}>{t("dashboard.last24h")}</span>
         </div>
+        {loadError && (
+          <div className={styles.statusError} data-testid="dashboard-error">
+            <TriangleAlert size={14} />
+            <span>{t("dashboard.loadError")}</span>
+            <button
+              type="button"
+              className={styles.statusErrorRetry}
+              onClick={() => setRetryNonce((n) => n + 1)}
+            >
+              {t("dashboard.retry")}
+            </button>
+          </div>
+        )}
+        {loadingVisible && !loadError && (
+          <div className={styles.statusLoading} data-testid="dashboard-loading">
+            <Loader2 size={14} className={styles.statusSpinner} />
+            <span>{t("dashboard.loading")}</span>
+          </div>
+        )}
       </div>
       <div className={styles.body}>
         {!isSidebarCollapsed && (

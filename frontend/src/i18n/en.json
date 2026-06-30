@@ -186,6 +186,8 @@
     "legendLow": "Low",
     "legendHigh": "High",
     "last24h": "in last 24h",
+    "loadError": "Couldn't load reports",
+    "retry": "Retry",
     "layersPanel": "Layers",
     "layerBuildings": "Buildings",
     "layerCrisis": "Crisis boundary"

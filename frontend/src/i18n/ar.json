@@ -202,6 +202,8 @@
     "legendLow": "منخفض",
     "legendHigh": "مرتفع",
     "last24h": "خلال آخر 24 ساعة",
+    "loadError": "تعذر تحميل التقارير",
+    "retry": "إعادة المحاولة",
     "layersPanel": "الطبقات",
     "layerBuildings": "المباني",
     "layerCrisis": "منطقة الأزمة"

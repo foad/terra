@@ -194,6 +194,8 @@
     "legendLow": "Низкая",
     "legendHigh": "Высокая",
     "last24h": "за последние 24ч",
+    "loadError": "Не удалось загрузить отчёты",
+    "retry": "Повторить",
     "layersPanel": "Слои",
     "layerBuildings": "Здания",
     "layerCrisis": "Зона кризиса"

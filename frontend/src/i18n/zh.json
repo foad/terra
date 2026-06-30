@@ -182,6 +182,8 @@
     "legendLow": "低",
     "legendHigh": "高",
     "last24h": "最近24小时",
+    "loadError": "无法加载报告",
+    "retry": "重试",
     "layersPanel": "图层",
     "layerBuildings": "建筑",
     "layerCrisis": "危机区域"

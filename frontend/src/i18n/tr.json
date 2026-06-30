@@ -184,6 +184,8 @@
     "legendLow": "Düşük",
     "legendHigh": "Yüksek",
     "last24h": "son 24 saatte",
+    "loadError": "Raporlar yüklenemedi",
+    "retry": "Yeniden dene",
     "basemapStreet": "Sokak",
     "basemapSatellite": "Uydu",
     "layersPanel": "Katmanlar",

@@ -186,6 +186,8 @@
     "legendLow": "Faible",
     "legendHigh": "Élevé",
     "last24h": "dans les 24 dernières h",
+    "loadError": "Impossible de charger les rapports",
+    "retry": "Réessayer",
     "layersPanel": "Couches",
     "layerBuildings": "Bâtiments",
     "layerCrisis": "Zone de crise"

@@ -105,6 +105,46 @@
   margin: 0 4px;
 }
 
+.statusLoading,
+.statusError {
+  margin-inline-start: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.statusLoading {
+  color: var(--undpds-color-gray-600);
+}
+
+.statusError {
+  color: var(--undpds-color-red);
+}
+
+.statusErrorRetry {
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--undpds-color-red);
+  text-decoration: underline;
+  padding: 0;
+  cursor: pointer;
+}
+
+.statusSpinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .body {
   flex: 1;
   display: flex;

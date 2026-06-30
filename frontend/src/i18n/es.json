@@ -186,6 +186,8 @@
     "legendLow": "Bajo",
     "legendHigh": "Alto",
     "last24h": "en las últimas 24h",
+    "loadError": "No se pudieron cargar los informes",
+    "retry": "Reintentar",
     "layersPanel": "Capas",
     "layerBuildings": "Edificios",
     "layerCrisis": "Zona de crisis"
