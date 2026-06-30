@@ -55,6 +55,20 @@ resource "aws_db_instance" "main" {
   apply_immediately           = true
 }
 
+// RDS-managed secrets default to 7-day rotation. Rotation invalidates the
+// password cached in SSM `/terra/database_url`, breaking the Lambda until SSM
+// is manually re-synced. Cancel rotation on every apply so it stays disabled
+// even if RDS or the AWS provider re-enables it.
+resource "null_resource" "disable_db_secret_rotation" {
+  triggers = {
+    secret_arn = aws_db_instance.main.master_user_secret[0].secret_arn
+  }
+
+  provisioner "local-exec" {
+    command = "aws secretsmanager cancel-rotate-secret --secret-id ${aws_db_instance.main.master_user_secret[0].secret_arn}"
+  }
+}
+
 output "rds_endpoint" {
   value = aws_db_instance.main.endpoint
 }
