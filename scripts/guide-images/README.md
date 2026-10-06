@@ -18,7 +18,7 @@ Requires Node 22+, the frontend dependencies (`cd frontend && npm install`), Goo
 
 ```bash
 # 1. capture (dashboard views need the evaluator demo password; never commit it)
-TERRA_DEMO_PASSWORD=… node scripts/guide-images/capture.mjs all   # or: time | priority | phone
+TERRA_DEMO_PASSWORD=… node scripts/guide-images/capture.mjs all   # or: time | priority | phone | flow
 
 # 2. frame (set: guides | pitch)
 node scripts/guide-images/mockups.mjs guides
@@ -35,7 +35,9 @@ To frame the map on Antakya, it filters `/reports` responses **inside its own br
 
 ## Source screenshots
 
-Some community-flow and admin screenshots come from the earlier visual-guide capture run, not `capture.mjs`. The phone flow needs a building tap and a photo upload, and an upload would write to the live photo bucket.
+`capture.mjs flow` captures the reporter's map screens. They're taken at Nato Sokak, Antakya, where the building footprints line up well with the basemap.
+
+The photo, damage, survey and confirmation screens, and the admin screens, come from the earlier visual-guide capture run. Getting past the photo step needs a real upload, which would write to the live photo bucket.
 
 Point `GUIDE_SOURCE_DIR` at those screenshots (default `submission/visual-guide-assets`, kept locally). `GUIDE_CAPTURE_DIR` overrides where `mockups.mjs` reads `capture.mjs` output from.
 

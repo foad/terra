@@ -120,14 +120,14 @@ function panel({ img, w, h }) {
 
 const PITCH = () => ({
   // Slide A — reporting flow
-  "a1-open": phone({ img: uri(path.join(VG, "c-initial.png")) }),
+  "a1-open": phone({ img: uri(path.join(CAP, "f-initial.png")) }),
   "a2-ai": phone({ img: uri(path.join(VG, "c-photo-ai.png")), callout: { x: 8, y: 360, w: 272, h: 92, side: "right", scale: 1.55 } }),
   "a3-offline": phone({ img: uri(path.join(VG, "c-offline.png")) }),
   "a4-done": phone({ img: uri(path.join(VG, "c-confirm.png")) }),
   // Slide B — location
-  "b1-building": phone({ img: uri(path.join(VG, "c-building.png")), callout: { x: 4, y: 728, w: 320, h: 40, side: "right", scale: 1.5 } }),
-  "b2-landmark": phone({ img: uri(path.join(VG, "c-landmark.png")), callout: { x: 6, y: 640, w: 370, h: 115, side: "right", scale: 1.35 } }),
-  "b3-arabic": phone({ img: uri(path.join(VG, "c-language.png")) }),
+  "b1-building": phone({ img: uri(path.join(CAP, "f-building.png")), callout: { x: 4, y: 728, w: 320, h: 40, side: "right", scale: 1.5 } }),
+  "b2-landmark": phone({ img: uri(path.join(CAP, "f-landmark.png")), callout: { x: 6, y: 640, w: 370, h: 115, side: "right", scale: 1.35 } }),
+  "b3-arabic": phone({ img: uri(path.join(CAP, "f-arabic.png")) }),
   // Slide C — priority loop
   "c1-tag": browser({ img: uri(path.join(VG, "d-priority-flag.png")), w: 1440, h: 800, url: "terra.foad.dev/dashboard", crop: { x: 690, y: 150, w: 700, h: 470 } }),
   "c2-phone": phone({ img: uri(path.join(CAP, "p-phone.png")), callout: { x: 40, y: 350, w: 240, h: 180, side: "left", scale: 1.4 } }),
@@ -141,10 +141,10 @@ const PITCH = () => ({
 
 const GUIDES = () => ({
   // Reporter guide (phones)
-  "r1-open": phone({ img: uri(path.join(VG, "c-initial.png")) }),
-  "r1-language": phone({ img: uri(path.join(VG, "c-language.png")) }),
-  "r2-building": phone({ img: uri(path.join(VG, "c-building.png")), callout: { x: 4, y: 728, w: 320, h: 40, side: "right", scale: 1.5 } }),
-  "r2-landmark": phone({ img: uri(path.join(VG, "c-landmark.png")), callout: { x: 6, y: 640, w: 370, h: 115, side: "right", scale: 1.35 } }),
+  "r1-open": phone({ img: uri(path.join(CAP, "f-initial.png")) }),
+  "r1-language": phone({ img: uri(path.join(CAP, "f-arabic.png")) }),
+  "r2-building": phone({ img: uri(path.join(CAP, "f-building.png")), callout: { x: 4, y: 728, w: 320, h: 40, side: "right", scale: 1.5 } }),
+  "r2-landmark": phone({ img: uri(path.join(CAP, "f-landmark.png")), callout: { x: 6, y: 640, w: 370, h: 115, side: "right", scale: 1.35 } }),
   "r2-priority": phone({ img: uri(path.join(CAP, "p-phone.png")), callout: { x: 40, y: 350, w: 240, h: 180, side: "right", scale: 1.4 } }),
   "r4-damage": phone({ img: uri(path.join(VG, "c-photo-ai.png")), callout: { x: 8, y: 360, w: 272, h: 92, side: "right", scale: 1.55 } }),
   "r5-survey": phone({ img: uri(path.join(VG, "c-survey.png")) }),

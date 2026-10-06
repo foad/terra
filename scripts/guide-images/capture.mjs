@@ -7,7 +7,7 @@
  *   Nothing is written to the server: no reports, no flags, no edits.
  * Output: scripts/guide-images/.out/captures/*.png at 2x pixel density (override with GUIDE_CAPTURE_DIR).
  *
- * Usage: TERRA_DEMO_PASSWORD=… node scripts/guide-images/capture.mjs [time|heat|priority|phone|all]
+ * Usage: TERRA_DEMO_PASSWORD=… node scripts/guide-images/capture.mjs [time|heat|priority|phone|flow|all]
  */
 import { createRequire } from "node:module";
 const { chromium } = createRequire(new URL("../../frontend/package.json", import.meta.url))("@playwright/test");
@@ -20,7 +20,7 @@ fs.mkdirSync(OUT, { recursive: true });
 const BASE = "https://terra.foad.dev";
 const EMAIL = process.env.TERRA_DEMO_EMAIL || "demo@terra.foad.dev";
 const PASS = process.env.TERRA_DEMO_PASSWORD; // evaluator demo password — never commit it
-if (!PASS && process.argv[2] !== "phone") {
+if (!PASS && !["phone", "flow"].includes(process.argv[2])) {
   console.error("Set TERRA_DEMO_PASSWORD (the evaluator demo account password) to capture dashboard views.");
   process.exit(1);
 }
@@ -145,6 +145,44 @@ if (what === "phone" || what === "all") {
   await page.waitForFunction(() => !!document.querySelector(".maplibregl-canvas"), undefined, { timeout: 30_000 });
   await page.waitForTimeout(9000);
   await shot(page, "p-phone");
+  await browser.close();
+}
+
+if (what === "flow" || what === "all") {
+  // Reporter map screens at a spot where VIDA footprints line up well with the OSM basemap
+  // (Nato Sokak, Antakya). Taps and typing only — nothing is submitted.
+  console.log("reporter flow (phone)");
+  const SPOT = { latitude: 36.208, longitude: 36.156 };
+  const browser = await chromium.launch({ headless: true, channel: "chrome" });
+  const phoneCtx = (lng) => browser.newContext({
+    viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true,
+    geolocation: SPOT, permissions: ["geolocation"], locale: lng === "ar" ? "ar" : "en-GB",
+  });
+  const open = async (ctx, q = "") => {
+    const page = await ctx.newPage();
+    await page.goto(`${BASE}/${q}`, { waitUntil: "domcontentloaded" });
+    await page.waitForFunction(() => !!document.querySelector(".maplibregl-canvas"), undefined, { timeout: 30_000 });
+    await page.waitForTimeout(8000);
+    return page;
+  };
+  let ctx = await phoneCtx("en");
+  let page = await open(ctx);
+  await shot(page, "f-initial");
+  await page.touchscreen.tap(205, 350); await page.waitForTimeout(2500);
+  await shot(page, "f-building");
+  await ctx.close();
+  ctx = await phoneCtx("en");
+  page = await open(ctx);
+  await page.touchscreen.tap(285, 470); await page.waitForTimeout(2500);
+  const box = page.locator('input[placeholder*="landmark"], textarea[placeholder*="landmark"]').first();
+  if (await box.isVisible().catch(() => false)) { await box.fill("The school near the central market"); await page.locator("body").click({ position: { x: 5, y: 840 } }).catch(() => {}); }
+  await page.waitForTimeout(800);
+  await shot(page, "f-landmark");
+  await ctx.close();
+  ctx = await phoneCtx("ar");
+  page = await open(ctx, "?lng=ar");
+  await shot(page, "f-arabic");
+  await ctx.close();
   await browser.close();
 }
 console.log("done");
