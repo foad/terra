@@ -35,7 +35,7 @@ To frame the map on Antakya, it filters `/reports` responses **inside its own br
 
 ## Source screenshots
 
-`capture.mjs flow` captures the reporter's map screens. They're taken at Nato Sokak, Antakya, where the building footprints line up well with the basemap.
+`capture.mjs flow` captures the reporter's map screens. They are taken off Yavuz Sultan Selim Caddesi, Antakya: the spot (out of 62 scouted) where the footprints leave the least OSM building area uncovered.
 
 The photo, damage, survey and confirmation screens, and the admin screens, come from the earlier visual-guide capture run. Getting past the photo step needs a real upload, which would write to the live photo bucket.
 

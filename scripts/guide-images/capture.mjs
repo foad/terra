@@ -150,9 +150,9 @@ if (what === "phone" || what === "all") {
 
 if (what === "flow" || what === "all") {
   // Reporter map screens at a spot where VIDA footprints line up well with the OSM basemap
-  // (Nato Sokak, Antakya). Taps and typing only — nothing is submitted.
+  // (off Yavuz Sultan Selim Caddesi, Antakya; chosen by measuring how much OSM building area the footprints leave uncovered). Taps and typing only — nothing is submitted.
   console.log("reporter flow (phone)");
-  const SPOT = { latitude: 36.208, longitude: 36.156 };
+  const SPOT = { latitude: 36.210, longitude: 36.160 };
   const browser = await chromium.launch({ headless: true, channel: "chrome" });
   const phoneCtx = (lng) => browser.newContext({
     viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true,
@@ -168,12 +168,12 @@ if (what === "flow" || what === "all") {
   let ctx = await phoneCtx("en");
   let page = await open(ctx);
   await shot(page, "f-initial");
-  await page.touchscreen.tap(205, 350); await page.waitForTimeout(2500);
+  await page.touchscreen.tap(220, 335); await page.waitForTimeout(2500);
   await shot(page, "f-building");
   await ctx.close();
   ctx = await phoneCtx("en");
   page = await open(ctx);
-  await page.touchscreen.tap(285, 470); await page.waitForTimeout(2500);
+  await page.touchscreen.tap(100, 290); await page.waitForTimeout(2500);
   const box = page.locator('input[placeholder*="landmark"], textarea[placeholder*="landmark"]').first();
   if (await box.isVisible().catch(() => false)) { await box.fill("The school near the central market"); await page.locator("body").click({ position: { x: 5, y: 840 } }).catch(() => {}); }
   await page.waitForTimeout(800);
