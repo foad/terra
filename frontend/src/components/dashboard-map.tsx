@@ -729,7 +729,7 @@ export const DashboardMap = ({
     };
   }, [api]);
 
-  // Fetch priority buildings and apply feature-state so the amber outline appears.
+  // Fetch priority buildings and apply feature-state so the purple outline appears.
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;

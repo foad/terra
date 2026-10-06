@@ -136,7 +136,7 @@ export const Map = ({
     map.on("load", () => {
       // Damage-level fill driven by feature-state set from /reports bbox fetch.
       // minzoom 16: buildings are too small to read fills at lower zoom.
-      // Outline left at default — priority-flag amber border handled by building-priority-outline layer (#235).
+      // Outline left at default — priority-flag purple border handled by building-priority-outline layer (#235).
       map.addLayer({
         id: "building-damage",
         type: "fill",
