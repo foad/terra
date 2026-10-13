@@ -2,22 +2,20 @@
 
 Builds the images in `docs/guides/images/`: phone and browser mockups with zoom callouts, from screenshots of the live demo.
 
-The pipeline has three steps.
-
 | Step | Script | Output |
 |---|---|---|
 | 1. Capture | `capture.mjs` | Read-only screenshots of the live site at 2x, in `.out/captures/` |
-| 2. Frame | `mockups.mjs` | SVG phone/browser frames and zoom callouts rendered to transparent PNGs, in `.out/mockups/<set>/` |
-| 3. Publish | `to_webp.py` | Trimmed, resized WebP files in `docs/guides/images/` |
+| 2. Frame | `mockups.mjs` | SVG phone and browser frames with zoom callouts, rendered to transparent PNGs in `.out/mockups/<set>/` |
+| 3. Publish | `to_webp.py` | Trimmed and resized WebP files in `docs/guides/images/` |
 
 `.out/` is git-ignored.
 
-## Running it
+## Run the pipeline
 
-Requires Node 22+, the frontend dependencies (`cd frontend && npm install`), Google Chrome, and Python 3 with Pillow.
+Prerequisites: Node 22 or later, the frontend dependencies (`cd frontend && npm install`), Google Chrome, and Python 3 with Pillow.
 
 ```bash
-# 1. capture (dashboard views need the evaluator demo password; never commit it)
+# 1. capture. Dashboard views need the evaluator demo password. Never commit it.
 TERRA_DEMO_PASSWORD=… node scripts/guide-images/capture.mjs all   # or: time | priority | phone | flow
 
 # 2. frame (set: guides | pitch)
@@ -29,26 +27,26 @@ python scripts/guide-images/to_webp.py guides
 
 ## Read-only by design
 
-`capture.mjs` never writes to the live site. It signs in with the evaluator demo account, and only reads.
+`capture.mjs` does not write to the live site. It signs in with the evaluator demo account and only reads.
 
-To frame the map on Antakya, it filters `/reports` responses **inside its own browser** to a bounding box. This also hides stray test reports elsewhere. Nothing on the server changes.
+To frame the map on Antakya, it filters the `/reports` responses to a bounding box **inside its own browser**. This filter also hides stray test reports in other places. Nothing on the server changes.
 
 ## Source screenshots
 
-`capture.mjs flow` captures the reporter's map screens. They are taken off Yavuz Sultan Selim Caddesi, Antakya: the spot (out of 62 scouted) where the footprints leave the least OSM building area uncovered.
+`capture.mjs flow` captures the map screens of the reporter. The capture point is on Yavuz Sultan Selim Caddesi, Antakya. The capture run examined 62 points. This point leaves the least OSM building area uncovered by the footprints.
 
-The photo, damage, survey and confirmation screens, and the admin screens, come from the earlier visual-guide capture run. Getting past the photo step needs a real upload, which would write to the live photo bucket.
+The photo, damage, survey and confirmation screens, and the admin screens, come from the earlier visual-guide capture run. A real upload is necessary to get past the photo step, and an upload writes to the live photo bucket.
 
-Point `GUIDE_SOURCE_DIR` at those screenshots (default `submission/visual-guide-assets`, kept locally). `GUIDE_CAPTURE_DIR` overrides where `mockups.mjs` reads `capture.mjs` output from.
+`GUIDE_SOURCE_DIR` sets the directory of those screenshots. The default is `submission/visual-guide-assets`, which is kept locally. `GUIDE_CAPTURE_DIR` sets the directory from which `mockups.mjs` reads the output of `capture.mjs`.
 
-## Editing a callout
+## Edit a callout
 
-Callouts are set per image in `mockups.mjs`:
+`mockups.mjs` holds the callout of each image:
 
 ```js
 callout: { x, y, w, h, side, scale }
 ```
 
-- `x`, `y`, `w`, `h`: the source rectangle, in the screenshot's CSS pixels (390 × 844 for phones).
+- `x`, `y`, `w`, `h`: the source rectangle, in the CSS pixels of the screenshot (390 × 844 for phones).
 - `side`: `left` or `right`.
-- `scale`: magnification.
+- `scale`: the magnification.
